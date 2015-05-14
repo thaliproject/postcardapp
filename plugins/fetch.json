@@ -1,0 +1,18 @@
+{
+    "cordova-plugin-whitelist": {
+        "source": {
+            "type": "registry",
+            "id": "cordova-plugin-whitelist@1"
+        },
+        "is_top_level": true,
+        "variables": {}
+    },
+    "io.jxcore.node": {
+        "source": {
+            "type": "local",
+            "path": "c:\\depots\\jxcore-cordova\\io.jxcore.node"
+        },
+        "is_top_level": true,
+        "variables": {}
+    }
+}
