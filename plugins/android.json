@@ -23,10 +23,10 @@
     },
     "installed_plugins": {
         "cordova-plugin-whitelist": {
-            "PACKAGE_NAME": "org.thaliproject.postcardapp"
+            "PACKAGE_NAME": "io.cordova.hellocordova"
         },
         "io.jxcore.node": {
-            "PACKAGE_NAME": "org.thaliproject.postcardapp"
+            "PACKAGE_NAME": "io.cordova.hellocordova"
         }
     },
     "dependent_plugins": {}

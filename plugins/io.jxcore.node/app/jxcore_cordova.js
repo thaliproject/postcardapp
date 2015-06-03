@@ -16,11 +16,11 @@ function callJXcoreNative(name, args) {
 
   var cb = "";
 
-  if (params.length && typeof params[params.length-1] == "function") {
+  if (params.length && typeof params[params.length - 1] == "function") {
     cb = "$$jxcore_callback_" + cordova.eventId;
     cordova.eventId++;
     cordova.eventId %= 1e5;
-    cordova.on(cb, new WrapFunction(cb, params[params.length-1]));
+    cordova.on(cb, new WrapFunction(cb, params[params.length - 1]));
     params.pop();
   }
 
@@ -36,7 +36,9 @@ function MakeCallback(callbackId) {
 
   var _this = this;
   this.callback = function () {
-    callJXcoreNative("  _callback_  ", [Array.prototype.slice.call(arguments, 0), null, _this.cid]);
+    callJXcoreNative("  _callback_  ", [Array.prototype.slice.call(arguments, 0),
+      null,
+      _this.cid]);
   };
 }
 
@@ -53,7 +55,7 @@ function WrapFunction(cb, fnc) {
 
 cordova.events = {};
 cordova.eventId = 0;
-cordova.on = function(name, target) {
+cordova.on = function (name, target) {
   cordova.events[name] = target;
 };
 
@@ -64,30 +66,32 @@ cordova.prototype.callNative = function () {
 
 var isAndroid = process.platform == "android";
 
-cordova.ping = function(name, param) {
-  if (cordova.events.hasOwnProperty(name)) {
-    var x;
-    if (Array.isArray(param)) {
-      x = param;
-    } else if (param.str) {
-      x = [param.str];
-    } else if (param.json) {
-      try {
-        x = [JSON.parse(param.json)];
-      } catch (e) {
-        return e;
-      }
-    } else {
-      x = null;
+cordova.ping = function (name, param) {
+  var x;
+  if (Array.isArray(param)) {
+    x = param;
+  } else if (param.str) {
+    x = [param.str];
+  } else if (param.json) {
+    try {
+      x = [JSON.parse(param.json)];
+    } catch (e) {
+      return e;
     }
+  } else {
+    x = null;
+  }
 
+  if (cordova.events.hasOwnProperty(name)) {
     var target = cordova.events[name];
 
     if (target instanceof WrapFunction) {
       return target.callback.apply(target, x);
     } else {
-      return cordova.events[name].apply(null, x);
+      return target.apply(null, x);
     }
+  } else {
+    console.warn(name, "wasn't registered");
   }
 };
 
@@ -118,15 +122,26 @@ cordova.prototype.unregister = function () {
   return this;
 };
 
+var return_reference_counter = 0;
 cordova.prototype.call = function (rest) {
   var params = Array.prototype.slice.call(arguments, 0);
-  var fnc = ui_methods[this.name];
+  var fnc = ui_methods["callLocalMethods"];
 
   if (!fnc) {
     throw new Error("Method " + this.name + " is undefined.");
   }
 
-  fnc.callback.apply(null, [params, null]);
+  if (typeof params[params.length-1] === 'function') {
+    var return_reference = return_reference_counter + this.name;
+    return_reference_counter ++;
+    return_reference_counter %= 9999;
+    ui_methods[return_reference] = {};
+
+    ui_methods[return_reference].returnCallback = params[params.length-1];
+    params[params.length-1] = { JXCORE_RETURN_CALLBACK:"RC-" + return_reference };
+  }
+
+  fnc.callback.apply(null, [this.name, params, null]);
 
   return this;
 };
@@ -166,9 +181,10 @@ internal_methods['loadMainFile'] = function (filePath, callback_) {
   } catch (e) {
     result = false;
     err = e;
+    Error.captureStackTrace(err);
     console.error("loadMainFile", e);
   }
-  callback_(result, err);
+  callback_(result, !err ? null : err.message + "\n" + err.stack);
 };
 
 cordova.executeJSON = function (json, callbackId) {
@@ -177,18 +193,12 @@ cordova.executeJSON = function (json, callbackId) {
   var internal = internal_methods[json.methodName];
   var fnc = jx_methods[json.methodName];
 
-  if (!fnc && !internal) {
-    console.error("JXcore: Method Doesn't Exist [", json.methodName, "] Did you register it?");
-    return;
-  }
-
   if (internal) {
     var cb = new MakeCallback(callbackId).callback
     json.params.push(cb);
     internal.apply(null, json.params);
-  }
-
-  if (fnc) {
+    return;
+  } else if (fnc) {
     if (!fnc.is_synced) {
       if (!json.params || (json.params.length == 1 && json.params[0] === null)) {
         json.params = [];
@@ -202,18 +212,46 @@ cordova.executeJSON = function (json, callbackId) {
     } else {
       return ret_val;
     }
+    return;
+  } else if (json.methodName && json.methodName.length>3 && json.methodName.substr(0,3) === "RC-") {
+    var cb = new MakeCallback(callbackId).callback
+    json.params.push(cb);
+    fnc = ui_methods[json.methodName.substr(3)];
+    if (fnc && fnc.returnCallback) {
+      fnc.returnCallback.apply(null, json.params);
+      delete ui_methods[json.methodName.substr(3)];
+      return;
+    }
   }
+
+  console.error("JXcore: Method Doesn't Exist [", json.methodName, "] Did you register it?");
 };
 
 console.error("Platform", process.platform);
 if (isAndroid) {
-  process.registerAssets = function () {
-    var fs = require('fs');
+  process.registerAssets = function (from) {
+    var fs = from || require('fs');
+    var path = require('path');
     var folders = process.natives.assetReadDirSync();
     var root = process.cwd();
 
     // patch execPath to userPath
     process.execPath = root;
+
+    console.warn("creating file system at", root);
+    try {
+      // force create www_old/jxcore sub folder so we can write into cwd
+      if (!fs.existsSync(process.userPath)) {
+        fs.mkdir(process.userPath);
+        if (!fs.existsSync(root)) {
+          fs.mkdir(root);
+        }
+      }
+    } catch (e) {
+      console.error("Problem creating assets root at ", root);
+      console.error("You may have a problem with writing files");
+      console.error("Original error was", e);
+    }
 
     var jxcore_root;
 
@@ -242,7 +280,7 @@ if (isAndroid) {
         jxcore_root = jxcore_root[sp[o]];
       }
 
-      jxcore_root['jxcore'] = _; // assets/jxcore -> /
+      jxcore_root['jxcore'] = _; // assets/www_old/jxcore -> /
       jxcore_root = _;
     };
 
@@ -260,21 +298,21 @@ if (isAndroid) {
       return last;
     };
 
-    var getLast = function (location) {
-      while (location[0] == '/')
-        location = location.substr(1);
+    var getLast = function (pathname) {
+      while (pathname[0] == '/')
+        pathname = pathname.substr(1);
 
-      while (location[location.length - 1] == '/')
-        location = location.substr(0, location.length - 1);
+      while (pathname[pathname.length - 1] == '/')
+        pathname = pathname.substr(0, pathname.length - 1);
 
-      var dirs = location.split('/');
+      var dirs = pathname.split('/');
 
       var res = findIn(dirs, jxcore_root);
       if (!res) res = findIn(dirs, folders);
-
       return res;
     };
 
+    var stat_archive = {};
     var existssync = function (pathname) {
       var n = pathname.indexOf(root);
       if (n === 0 || n === -1) {
@@ -291,15 +329,28 @@ if (isAndroid) {
         }
 
         var result;
-        if (typeof last['!s'] === 'undefined')
-          result = {
-            size: 0
-          };
-        else
-          result = {
-            size: last['!s']
-          };
+        // cache result and send the same again
+        // to keep same ino number for each file
+        // a node module may use caching for dev:ino
+        // combinations
+        if (stat_archive.hasOwnProperty(pathname))
+          return stat_archive[pathname];
 
+        if (typeof last['!s'] === 'undefined') {
+          result = { // mark as a folder
+            size: 340,
+            mode: 16877,
+            ino: fs.virtualFiles.getNewIno()
+          };
+        } else {
+          result = {
+            size: last['!s'],
+            mode: 33188,
+            ino: fs.virtualFiles.getNewIno()
+          };
+        }
+
+        stat_archive[pathname] = result;
         return result;
       }
     };
@@ -310,7 +361,7 @@ if (isAndroid) {
       var n = pathname.indexOf(root);
       if (n === 0) {
         pathname = pathname.replace(root, "");
-        pathname = path.join('jxcore/', pathname);
+        pathname = path.join('www_old/jxcore/', pathname);
         return process.natives.assetReadSync(pathname);
       }
     };
@@ -342,11 +393,17 @@ if (isAndroid) {
   };
 
   process.registerAssets();
+  process.binding('natives').fs += "(" + process.registerAssets + ")(exports);";
 } else {
-//ugly patching
+  // ugly patching
   var base_path = process.cwd();
   process.cwd = function () {
-    return base_path + "/jxcore/";
+    if (arguments.length) {
+      // or we should throw this as an exception ?
+      // Who knows how many node modules would break..
+      console.error("You are on iOS. This platform doesn't support setting cwd");
+    }
+    return base_path + "/www_old/jxcore/";
   };
 }
 

@@ -9,8 +9,9 @@
     },
     "io.jxcore.node": {
         "source": {
-            "type": "local",
-            "path": "c:\\depots\\jxcore-cordova\\io.jxcore.node"
+            "type": "git",
+            "url": "https://github.com/jxcore/jxcore-cordova.git",
+            "subdir": "."
         },
         "is_top_level": true,
         "variables": {}
