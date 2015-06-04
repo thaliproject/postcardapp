@@ -127,7 +127,7 @@ function focusable( element, isTabIndexNotNaN ) {
 		if ( !element.href || !mapName || map.nodeName.toLowerCase() !== "map" ) {
 			return false;
 		}
-		img = $( "img[usemap=#" + mapName + "]" )[0];
+		img = $( "public[usemap=#" + mapName + "]" )[0];
 		return !!img && visible( img );
 	}
 	return ( /input|select|textarea|button|object/.test( nodeName ) ?
@@ -8609,7 +8609,7 @@ $.widget( "mobile.slider", $.extend( {
 				sliderImg = document.createElement( "span" );
 
 				sliderImg.className = [ "ui-slider-label ui-slider-label-", side, activeClass ].join( "" );
-				sliderImg.setAttribute( "role", "img" );
+				sliderImg.setAttribute( "role", "public" );
 				sliderImg.appendChild( document.createTextNode( options[i].innerHTML ) );
 				$( sliderImg ).prependTo( slider );
 			}
