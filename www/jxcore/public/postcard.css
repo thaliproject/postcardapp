@@ -31,7 +31,7 @@ body {
 }
 
 /************************
- *      N O T E S       *
+ *      C A R D S       *
  ************************/
 ul, li {
     list-style: none;
@@ -81,14 +81,15 @@ ul li textarea {
     border-style: none;
 }
 
-.note-title {
+.card-title {
     font-size: 120%;
     font-weight: bold;
     height: 30px;
     width: 70%;
+    border-style: hidden;
 }
 
-.note-content {
+.card-content {
     font-size:120%;
     height: 100px;
     width: 95%;

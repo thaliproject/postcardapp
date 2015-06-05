@@ -1,32 +1,32 @@
-var notes, count = 0;
+var cards, count = 0, userName = "Tom";
 
 // save the cards
 function saveCards() {
 
     //TODO: Save the cards to PouchDB
 
-    var notesArray = [];
+    var cardsArray = [];
 
-    // for each of the notes add a bespoke note object to the array
-    notes.find("li > div").each(function (i, e) {
+    // for each of the cards add a bespoke card object to the array
+    cards.find("li > div").each(function (i, e) {
         // save the class attribute of the div, as well as the text for the title and content text areas
         var colourClass = $(e).attr("class");
-        var title = $(e).find("textarea.note-title");
-        var content = $(e).find("textarea.note-content");
+        var title = $(e).find("textarea.card-title");
+        var content = $(e).find("textarea.card-content");
 
-        notesArray.push({ Index: i, Title: title.val(), Content: content.val(), Class: colourClass });
+        cardsArray.push({ Index: i, Title: title.val(), Content: content.val(), Class: colourClass });
     });
 
     // json encode it
-    var jsonStr = JSON.stringify(notesArray);
+    var jsonStr = JSON.stringify(cardsArray);
 
     // and save the json string into local storage
-    localStorage.setItem("notes", jsonStr);
+    localStorage.setItem("cards", jsonStr);
 }
 
-// add event handlers to a note
-function addNoteEvent(noteElement) {
-    var div = noteElement.children("div");
+// add event handlers to a card
+function addCardEvent(cardElement) {
+    var div = cardElement.children("div");
     var closeImg = div.find("img");
 
     div.focus(function () {
@@ -51,76 +51,78 @@ function addNoteEvent(noteElement) {
     });
 }
 
-//  adds a new note to the 'notes' list
-function addNewNote(className, title, content) {
+//  adds a new postcard to the 'cards' list
+function addNewCard(className, title, content) {
     // if class is not specified, use a random colour class
     if (!className) {
         className = "colour" + Math.ceil(Math.random() * 3);
     }
 
-    // add a new note to the end of the list
-    notes.append("<li><div class='" + className + "'>" +
-        "<textarea class='note-title' placeholder='Untitled' maxlength='10'/>" +
-        "<textarea class='note-content' placeholder='Your content here'/>" +
+    // add a new card to the end of the list
+    cards.append("<li><div class='" + className + "'>" +
+        "<textarea readonly class='card-title' placeholder='Owner' maxlength='10'/>" +
+        "<textarea class='card-content' placeholder='Your content here'/>" +
         "<img class='hide' src='close.png'/>" +
         "</div></li>");
 
-    // get the new note that's just been added and attach the click event handler to its close button
-    var newNote = notes.find("li:last");
-    newNote.find("img").click(function () {
-        // remove the note and save
-        newNote.remove();
+    // get the new card that's just been added and attach the click event handler to its close button
+    var newCard = cards.find("li:last");
+    newCard.find("img").click(function () {
+        // remove the card and save
+        newCard.remove();
         saveCards();
     });
 
     // hook up event handlers to show/hide close button as appropriate
-    addNoteEvent(newNote);
+    addCardEvent(newCard);
 
-    // if a title is provided then set the title of the new note
-    if (title) {
-        // get the title textarea element and set its value
-        newNote.find("textarea.note-title").val(title);
-    }
+    // if a title is provided then set the title of the new card
+    if (title)
+        newCard.find("textarea.card-title").val(title);
+    else
+        newCard.find("textarea.card-title").val(userName);//Use teh current userName
 
-    // if a content is provided then set the content of the new note
+    // if a content is provided then set the content of the new card
     if (content) {
         // get the content textarea element and set its value
-        newNote.find("textarea.note-content").val(content);
+        newCard.find("textarea.card-content").val(content);
     }
 
     // save
     saveCards();
 }
 
-// load the notes saved in the local storage
-function loadNotes() {
-    var storedNotes = localStorage.getItem("notes");
-    if (storedNotes) {
-        // passes the stored json back into an array of note objects
-        var notesArray = JSON.parse(storedNotes);
-        count = notesArray.length;
+// load the cards saved in the local storage
+function loadCards() {
+    //TODO: Load cards from the thali db
+
+    var storedCards = localStorage.getItem("cards");
+    if (storedCards) {
+        // passes the stored json back into an array of card objects
+        var cardsArray = JSON.parse(storedCards);
+        count = cardsArray.length;
 
         var i;
         for (i = 0; i < count; i++) {
-            var storedNote = notesArray[i];
-            addNewNote(storedNote.Class, storedNote.Title, storedNote.Content);
+            var storedCard = cardsArray[i];
+            addNewCard(storedCard.Class, storedCard.Title, storedCard.Content);
         }
     }
 }
 
 $(document).ready(function () {
-    // get references to the 'notes' list
-    notes = $("#notes");
+    // get references to the 'cards' list
+    cards = $("#cards");
 
-    // load notes from local storage if one's available
-    loadNotes();
+    // load cards from local storage if one's available
+    loadCards();
 
-    // clicking the 'New Note' button adds a new note to the list
+    // clicking the 'New card' button adds a new card to the list
     $("#btnNew").click(function () {
-        addNewNote();
+        addNewCard();
     });
 
-    // add a note to the list if there aren't any
+    // add a card to the list if there aren't any
     if (count === 0) {
         $("#btnNew").click();
     }
