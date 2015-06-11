@@ -4,9 +4,16 @@
   "description": "Sample app to demosntrate the Thali framework",
   "main": "app.js",
   "dependencies": {
+    "body-parser": "^1.12.4",
     "ejs": "^2.3.1",
     "ejs-locals": "^1.0.2",
-    "express": "^4.12.3"
+    "express": "^4.12.3",
+    "express-pouchdb": "^0.14.2",
+    "gulp": "^3.9.0",
+    "gulp-nodemon": "^2.0.3",
+    "memdown": "^1.0.0",
+    "pouchdb": "^3.6.0",
+    "shortid": "^2.2.2"
   },
   "devDependencies": {},
   "scripts": {
