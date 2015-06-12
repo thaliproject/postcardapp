@@ -80,7 +80,7 @@ function addNewCard(className, title, content) {
     if (title)
         newCard.find("textarea.card-title").val(title);
     else
-        newCard.find("textarea.card-title").val(userName);//Use teh current userName
+        newCard.find("textarea.card-title").val(userName);//Use the current userName
 
     // if a content is provided then set the content of the new card
     if (content) {
