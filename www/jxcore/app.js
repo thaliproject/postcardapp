@@ -13,9 +13,7 @@ var PouchDB = require('pouchdb');
 app.disable('x-powered-by');
 
 // Create in memory version
-//TODO: uncomment later while testing in device
-//var InMemPouchDB = PouchDB.defaults({db: require('memdown')});
-var InMemPouchDB = PouchDB.defaults();
+var InMemPouchDB = PouchDB.defaults({db: require('memdown')});
 app.use('/db', require('express-pouchdb')(InMemPouchDB));
 var db = new InMemPouchDB('postcarddb');
 clog("JXcore is up and running!");

@@ -1,27 +1,30 @@
 var cards, count = 0, userName = "Tom";
+var url = 'http://localhost:5000/api/cards/';
+var loading = false;
 
-// save the cards
-function saveCards() {
 
-    //TODO: Save the cards to PouchDB
 
-    var cardsArray = [];
-
-    // for each of the cards add a bespoke card object to the array
-    cards.find("li > div").each(function (i, e) {
-        // save the class attribute of the div, as well as the text for the title and content text areas
-        var colourClass = $(e).attr("class");
-        var title = $(e).find("textarea.card-title");
-        var content = $(e).find("textarea.card-content");
-
-        cardsArray.push({ Index: i, Title: title.val(), Content: content.val(), Class: colourClass });
+//Save the post card
+function saveCard(cardId, author, content){
+    $.ajax({
+        url: url + cardId,
+        type: 'PUT',
+        contentType: "application/json",
+        data: "{ \"author\":\"" + author +"\", \"content\": \"" + content +"\" }",
+        dataType: 'json',
+        success: function(result) {
+        }
     });
+}
 
-    // json encode it
-    var jsonStr = JSON.stringify(cardsArray);
-
-    // and save the json string into local storage
-    localStorage.setItem("cards", jsonStr);
+//Delete the post card
+function deleteCard(cardId){
+    $.ajax({
+        url: url + cardId,
+        type: 'DELETE',
+        success: function(result) {
+        }
+    });
 }
 
 // add event handlers to a card
@@ -41,7 +44,7 @@ function addCardEvent(cardElement) {
         closeImg.removeClass("hide");
     }, function () {
         closeImg.addClass("hide");
-        saveCards();
+//        saveCards();
     });
 
     div.children().hover(function () {
@@ -52,14 +55,15 @@ function addCardEvent(cardElement) {
 }
 
 //  adds a new postcard to the 'cards' list
-function addNewCard(className, title, content) {
-    // if class is not specified, use a random colour class
-    if (!className) {
-        className = "colour" + Math.ceil(Math.random() * 3);
+function addNewCard(cardId, title, content) {
+    // use a random colour class
+    var className = "colour" + Math.ceil(Math.random() * 3);
+    if (cardId === "") {
+       cardId = generateUUID();
     }
-
     // add a new card to the end of the list
     cards.append("<li><div class='" + className + "'>" +
+        "<input type='hidden' id='cardId' value='" + cardId + "'>" +
         "<textarea readonly class='card-title' placeholder='Owner' maxlength='10'/>" +
         "<textarea class='card-content' placeholder='Your content here'/>" +
         "<img class='hide' src='close.png'/>" +
@@ -69,8 +73,15 @@ function addNewCard(className, title, content) {
     var newCard = cards.find("li:last");
     newCard.find("img").click(function () {
         // remove the card and save
+        deleteCard(newCard.find("input[type=hidden]").val());
         newCard.remove();
-        saveCards();
+    });
+
+    //Add the update handler
+    newCard.find("textarea.card-content").blur(function(){
+        saveCard(newCard.find("input[type=hidden]").val(),
+            newCard.find("textarea.card-title").val(),
+            newCard.find("textarea.card-content").val() );
     });
 
     // hook up event handlers to show/hide close button as appropriate
@@ -88,27 +99,45 @@ function addNewCard(className, title, content) {
         newCard.find("textarea.card-content").val(content);
     }
 
-    // save
-    saveCards();
+    if(!loading)
+        saveCard(newCard.find("input[type=hidden]").val(),
+            newCard.find("textarea.card-title").val(),
+            newCard.find("textarea.card-content").val() );
 }
 
 // load the cards saved in the local storage
 function loadCards() {
-    //TODO: Load cards from the thali db
-
-    var storedCards = localStorage.getItem("cards");
-    if (storedCards) {
-        // passes the stored json back into an array of card objects
-        var cardsArray = JSON.parse(storedCards);
-        count = cardsArray.length;
-
-        var i;
-        for (i = 0; i < count; i++) {
-            var storedCard = cardsArray[i];
-            addNewCard(storedCard.Class, storedCard.Title, storedCard.Content);
+    $.ajax({
+        type: 'GET',
+        url: url,
+        data: { get_param: 'value' },
+        dataType: 'json',
+        success: function (data) {
+            loading = true;
+             $.each(data.rows, function(index, element) {
+                addNewCard(element.id, element.doc.author, element.doc.content);
+                count++;
+            });
+            // add a card to the list if there aren't any
+            if (count === 0) {
+                $("#btnNew").click();
+            }
+            loading = false;
         }
-    }
+    });
+
 }
+
+//generate unique id for postcard
+function generateUUID() {
+    var d = new Date().getTime();
+    var uuid = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+        var r = (d + Math.random()*16)%16 | 0;
+        d = Math.floor(d/16);
+        return (c=='x' ? r : (r&0x3|0x8)).toString(16);
+    });
+    return uuid;
+};
 
 $(document).ready(function () {
     // get references to the 'cards' list
@@ -119,11 +148,6 @@ $(document).ready(function () {
 
     // clicking the 'New card' button adds a new card to the list
     $("#btnNew").click(function () {
-        addNewCard();
+        addNewCard("");
     });
-
-    // add a card to the list if there aren't any
-    if (count === 0) {
-        $("#btnNew").click();
-    }
 });

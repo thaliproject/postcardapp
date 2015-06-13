@@ -26,8 +26,14 @@ var routes = function(db){
             });
         })
         .get(function(req, res){
-            var responseJson = { result: 'not supported'};
-            res.json(responseJson);
+            db.allDocs({
+                include_docs: true
+                //attachments: true
+            }).then(function (result) {
+                res.json(result);
+            }).catch(function (err) {
+                console.log(err);
+            });
         });
 
     cardRouter.route('/cards/:cardId')
@@ -47,6 +53,7 @@ var routes = function(db){
                 return db.put({
                     _id: doc._id,
                     _rev: doc._rev,
+                    author: req.body.author,
                     content: req.body.content //Update the post card content
                 });
             }).then(function(response) {
@@ -54,6 +61,20 @@ var routes = function(db){
                 res.json(responseJson);
             }).catch(function (err) {
                 console.log(err);
+                //Create the new card, if the doc is not available to update
+                var newCard = {
+                    id:req.params.cardId,
+                    author: req.body.author,
+                    content: req.body.content
+                };
+                db.put({
+                    _id: newCard.id,
+                    author: newCard.author,
+                    content: newCard.content
+                }, function (err, doc) {
+                    var responseJson = { result: 'doc created'};
+                    res.json(responseJson);
+                });
             });
         })
         .delete(function(req, res){
