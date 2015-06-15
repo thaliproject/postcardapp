@@ -31,9 +31,20 @@ app.get('/', function(req,res){
     res.render('ejs/index',{title: 'Postcards'});
 });
 
+var allowCrossDomain = function(req, res, next) {
+    res.header('Access-Control-Allow-Origin', 'http://localhost:5000');
+    res.header('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE');
+    res.header('Access-Control-Allow-Headers', 'Content-Type');
+    next();
+}
+
+app.use(allowCrossDomain);
+
 var cardRouter = require('./cardroutes')(db);
 app.use('/api', cardRouter);
 
 var server = app.listen(5000, function () {
   clog("Express server started. (port: 5000)");
 });
+
+
