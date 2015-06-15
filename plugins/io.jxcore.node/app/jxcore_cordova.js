@@ -4,6 +4,7 @@ var path = require('path');
 var jx_methods = {};
 var internal_methods = {};
 var ui_methods = {};
+var node_module = require('module');
 
 function cordova(x) {
   if (!(this instanceof cordova)) return new cordova(x);
@@ -240,7 +241,7 @@ if (isAndroid) {
 
     console.warn("creating file system at", root);
     try {
-      // force create www_old/jxcore sub folder so we can write into cwd
+      // force create www/jxcore sub folder so we can write into cwd
       if (!fs.existsSync(process.userPath)) {
         fs.mkdir(process.userPath);
         if (!fs.existsSync(root)) {
@@ -280,7 +281,7 @@ if (isAndroid) {
         jxcore_root = jxcore_root[sp[o]];
       }
 
-      jxcore_root['jxcore'] = _; // assets/www_old/jxcore -> /
+      jxcore_root['jxcore'] = _; // assets/www/jxcore -> /
       jxcore_root = _;
     };
 
@@ -361,7 +362,7 @@ if (isAndroid) {
       var n = pathname.indexOf(root);
       if (n === 0) {
         pathname = pathname.replace(root, "");
-        pathname = path.join('www_old/jxcore/', pathname);
+        pathname = path.join('www/jxcore/', pathname);
         return process.natives.assetReadSync(pathname);
       }
     };
@@ -390,6 +391,8 @@ if (isAndroid) {
     };
 
     fs.setExtension("jxcore-java", extension);
+    
+    node_module.addGlobalPath(process.execPath);
   };
 
   process.registerAssets();
@@ -403,8 +406,14 @@ if (isAndroid) {
       // Who knows how many node modules would break..
       console.error("You are on iOS. This platform doesn't support setting cwd");
     }
-    return base_path + "/www_old/jxcore/";
+    return path.join(base_path, "www/jxcore/");
   };
+
+  node_module.addGlobalPath(process.cwd());
+  cordova('setProcessUserPath_').registerToNative(function(dir){
+    node_module.addGlobalPath(dir);
+    process.userPath = dir;
+  });
 }
 
 console.log("JXcore Cordova Bridge is Ready!");

@@ -21,13 +21,12 @@ enum _JXType {
   RT_Double = 2,
   RT_Boolean = 3,
   RT_String = 4,
-  RT_JSON = 5,
+  RT_Object = 5,
   RT_Buffer = 6,
   RT_Undefined = 7,
   RT_Null = 8,
   RT_Error = 9,
-  RT_Function = 10,
-  RT_Object = 11
+  RT_Function = 10
 };
 
 typedef enum _JXType JXResultType;
@@ -186,6 +185,12 @@ JX_SetNamedProperty(JXValue *object, const char *name, JXValue *prop);
 
 JXCORE_EXTERN(void)
 JX_SetIndexedProperty(JXValue *object, const unsigned index, JXValue *prop);
+
+JXCORE_EXTERN(void)
+JX_GetNamedProperty(JXValue *object, const char *name, JXValue *out);
+
+JXCORE_EXTERN(void)
+JX_GetIndexedProperty(JXValue *object, const int index, JXValue *out);
 
 // if you have a JXValue around, this method brings threadId much faster
 JXCORE_EXTERN(int)

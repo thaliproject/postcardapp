@@ -26,9 +26,8 @@ import android.util.Log;
 public class jxcore extends CordovaPlugin {
 
   public enum JXType {
-    RT_Int32(1), RT_Double(2), RT_Boolean(3), RT_String(4), RT_JSON(5), RT_Buffer(
-        6), RT_Undefined(7), RT_Null(8), RT_Error(9), RT_Function(10), RT_Object(
-        11), RT_Unsupported(12);
+    RT_Int32(1), RT_Double(2), RT_Boolean(3), RT_String(4), RT_Object(5), RT_Buffer(
+        6), RT_Undefined(7), RT_Null(8), RT_Error(9), RT_Function(10), RT_Unsupported(11);
 
     int val;
 
@@ -47,7 +46,7 @@ public class jxcore extends CordovaPlugin {
       case 4:
         return RT_String;
       case 5:
-        return RT_JSON;
+        return RT_Object;
       case 6:
         return RT_Buffer;
       case 7:
@@ -197,7 +196,7 @@ public class jxcore extends CordovaPlugin {
 
   @Override
   protected void pluginInitialize() {
-    final boolean new_instance = activity != null;
+    final boolean new_instance = activity == null;
     activity = cordova.getActivity();
     if (!new_instance) {
       setNativeContext(activity.getBaseContext(), activity.getAssets());
@@ -223,7 +222,7 @@ public class jxcore extends CordovaPlugin {
 
     JXcoreExtension.LoadExtensions();
 
-    if (new_instance)
+    if (!new_instance)
       return;
 
     activity.runOnUiThread(new Runnable() {
@@ -235,7 +234,7 @@ public class jxcore extends CordovaPlugin {
     });
   }
 
-  public static void startProgress() {
+  private static void startProgress() {
     addon.Initialize(activity.getBaseContext().getFilesDir().getAbsolutePath());
 
     Runnable runnable = new Runnable() {
@@ -285,7 +284,7 @@ public class jxcore extends CordovaPlugin {
     int tp = addon.getType(ret);
     JXType ret_tp = JXType.fromInt(tp);
 
-    if (ret_tp == JXType.RT_JSON || ret_tp == JXType.RT_String
+    if (ret_tp == JXType.RT_Object || ret_tp == JXType.RT_String
         || ret_tp == JXType.RT_Error) {
       Log.e(LOGTAG, "jxcore.CallJSMethod :" + addon.getString(ret));
     }
@@ -296,7 +295,7 @@ public class jxcore extends CordovaPlugin {
     int tp = addon.getType(ret);
     JXType ret_tp = JXType.fromInt(tp);
 
-    if (ret_tp == JXType.RT_JSON || ret_tp == JXType.RT_String
+    if (ret_tp == JXType.RT_Object || ret_tp == JXType.RT_String
         || ret_tp == JXType.RT_Error) {
       Log.e(LOGTAG, "jxcore.CallJSMethod :" + addon.getString(ret));
     }
@@ -396,7 +395,7 @@ public class jxcore extends CordovaPlugin {
     app_paused = false;
   }
 
-  public void Initialize(String home) {
+  private void Initialize(String home) {
     // assets.list is terribly slow, below trick is literally 100 times faster
     StringBuilder assets = new StringBuilder();
     assets.append("{");

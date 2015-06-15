@@ -66,7 +66,7 @@ function addNewCard(cardId, title, content) {
         "<input type='hidden' id='cardId' value='" + cardId + "'>" +
         "<textarea readonly class='card-title' placeholder='Owner' maxlength='10'/>" +
         "<textarea class='card-content' placeholder='Your content here'/>" +
-        "<img class='hide' src='close.png'/>" +
+        "<img  src='close.png'/>" +
         "</div></li>");
 
     // get the new card that's just been added and attach the click event handler to its close button
@@ -85,7 +85,7 @@ function addNewCard(cardId, title, content) {
     });
 
     // hook up event handlers to show/hide close button as appropriate
-    addCardEvent(newCard);
+    //addCardEvent(newCard);
 
     // if a title is provided then set the title of the new card
     if (title)

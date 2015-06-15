@@ -37,23 +37,24 @@ SOFTWARE.
 @end
 
 @implementation CPPWrapper {
-  void* data_;
+  JXcoreNative native_;
+  JXValue jxvalue_;
 }
 
 - (JXcoreNative) getCallback {
-  return (JXcoreNative) data_;
+  return native_;
 }
 
 - (void) setCallback:(JXcoreNative)native {
-  data_ = native;
+  native_ = native;
 }
 
 - (JXValue*) getFunction {
-  return (JXValue*)data_;
+  return &jxvalue_;
 }
 
 - (void) setFunction:(JXValue*)fnc {
-  data_ = fnc;
+  jxvalue_ = *fnc;
 }
 @end
 
@@ -176,7 +177,7 @@ void ConvertParams(JXValue *results, int argc, NSMutableArray *params) {
             [NSData dataWithBytes:(const void *)data length:sizeof(char) * len];
         free(data);
       } break;
-      case RT_JSON: {
+      case RT_Object: {
         char *data = JX_GetString(result);
         int ln = JX_GetDataLength(result);
         if (ln > 0 && *data != '{' && *data != '[') {
@@ -285,6 +286,8 @@ static float delay = 0;
 {
   assert(jxcoreThread == nil && "You can start JXcore engine only once");
   
+  natives = [[NSMutableDictionary alloc] init];
+  
   jxcoreThread = [[NSThread alloc]
     initWithTarget:self
     selector:@selector(threadMain)
@@ -314,8 +317,6 @@ static float delay = 0;
   NSString *filePath =
       [[NSBundle mainBundle] pathForResource:fileName ofType:@"js"];
 
-  natives = [[NSMutableDictionary alloc] init];
-
   [JXcore addNativeMethod:jxCallback withName:name];
   
   NSError *error;
@@ -336,6 +337,15 @@ static float delay = 0;
   JX_DefineExtension("defineEventCB", defineEventCB);
   JX_DefineMainFile([fileContents UTF8String]);
   JX_StartEngine();
+
+  NSArray *paths = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES);
+  NSString *documentsDirectory = [paths objectAtIndex:0];
+
+  NSMutableArray *arr = [[NSMutableArray alloc] init];
+  [arr addObject:documentsDirectory];
+
+  [JXcore callEventCallback:@"setProcessUserPath_" withParams:arr];
+
   [JXcore jxcoreLoop:[NSNumber numberWithInt:0]];
 }
 
@@ -433,21 +443,19 @@ static float delay = 0;
 
   if (cpp == nil) {
     cpp = [natives valueForKey:@"eventPing"];
-  }
-  
-  if (cpp != nil) {
+  } else {
     if ([cpp isKindOfClass:[CPPWrapper class]])
     {
-      CPPWrapper *cpp_ = (CPPWrapper*)cpp;
-      fnc = [cpp_ getFunction];
-    } else {
-      NSLog(@"Error: Only Wrapped JXcore functions can be called from OBJ-C side");
+      [JXcore callDirectMethod:eventName withParams:params isJSON:is_json];
       return;
     }
-  } else {
-    NSLog(@"Callback reference method %@ not found.", eventName);
+  }
+  
+  if (![cpp isKindOfClass:[CPPWrapper class]]) {
+    NSLog(@"Error: Only Wrapped JXcore functions can be called from OBJ-C side");
     return;
   }
+  fnc = [(CPPWrapper*)cpp getFunction];
   
   unsigned nscount = (unsigned)[params count];
   JXValue arr[2];
@@ -516,8 +524,92 @@ static float delay = 0;
   }
 }
 
++ (void) callDirectMethod:(NSString*)eventName withParams:(NSArray*)params isJSON:(BOOL) is_json {
+  NSObject *cpp = [natives valueForKey:eventName];
+  JXValue *fnc;
+  
+  BOOL pingEvent = cpp == nil;
+  if (pingEvent) {
+    [JXcore callEventCallbackNoThread:eventName withParams:params isJSON:is_json];
+    return;
+  }
+
+  if (cpp != nil && [cpp isKindOfClass:[CPPWrapper class]])
+  {
+    CPPWrapper *cpp_ = (CPPWrapper*)cpp;
+    fnc = [cpp_ getFunction];
+  } else {
+    NSLog(@"Error: Only Wrapped JXcore functions can be called from OBJ-C side");
+    return;
+  }
+  
+  unsigned nscount = 0;
+  
+  if (params != nil)
+    nscount = (unsigned)[params count];
+  
+  
+  JXValue *arr = NULL;
+  NSMutableData* mdata = nil;
+  
+  if (nscount > 0)
+  {
+    mdata = [NSMutableData dataWithLength:sizeof(JXValue) * nscount];
+    arr = (JXValue*) [mdata mutableBytes];
+  }
+  
+  for(unsigned i=0; i < nscount; i++) {
+    NSObject *objValue = [params objectAtIndex:i];
+    JXValue *value = arr+i;
+    JX_New(value);
+    
+    if ([objValue isKindOfClass:[NSString class]]) {
+      NSString *strval = (NSString*)objValue;
+      
+      const char* chval = [strval UTF8String];
+      unsigned length = (unsigned)[strval lengthOfBytesUsingEncoding:NSUTF8StringEncoding];
+      if (is_json)
+        JX_SetJSON(value, chval, length);
+      else
+        JX_SetString(value, chval, length);
+    } else if ([objValue isKindOfClass:[JXBoolean class]]) {
+      JX_SetBoolean(value, [(JXBoolean*)objValue getBoolean] == TRUE);
+    } else if ([objValue isKindOfClass:[NSNumber class]]) {
+      NSNumber *nmval = (NSNumber*)objValue;
+      if (CFNumberIsFloatType((CFNumberRef)nmval) || CFNumberGetType((CFNumberRef)nmval) == kCFNumberDoubleType) {
+        JX_SetDouble(value, [nmval doubleValue]);
+      } else {
+        JX_SetInt32(value, [nmval intValue]);
+      }
+    } else if ([objValue isKindOfClass:[NSData class]]) {
+      NSData *data = (NSData*) objValue;
+      
+      NSUInteger len = [data length];
+      Byte byteData[len];
+      memcpy(byteData, [data bytes], len);
+      
+      JX_SetBuffer(value, (char*)byteData, (int32_t) len);
+    } else if ([objValue isKindOfClass:[JXJSON class]]) {
+      NSString *strval = [(JXJSON*)objValue getString];
+      const char* chval = [strval UTF8String];
+      unsigned length = (unsigned)[strval lengthOfBytesUsingEncoding:NSUTF8StringEncoding];
+      JX_SetJSON(value, chval, length);
+    } else {
+      JX_SetNull(value);
+    }
+  }
+  
+  JXValue ret_val;
+  JX_CallFunction(fnc, arr, nscount, &ret_val);
+  
+  JX_Free(&ret_val);
+  
+  for(int i=0; i<nscount; i++)
+    JX_Free(arr+i);
+}
+
 + (void) callEventCallback:(NSString*)eventName_ withParams:(NSArray*)params_ isJSON:(BOOL) is_json {
-  if (useThreading) {
+  if (useThreading && [NSThread currentThread] != jxcoreThread) {
     NativeCall *nc = [[NativeCall alloc] init];
     [nc setName:eventName_ withParams:params_ isJSON:FALSE];
     

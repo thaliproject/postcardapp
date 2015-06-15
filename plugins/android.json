@@ -26,7 +26,7 @@
             "PACKAGE_NAME": "io.cordova.hellocordova"
         },
         "io.jxcore.node": {
-            "PACKAGE_NAME": "io.cordova.hellocordova"
+            "PACKAGE_NAME": "org.thaliproject.postcardapp"
         }
     },
     "dependent_plugins": {}
