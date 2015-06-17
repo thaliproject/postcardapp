@@ -34,7 +34,7 @@ var inter = setInterval(function() {
         alert(JSON.stringify(err));
       } else {
         log('Loaded');
-        jxcore_ready();
+   //     jxcore_ready();
         document.getElementById('postcardFrame').src = 'http://localhost:5000';
       }
     });
