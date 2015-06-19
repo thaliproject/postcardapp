@@ -13,8 +13,7 @@ console.log('starting app.js');
 app.disable('x-powered-by');
 
 //TODO: Should we move the 'self' support to JxCore?
-global.self = global;
-
+//global.self = global;
 
 /*
 app.use('/db', require('express-pouchdb')(PouchDB, {
@@ -25,14 +24,16 @@ app.use('/db', require('express-pouchdb')(PouchDB, {
         ]
     }
 }));
-
 */
-
+var db;
 var path= require('path');
 var os = require('os');
 var dbPath = path.join(os.tmpdir(), "dbPath");
 console.log(dbPath);
-var db = new PouchDB(dbPath);
+if (process.isEmbedded)  //JxCore
+    db = new PouchDB(dbPath);
+else
+    db = new PouchDB({name: 'dbName', db: require('leveldown')}) ;
 
 
 //Adding the ejs view engine
