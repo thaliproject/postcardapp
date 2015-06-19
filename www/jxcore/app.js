@@ -45,7 +45,38 @@ app.use(bodyParser.json());
 
 
 app.get('/', function(req,res){
-    res.render('ejs/index',{title: 'Postcards'});
+    db.get('me').then(function (doc) {
+        console.log(doc); //current user details
+        res.render('ejs/index', {title: 'Postcards'});
+    }).catch(function (err) {
+        console.log(err);
+        res.render('ejs/login');
+    });
+ });
+
+app.post('/login', function(req,res){
+    var userName = req.body.username.trim();
+    if(userName !== "") {
+        db.put({
+            _id: 'me',
+            user: userName
+        }, function (err, doc) {
+            console.log(doc);
+        });
+        // already logged in
+        res.render('ejs/index', {title: 'Postcards'});
+    }
+    else {
+        // empty login name
+        res.render('ejs/login');
+    }
+});
+
+app.post('/sync', function(req,res){
+    var endpoint = req.body.endpoint.trim();
+    if(endpoint !== "") {
+       //TODO: Replicate the db to the endpoint given
+    }
 });
 
 var allowCrossDomain = function(req, res, next) {
