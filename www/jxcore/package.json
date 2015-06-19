@@ -9,6 +9,7 @@
     "ejs-locals": "^1.0.2",
     "express": "^4.12.3",
     "express-pouchdb": "^0.14.2",
+    "fast-future": "^1.0.1",
     "gulp": "^3.9.0",
     "gulp-nodemon": "^2.0.3",
     "memdown": "^1.0.0",

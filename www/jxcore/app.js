@@ -12,15 +12,27 @@ console.log('starting app.js');
 // Remove powered by
 app.disable('x-powered-by');
 
-// Create in memory version
-var InMemPouchDB = PouchDB.defaults({db: require('memdown')});
-//TODO: Uncomment later when we get the leveldown fix
-//var path= require('path');
-//var os = require('os');
-//var dbPath = path.join(os.tmpdir(), "dbPath");
-//var db = new PouchDB(dbPath);
-//app.use('/db', require('express-pouchdb')(InMemPouchDB));
-var db = new InMemPouchDB('postcarddb');
+//TODO: Should we move the 'self' support to JxCore?
+global.self = global;
+
+
+/*
+app.use('/db', require('express-pouchdb')(PouchDB, {
+    overrideMode: {
+        exclude: [
+            'routes/log',
+            'routes/http-log'
+        ]
+    }
+}));
+
+*/
+
+var path= require('path');
+var os = require('os');
+var dbPath = path.join(os.tmpdir(), "dbPath");
+console.log(dbPath);
+var db = new PouchDB(dbPath);
 
 
 //Adding the ejs view engine
