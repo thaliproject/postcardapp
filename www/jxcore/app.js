@@ -13,28 +13,21 @@ console.log('starting app.js');
 app.disable('x-powered-by');
 
 //TODO: Should we move the 'self' support to JxCore?
-//global.self = global;
+global.self = global;
 
-/*
-app.use('/db', require('express-pouchdb')(PouchDB, {
-    overrideMode: {
-        exclude: [
-            'routes/log',
-            'routes/http-log'
-        ]
-    }
-}));
-*/
-var db;
+
 var path= require('path');
 var os = require('os');
 var dbPath = path.join(os.tmpdir(), "dbPath");
-console.log(dbPath);
-if (process.isEmbedded)  //JxCore
-    db = new PouchDB(dbPath);
-else
-    db = new PouchDB({name: 'dbName', db: require('leveldown')}) ;
+global.thalifolder = os.tmpdir(); //Used by express-pouchdb as well
 
+var LevelDownPouchDB = PouchDB.defaults({db: require('leveldown')});
+
+app.use('/db', require('express-pouchdb')(LevelDownPouchDB, { mode: 'minimumForPouchDB'}));
+console.log('Added express pouchdb support to app');
+
+
+var db = new LevelDownPouchDB(dbPath);
 
 //Adding the ejs view engine
 app.engine('ejs',ejsEngine);
@@ -43,6 +36,7 @@ app.use( express.static( "public" ) );
 
 app.use(bodyParser.urlencoded({extended:true}));
 app.use(bodyParser.json());
+console.log('Added bodyparser..');
 
 
 app.get('/', function(req,res){
@@ -54,6 +48,7 @@ app.get('/', function(req,res){
         res.render('ejs/login');
     });
  });
+
 
 app.post('/login', function(req,res){
     var userName = req.body.username.trim();
