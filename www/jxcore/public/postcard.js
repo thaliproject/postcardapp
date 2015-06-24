@@ -1,4 +1,5 @@
-var cards, count = 0, userName = "Tom";
+var cards, count = 0;
+var userName = 'Self'; //Default to 'self'
 var url = 'http://localhost:5000/api/cards/';
 var loading = false;
 
@@ -85,7 +86,7 @@ function addNewCard(cardId, title, content) {
     });
 
     // hook up event handlers to show/hide close button as appropriate
-    //addCardEvent(newCard);
+    addCardEvent(newCard);
 
     // if a title is provided then set the title of the new card
     if (title)
@@ -150,4 +151,17 @@ $(document).ready(function () {
     $("#btnNew").click(function () {
         addNewCard("");
     });
+
+    $("#btnSync").click(function () {
+        $(".syncDialog").toggle();
+    });
+
+    userName = $("#userId").val();
 });
+
+//Hide the sync dialog if its open
+function hideSync(){
+    $(".syncDialog").toggle();
+}
+
+

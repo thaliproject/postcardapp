@@ -8,10 +8,21 @@
     <script type="text/javascript" src="postcard.js"></script>
 </head>
 <body>
-<div id="controls">
-    <img id="btnNew" src="newpost.png"/>
-</div>
-
-<ul id="cards"/>
+    <div id="controls" style="height: 10px;">
+        <img id="btnNew" src="newpost.png"/>
+        <img id="btnSync" src="sync.png" align="right"/>
+        <input type='hidden' id='userId' value='<%= user %>' />
+    </div>
+    <div class="syncDialog">
+        <form action="/sync" method="post" align="center">
+            <br><br>
+            <input type="text" id="endpoint" placeholder="IP (eg:-192.168.1.13)" name="endpoint"><br><br>
+            <button type="submit" style="width:85px;">Submit</button>
+            <button style="width:85px;" onclick="hideSync();">Cancel</button>
+        </form>
+    </div>
+    <div style="left:0px">
+        <ul id="cards"/>
+    </div>
 </body>
 </html>

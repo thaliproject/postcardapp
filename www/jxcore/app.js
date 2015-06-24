@@ -6,8 +6,9 @@ var app = express();
 var bodyParser = require('body-parser')
 var ejsEngine = require('ejs-locals');
 var PouchDB = require('pouchdb');
+var userName;
 
-console.log('starting app.js');
+logMe('starting app.js');
 
 // Remove powered by
 app.disable('x-powered-by');
@@ -21,13 +22,11 @@ var os = require('os');
 var dbPath = path.join(os.tmpdir(), "dbPath");
 global.thalifolder = os.tmpdir(); //Used by express-pouchdb as well
 
-var LevelDownPouchDB = PouchDB.defaults({db: require('leveldown')});
+var LevelDownPouchDB = PouchDB.defaults({db: require('leveldown'), prefix: dbPath});
 
 app.use('/db', require('express-pouchdb')(LevelDownPouchDB, { mode: 'minimumForPouchDB'}));
-console.log('Added express pouchdb support to app');
-
-
-var db = new LevelDownPouchDB(dbPath);
+logMe('Added express pouchdb support to app');
+var db = new LevelDownPouchDB('thali');
 
 //Adding the ejs view engine
 app.engine('ejs',ejsEngine);
@@ -36,31 +35,34 @@ app.use( express.static( "public" ) );
 
 app.use(bodyParser.urlencoded({extended:true}));
 app.use(bodyParser.json());
-console.log('Added bodyparser..');
+logMe('Added bodyparser..');
 
 
 app.get('/', function(req,res){
     db.get('me').then(function (doc) {
-        console.log(doc); //current user details
-        res.render('ejs/index', {title: 'Postcards'});
+        logMe(doc); //current user details
+        if(doc.hasOwnProperty('user'))
+            userName = doc['user'];
+        res.render('ejs/index',  {user: userName});
     }).catch(function (err) {
-        console.log(err);
+        logMe(err);
         res.render('ejs/login');
     });
  });
 
 
 app.post('/login', function(req,res){
-    var userName = req.body.username.trim();
+    userName = req.body.username.trim();
+    logMe('userName=' + userName);
     if(userName !== "") {
         db.put({
             _id: 'me',
             user: userName
         }, function (err, doc) {
-            console.log(doc);
+           logMe('error=' + doc);
         });
         // already logged in
-        res.render('ejs/index', {title: 'Postcards'});
+        res.render('ejs/index', {user: userName});
     }
     else {
         // empty login name
@@ -68,12 +70,27 @@ app.post('/login', function(req,res){
     }
 });
 
+//Sync handler to sync the remote pouchDB
 app.post('/sync', function(req,res){
-    var endpoint = req.body.endpoint.trim();
-    if(endpoint !== "") {
-       //TODO: Replicate the db to the endpoint given
+    var remoteIP = req.body.endpoint.trim();
+    var remoteDB = 'http://' + remoteIP+ ':5000/db/thali';
+    if(remoteDB !== "") {
+        db.sync(remoteDB, {
+            live: false
+        }).on('change', function (change) {
+            logMe(change);
+        }).on('error', function (err) {
+            logMe(err);
+        });
     }
+    //Redirect to index page to show the updated entries
+    res.render('ejs/index',  {user: userName});
 });
+
+app.get('/sync', function(req,res){
+    res.render('ejs/sync');
+});
+
 
 var allowCrossDomain = function(req, res, next) {
     res.header('Access-Control-Allow-Origin', 'http://127.0.0.1:5000');
@@ -88,7 +105,13 @@ var cardRouter = require('./cardroutes')(db);
 app.use('/api', cardRouter);
 
 var server = app.listen(5000, function () {
-  console.log("Express server started. (port: 5000)");
+    logMe("Express server started. (port: 5000)");
 });
+
+//Custom log method.
+//TODO: update the log to file if Logcat messages are not reachable for debug
+function logMe(txt){
+    console.log(txt);
+}
 
 
