@@ -1,5 +1,3 @@
-// This JavaScript file runs on JXcore
-
 var fs = require('fs');
 var express = require('express');
 var app = express();
@@ -13,14 +11,13 @@ logMe('starting app.js');
 // Remove powered by
 app.disable('x-powered-by');
 
-//TODO: Should we move the 'self' support to JxCore?
+//TODO: Quick fix for Bluebird crash in JxCore
 global.self = global;
 
 
 var path= require('path');
 var os = require('os');
 var dbPath = path.join(os.tmpdir(), "dbPath");
-global.thalifolder = os.tmpdir(); //Used by express-pouchdb as well
 
 var LevelDownPouchDB = PouchDB.defaults({db: require('leveldown'), prefix: dbPath});
 
