@@ -58,7 +58,7 @@ function callNative(name, args, callback) {
     },
     'JXcore',
     name,
-    args
+    args || []
   );
 }
 
@@ -100,7 +100,7 @@ var callFunction = function (name, params, callback) {
   args.methodName = name;
   args.params = params;
 
-  callNative("Evaluate", ["cordova.executeJSON(" + JSON.stringify(args)], callback);
+  callNative("Evaluate", ["Mobile.executeJSON(" + JSON.stringify(args)], callback);
 };
 
 jxcore.prototype.call = function () {

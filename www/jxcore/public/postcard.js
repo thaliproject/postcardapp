@@ -156,8 +156,16 @@ $(document).ready(function () {
         $(".syncDialog").toggle();
     });
 
+    $("#btnRefresh").click(function () {
+        refreshCards();
+    });
+
     userName = $("#userId").val();
 });
+
+function refreshCards(){
+    loadCards();
+}
 
 //Hide the sync dialog if its open
 function hideSync(){

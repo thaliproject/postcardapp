@@ -11,15 +11,15 @@ logMe('starting app.js');
 // Remove powered by
 app.disable('x-powered-by');
 
-//TODO: Quick fix for Bluebird crash in JxCore
-global.self = global;
-
 
 var path= require('path');
 var os = require('os');
 var dbPath = path.join(os.tmpdir(), "dbPath");
-
-var LevelDownPouchDB = PouchDB.defaults({db: require('leveldown'), prefix: dbPath});
+var LevelDownPouchDB;
+if(process.platform == 'android' || process.platform == 'ios')
+    LevelDownPouchDB = PouchDB.defaults({db: require('leveldown-mobile'), prefix: dbPath});
+else
+    LevelDownPouchDB = PouchDB.defaults({db: require('leveldown'), prefix: dbPath});
 
 app.use('/db', require('express-pouchdb')(LevelDownPouchDB, { mode: 'minimumForPouchDB'}));
 logMe('Added express pouchdb support to app');
