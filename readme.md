@@ -11,4 +11,21 @@ node.js, Cordova and whatever platforms you require (e.g. cordova plafrom add an
 2. Then run 'cordova plugin add https://github.com/jxcore/jxcore-cordova.git' from postcardapp folder to
 install the JXCore-Cordova plugin.
 
-3. Now you can run 'cordova run android' (or whatever platform you are using) and it should just run.
+3. Then run 'cordova platform add android' (or what ever platform you are using) to add the platform support  
+
+4. From command line goto postcardapp/www/jxcore folder, and run 'npm install'
+   4a. Checkout the node_modules folder and see if leveldown_mobile is there. If not, run 'jx leveldown-mobile)
+   4b. Checkout the node_modules folder and see if leveldown_mobile is there. If not, goto node_modules folder, and git clone [here](https://github.com/Level/leveldown-mobile) and run 'npm install' from leveldown-mobile folder
+   4c. Goto file explorer and goto postcardapp/www/jxcore/node_modules and search for *.gz" and delete all *.gz files
+
+5. Now you can run 'cordova run android' (or whatever platform you are using) and it should just run.
+
+
+
+
+
+
+
+
+
+
