@@ -29,11 +29,19 @@ body {
     display:none
 }
 
-
+#controls {
+    width: 100%;
+    margin-top:10px;
+    margin-left: auto;
+    margin-right: auto;
+    text-align: justify;
+    -ms-text-justify: distribute-all-lines;
+    text-justify: distribute-all-lines;
+}
 
 #controls img {
-    width: 28px;
-    height: 30px;
+    width: 25px;
+    height: 25px;
     background: rgba(0, 0, 0, 0);
 }
 
@@ -153,4 +161,11 @@ ul li div.colour2 {
 }
 ul li div.colour3 {
     background: #ccf;
+}
+
+.stretch {
+    width: 100%;
+    display: inline-block;
+    font-size: 0;
+    line-height: 0
 }

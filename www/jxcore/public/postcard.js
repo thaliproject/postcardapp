@@ -164,6 +164,7 @@ $(document).ready(function () {
 });
 
 function refreshCards(){
+    $('#cards').empty();
     loadCards();
 }
 
