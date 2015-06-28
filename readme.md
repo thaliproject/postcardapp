@@ -1,6 +1,9 @@
 Postcard App Demo with the following features
+
 1. Create / update / delete post cards
+
 2. Sync the cards from other devices over http
+
 ![alt text](demo.gif "Postcard app demo") 
 
 
