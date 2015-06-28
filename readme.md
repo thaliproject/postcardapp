@@ -1,6 +1,6 @@
 Postcard App Demo
 
-![alt text](demo1.gif "Postcard app demo")  ![alt text](demo2.gif "Postcard app demo")
+![alt text](demo.gif "Postcard app demo") 
 
 
 This is intended as a sample project illustrating how to use the [Thali Project](http://www.thaliproject.org) APIs.
