@@ -22,7 +22,6 @@ else
     LevelDownPouchDB = PouchDB.defaults({db: require('leveldown'), prefix: dbPath});
 
 app.use('/db', require('express-pouchdb')(LevelDownPouchDB, { mode: 'minimumForPouchDB'}));
-logMe('Added express pouchdb support to app');
 var db = new LevelDownPouchDB('thali');
 
 //Adding the ejs view engine
@@ -32,7 +31,6 @@ app.use( express.static( "public" ) );
 
 app.use(bodyParser.urlencoded({extended:true}));
 app.use(bodyParser.json());
-logMe('Added bodyparser..');
 
 
 app.get('/', function(req,res){
