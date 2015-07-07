@@ -17,12 +17,18 @@ var routes = function(db){
                 author: newCard.author,
                 content: newCard.content
             }, function (err, doc) {
-                console.log(doc);
-            });
-            db.get(newCard.id).then(function (doc) {
-                res.status(201).send(doc);
-            }).catch(function (err) {
-                console.log(err);
+                console.log('put doc', doc);
+
+                if (!err) {
+                  db.get(newCard.id).then(function (doc) {
+                    console.log('Got doc', JSON.stringify(doc));
+                      res.status(201).send(doc);
+                  }).catch(function (err) {
+                      console.log('get err', err, JSON.stringify(doc));
+                  });
+                } else {
+                  console.log('put error', err);
+                }
             });
         })
         .get(function(req, res){
