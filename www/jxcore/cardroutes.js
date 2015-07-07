@@ -70,7 +70,7 @@ function routes (db) {
           });
 
       })
-      .delete(function(req, res) {
+      .delete(function (req, res) {
 
         db.get(req.params.cardId)
           .then(function(doc) {
