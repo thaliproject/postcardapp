@@ -20,10 +20,10 @@ function routes (db) {
         return db.get(response.id);
       })
       .then(function (doc) {
-        res.status(201).send(doc);
+        res.status(201).json(doc);
       })
       .catch(function (err) {
-        res.status(500).send(err);
+        res.status(err.status).send(err.message);
       });
 
     })
