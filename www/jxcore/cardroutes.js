@@ -1,88 +1,78 @@
 var express = require('express');
-var shortid = require('shortid');
 
 function routes (db) {
   var cardRouter = express.Router();
 
   cardRouter.route('/cards')
-    .post(function (req, res) {
-      var newCard = {
-        id:shortid.generate(),
-        author: req.body.author,
-        content: req.body.content
-      };
-
-      db.put({
-        _id: newCard.id,
-        author: newCard.author,
-        content: newCard.content
-      }).then(function (response) {
-        return db.get(response.id);
-      })
-      .then(function (doc) {
-        res.status(201).json(doc);
-      })
-      .catch(function (err) {
-        res.status(err.status).send(err.message);
-      });
-
-    })
     .get(function (req, res) {
 
       db.allDocs({
         include_docs: true
       }).then(function (docs) {
-        res.status(200).json(docs);
+        res.json(docs);
       }).catch(function (err) {
-        res.status(err.status).send(err.message);
+        res.status(err.status || 500).send(err.message || err);
       });
 
     });
 
-    cardRouter.route('/cards/:cardId')
-      .get(function (req,res) {
+  cardRouter.route('/cards/:cardId')
+    .get(function (req,res) {
 
-        db.get(req.params.cardId)
-          .then(function (doc) {
-            res.status(200).json(doc);
-          })
-          .catch(function (err) {
-            res.status(err.status).send(err.message);
-          });
+      db.get(req.params.cardId)
+        .then(function (doc) {
+          res.json(doc);
+        })
+        .catch(function (err) {
+          res.status(err.status || 500).send(err.message || err);
+        });
 
-      })
-      .put(function (req, res) {
+    })
+    .put(function (req, res) {
 
-        db.get(req.params.cardId)
-          .then(function (doc) {
-            return db.put({
-              _id: doc._id,
-              _rev: doc._rev,
-              author: req.body.author,
-              content: req.body.content
+      db.get(req.params.cardId, function (err, doc) {
+        // Not found so let's add it
+        if (err && err.status === 404) {
+
+          db.put({_id: req.params.cardId, author: req.body.author, content: req.body.content})
+            .then(function (response) {
+              res.status(200).end();
+            })
+            .catch(function (err) {
+              res.status(err.status || 500).send(err.message || err);
             });
-          })
-          .then(function (response) {
-            res.status(204).end();
-          })
-          .catch(function (err) {
-            res.status(err.status).send(err.message);
-          });
-
-      })
-      .delete(function (req, res) {
-
-        db.get(req.params.cardId)
-          .then(function(doc) {
-            return db.remove(doc);
-          })
-          .then(function (result) {
-            res.status(204).end();
-          }).catch(function (err) {
-            res.status(err.status).send(err.message);
-          });
-
+        } else if (err) {
+          res.status(err.status || 500).send(err.message || err);
+        } else {
+          doc.content = req.body.content;
+          db.put(doc)
+            .then(function () {
+              res.status(200).end();
+            })
+            .catch(function (err) {
+              res.status(err.status || 500).send(err.message || err);
+            });
+        }
       });
+    })
+    .delete(function (req, res) {
+
+      // Race condition, so let's drop 404s if we get them
+      db.get(req.params.cardId, function (err, doc) {
+        if (err && err.status === 404) {
+          res.status(200).end();
+        } else if (err) {
+          res.status(err.status || 500).send(err.message || err);
+        } else {
+          db.remove(doc)
+            .then(function () {
+              res.status(200).end();
+            }).catch(function (err) {
+              res.status(err.status || 500).send(err.message || err);
+            });
+        }
+      })
+    });
 
   return cardRouter;
 };

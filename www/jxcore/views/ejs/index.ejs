@@ -1,30 +1,21 @@
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<!DOCTYPE html>
 <html>
 <head>
-    <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
-    <link type="text/css" rel="stylesheet" href="postcard.css"/>
-    <script type="text/javascript" src="jquery-1.4.4.min.js"></script>
-    <script type="text/javascript" src="json2.js"></script>
-    <script type="text/javascript" src="postcard.js"></script>
+  <meta charset="utf-8" />
+  <link type="text/css" rel="stylesheet" href="postcard.css"/>
+  <script type="text/javascript" src="jquery-1.11.3.js"></script>
+  <script type="text/javascript" src="json2.js"></script>
+  <script type="text/javascript" src="postcard.js"></script>
 </head>
 <body>
-    <div id="controls" style="height: 6px;">
-        <img id="btnNew" src="newpost.png"/>
-        <img id="btnRefresh" src="refresh.png"/>
-        <img id="btnSync" src="sync.png"/>
-        <span class="stretch"></span>
-        <input type='hidden' id='userId' value='<%= user %>' />
-    </div>
-    <div class="syncDialog">
-        <form action="/sync" method="post" align="center">
-            <br><br>
-            <input type="text" id="endpoint" placeholder="IP (eg:-192.168.1.13)" name="endpoint"><br><br>
-            <button type="submit" style="width:85px;">Submit</button>
-            <button style="width:85px;" onclick="hideSync();">Cancel</button>
-        </form>
-    </div>
-    <div style="left:0px">
-        <ul id="cards"/>
-    </div>
+  <div id="controls" style="height: 6px;">
+    <img id="btnNew" src="newpost.png"/>
+    <img id="btnRefresh" src="refresh.png"/>
+    <span class="stretch"></span>
+    <input type='hidden' id='userId' value='<%= user %>' />
+  </div>
+  <div style="left:0px">
+    <ul id="cards"/>
+  </div>
 </body>
 </html>
