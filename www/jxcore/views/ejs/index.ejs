@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <link type="text/css" rel="stylesheet" href="postcard.css"/>
+  <script type="text/javascript" src="jquery-1.11.3.js"></script>
+  <script type="text/javascript" src="json2.js"></script>
+  <script type="text/javascript" src="postcard.js"></script>
+</head>
+<body>
+  <div id="controls" style="height: 6px;">
+    <img id="btnNew" src="newpost.png"/>
+    <img id="btnRefresh" src="refresh.png"/>
+    <span class="stretch"></span>
+    <input type='hidden' id='userId' value='<%= user %>' />
+  </div>
+  <div style="left:0px">
+    <ul id="cards"/>
+  </div>
+</body>
+</html>
