@@ -30,6 +30,7 @@ node_modules
 .idea/
 
 platforms/
+plugins/
 shortid
 ejs-locals
 express
