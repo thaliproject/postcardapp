@@ -1,15 +1,4 @@
-var express = require('express');
-
-function routes (db) {
-  var cardRouter = express.Router();
-
-  cardRouter.route('/cards')
-    .get(function (req, res) {
-
-      db.allDocs({
-        include_docs: true
-      }).then(function (docs) {
-        res.json(docs);
+        res.status(200).json(docs);
       }).catch(function (err) {
         res.status(err.status || 500).send(err.message || err);
       });
@@ -21,7 +10,7 @@ function routes (db) {
 
       db.get(req.params.cardId)
         .then(function (doc) {
-          res.json(doc);
+          res.status(200).json(doc);
         })
         .catch(function (err) {
           res.status(err.status || 500).send(err.message || err);
@@ -36,7 +25,7 @@ function routes (db) {
 
           db.put({_id: req.params.cardId, author: req.body.author, content: req.body.content})
             .then(function (response) {
-              res.status(200).end();
+              res.status(200).json(response);
             })
             .catch(function (err) {
               res.status(err.status || 500).send(err.message || err);
@@ -46,8 +35,8 @@ function routes (db) {
         } else {
           doc.content = req.body.content;
           db.put(doc)
-            .then(function () {
-              res.status(200).end();
+            .then(function (response) {
+              res.status(200).json(response);
             })
             .catch(function (err) {
               res.status(err.status || 500).send(err.message || err);
@@ -65,8 +54,8 @@ function routes (db) {
           res.status(err.status || 500).send(err.message || err);
         } else {
           db.remove(doc)
-            .then(function () {
-              res.status(200).end();
+            .then(function (response) {
+              res.status(200).json(response);
             }).catch(function (err) {
               res.status(err.status || 500).send(err.message || err);
             });
