@@ -1,14 +1,3 @@
-var express = require('express');
-
-function routes (db) {
-  var cardRouter = express.Router();
-
-  cardRouter.route('/cards')
-    .get(function (req, res) {
-
-      db.allDocs({
-        include_docs: true
-      }).then(function (docs) {
         res.status(200).json(docs);
       }).catch(function (err) {
         res.status(err.status || 500).send(err.message || err);
