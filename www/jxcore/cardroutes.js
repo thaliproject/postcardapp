@@ -6,6 +6,7 @@ function routes (db) {
   cardRouter.route('/cards')
     .get(function (req, res) {
 
+      console.log('cardRouter.route /cards- .get(function (req, res)');
       db.allDocs({
         include_docs: true
       }).then(function (docs) {
@@ -19,6 +20,7 @@ function routes (db) {
   cardRouter.route('/cards/:cardId')
     .get(function (req,res) {
 
+      console.log('cardRouter.route /cards/:cardId - .get(function (req, res)');
       db.get(req.params.cardId)
         .then(function (doc) {
           res.status(200).json(doc);
@@ -30,11 +32,12 @@ function routes (db) {
     })
     .put(function (req, res) {
 
+      console.log('cardRouter.route /cards/:cardId - .put(function (req, res)');
       db.get(req.params.cardId, function (err, doc) {
         // Not found so let's add it
         if (err && err.status === 404) {
 
-          db.put({_id: req.params.cardId, author: req.body.author, content: req.body.content})
+          db.put({_id: req.params.cardId, author: req.body.author, destination: req.body.destination, content: req.body.content})
             .then(function (response) {
               res.status(200).json(response);
             })
@@ -57,6 +60,7 @@ function routes (db) {
     })
     .delete(function (req, res) {
 
+      console.log('cardRouter.route /cards/:cardId - .delete(function (req, res)');
       // Race condition, so let's drop 404s if we get them
       db.get(req.params.cardId, function (err, doc) {
         if (err && err.status === 404) {

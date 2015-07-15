@@ -1,16 +1,22 @@
 var cards, count = 0;
 var userName = 'Self'; //Default to 'self'
+var addrBookPrefix = 'AB-';
 var url = 'http://localhost:5000/api/cards/';
 var loading = false;
 
 //Save the post card
-function saveCard(cardId, author, content) {
+function saveCard(cardId, author, destination, content) {
   $.ajax({
     url: url + cardId,
     type: 'PUT',
     contentType: 'application/json',
-    data: JSON.stringify({ author: author, content: content }),
+    data: JSON.stringify({ author: author, destination: destination, content: content }),
     dataType: 'json',
+    
+    success: function(data, status, xhr) {
+      console.log('success in saveCard');
+    },
+
     error: function(jqXHR, textStatus, errorThrown) {
       console.log('error in saveCard ' + JSON.stringify(jqXHR) + ' ' + textStatus + ' ' + errorThrown);
     }
@@ -22,6 +28,10 @@ function deleteCard(cardId) {
   $.ajax({
     url: url + cardId,
     type: 'DELETE',
+    
+    success: function(data, status, xhr) {
+      console.log('success in deleteCard');
+    },
     error: function(jqXHR, textStatus, errorThrown) {
       console.log('error in deleteCard ' + JSON.stringify(jqXHR) + ' ' + textStatus + ' ' + errorThrown);
     }
@@ -30,6 +40,7 @@ function deleteCard(cardId) {
 
 // add event handlers to a card
 function addCardEvent(cardElement) {
+  console.log('function addCardEvent(cardElement)');
   var div = cardElement.children('div');
   var closeImg = div.find('img');
 
@@ -55,7 +66,8 @@ function addCardEvent(cardElement) {
 }
 
 //  adds a new postcard to the 'cards' list
-function addNewCard(cardId, title, content) {
+function addNewCard(cardId, title, destination, content) {
+  console.log('function addNewCard(cardId, title, content)');
   var className = 'color' + Math.ceil(Math.random() * 3);
   cardId || (cardId = generateUUID());
 
@@ -63,6 +75,7 @@ function addNewCard(cardId, title, content) {
   cards.append('<li><div class="' + className + '">' +
     '<input type="hidden" id="cardId" value="' + cardId + '">' +
     '<textarea readonly class="card-title" placeholder="Owner" maxlength="10"/>' +
+    '<textarea readonly class="card-destination" placeholder="Destination" maxlength="10"/>' +
     '<textarea class="card-content" placeholder="Your content here"/>' +
     '<img  src="close.png"/>' +
     '</div></li>');
@@ -79,6 +92,7 @@ function addNewCard(cardId, title, content) {
   newCard.find('textarea.card-content').blur(function () {
     saveCard(newCard.find('input[type=hidden]').val(),
       newCard.find('textarea.card-title').val(),
+      newCard.find('textarea.card-destination').val(),
       newCard.find('textarea.card-content').val() );
   });
 
@@ -87,22 +101,30 @@ function addNewCard(cardId, title, content) {
 
   // if a title is provided then set the title of the new card
   if (title) {
+    console.log('function addNewCard - if (title)');
     newCard.find('textarea.card-title').val(title);
   } else {
-    newCard.find('textarea.card-title').val(userName);//Use the current userName
+    console.log('function addNewCard - else');
+    newCard.find('textarea.card-title').val(addrBookPrefix + userName);//Use the current userName
   }
 
+  newCard.find('textarea.card-destination').val('addr-dest');
+  
   // if a content is provided then set the content of the new card
   if (content) {
+    console.log('function addNewCard - if (content)');
     newCard.find('textarea.card-content').val(content);
   }
 
-  if(!loading)
+  if(!loading) {
+    console.log('function addNewCard - if(!loading)');
     saveCard(
       newCard.find('input[type=hidden]').val(),
       newCard.find('textarea.card-title').val(),
+      newCard.find('textarea.card-destination').val(),
       newCard.find('textarea.card-content').val()
     );
+  }
 }
 
 // load the cards saved in the local storage
@@ -112,15 +134,25 @@ function loadCards() {
     url: url,
     dataType: 'json',
     success: function (data) {
+      console.log('function loadCards - success');
       loading = true;
       $.each(data.rows, function(_, element) {
-        if (element.id !== 'me') {
-          addNewCard(element.id, element.doc.author, element.doc.content);
+        if(element.doc.content.match(addrBookPrefix) != null)
+          console.log('found an addressbook entry');
+        if (element.id !== 'me' &&
+          element.doc.content.match(addrBookPrefix) == null) {
+          console.log('found a card entry');
+          addNewCard(element.id, element.doc.author, element.doc.destination, element.doc.content);
           count++;
         }
       });
       // add a card to the list if there aren't any
-      if (count === 0) { addNewCard(''); }
+      if (count === 0) {
+        console.log('adding current user to DB as an addressbook entry');
+        saveCard(generateUUID, '', '', addrBookPrefix + userName);
+        
+        addNewCard('');
+      }
       loading = false;
     }
   });
@@ -139,6 +171,7 @@ function generateUUID() {
 }
 
 $(document).ready(function () {
+  console.log('(document).ready');
   // get references to the 'cards' list
   cards = $('#cards');
 
@@ -156,6 +189,7 @@ $(document).ready(function () {
 });
 
 function refreshCards() {
+  console.log('function refreshCards');
   $('#cards').empty();
   loadCards();
 }
