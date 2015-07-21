@@ -49,14 +49,7 @@ ThaliReplicationManager.prototype.start = function (port, dbName) {
   
 
 //test cards sync between 2 phones
-//merge code to my story-00-branch
-//use my story-00-branch, comment out my tuesday check-in and test sync on 2 phones
-
-
-  //do not show the card if address_AAA in doc._id (UI)
-    //bug - element.doc.id.match(addressPrefix) != null)?????
-    //so no card shold be displayed on app-start?????
-  //make "to" as a dropdown list (with all & address_options) (UI)
+//make "to" as a dropdown list (with all & address_options) (UI)
 
 
   var cryptomanager = require('./thalicryptomanager');
@@ -117,6 +110,8 @@ ThaliReplicationManager.prototype.start = function (port, dbName) {
     console.log('ThaliReplicationManager.events.STARTING');
   
     this._port = port;
+    console.log('setting this._deviceName to currentAddrEntry: ',
+        currentAddrEntry);
     this._deviceName = currentAddrEntry;
     this._dbName = dbName;
     this._serverBridge = muxServerBridge.call(this, port);
@@ -126,6 +121,8 @@ ThaliReplicationManager.prototype.start = function (port, dbName) {
       
       this._serverBridgePort = this._serverBridge.address().port;
   
+      console.log('calling this._emitter.startBroadcasting w/currentAddrEntry: ',
+        currentAddrEntry);
       this._emitter.startBroadcasting(currentAddrEntry, this._serverBridgePort, function (err) {
         console.log('this._emitter.startBroadcasting');
         if (err) {

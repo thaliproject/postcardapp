@@ -13,18 +13,6 @@ var hashSizeInBytes = 16;
 var fileLocation222 = 'AAA';
 
 
-/*
-
-07-16 17:22:47.582  16921-16921/org.thaliproject.postcardapp E/jxcore﹕ Error!: JXMobile.GetDocumentsPath expects a function callback
-    Stack: [{"_fileName":"main.js","_functionName":"JXMobile.GetDocumentsPath","_lineNumber":"155","_columnNumber":"1","_msg":"    at JXMobile.GetDocumentsPath@main.js:155:1"},{"_fileName":"/data/data/org.thaliproject.postcardapp/files/www/jxcore/thalicryptomanager.js","_functionName":"module.exports.getPublicKeyHash","_lineNumber":"26","_columnNumber":"7","_msg":"    at module.exports.getPublicKeyHash@/data/data/org.thaliproject.postcardapp/files/www/jxcore/thalicryptomanager.js:26:7"},{"_fileName":"/data/data/org.thaliproject.postcardapp/files/www/jxcore/thalireplicationmanager.js","_functionName":"ThaliReplicationManager.prototype.start","_lineNumber":"73","_columnNumber":"3","_msg":"    at ThaliReplicationManager.prototype.start@/data/data/org.thaliproject.postcardapp/files/www/jxcore/thalireplicationmanager.js:73:3"},{"_fileName":"/data/data/org.thaliproject.postcardapp/files/www/jxcore/app.js","_functionName":"server<","_lineNumber":"97","_columnNumber":"3","_msg":"    at server<@/data/data/org.thaliproject.postcardapp/files/www/jxcore/app.js:97:3"},{"_fileName":"events.js","_functionName":"g","_lineNumber":"159","_columnNumber":"7","_msg":"    at g@events.js:159:7"},{"_fileName":"events.js","_functionName":"emit","_lineNumber":"79","_columnNumber":"7","_msg":"    at emit@events.js:79:7"},{"_fileName":"net.js","_functionName":"Server.prototype._listen2/<","_lineNumber":"989","_columnNumber":"5","_msg":"    at Server.prototype._listen2/<@net.js:989:5"},{"_fileName":"node.js","_functionName":"_tickCallback","_lineNumber":"769","_columnNumber":"13","_msg":"    at _tickCallback@node.js:769:13"},{"_fileName":"node.js","_functionName":"_tickFromSpinner","_lineNumber":"745","_columnNumber":"7","_msg":"    at _tickFromSpinner@node.js:745:7"},{"_fileName":"main.js","_functionName":"unknown","_lineNumber":155,"_columnNumber":0,"_msg":"    at "}]
-
-07-16 17:35:44.922  24704-24704/? E/jxcore﹕ Error!: Mobile.GetDocumentsPath(...) is undefined
-    Stack: [{"_fileName":"/data/data/org.thaliproject.postcardapp/files/www/jxcore/thalicryptomanager.js","_functionName":"module.exports.getPublicKeyHash","_lineNumber":"35","_columnNumber":"7","_msg":"    at module.exports.getPublicKeyHash@/data/data/org.thaliproject.postcardapp/files/www/jxcore/thalicryptomanager.js:35:7"},{"_fileName":"/data/data/org.thaliproject.postcardapp/files/www/jxcore/thalireplicationmanager.js","_functionName":"ThaliReplicationManager.prototype.start","_lineNumber":"73","_columnNumber":"3","_msg":"    at ThaliReplicationManager.prototype.start@/data/data/org.thaliproject.postcardapp/files/www/jxcore/thalireplicationmanager.js:73:3"},{"_fileName":"/data/data/org.thaliproject.postcardapp/files/www/jxcore/app.js","_functionName":"server<","_lineNumber":"97","_columnNumber":"3","_msg":"    at server<@/data/data/org.thaliproject.postcardapp/files/www/jxcore/app.js:97:3"},{"_fileName":"events.js","_functionName":"g","_lineNumber":"159","_columnNumber":"7","_msg":"    at g@events.js:159:7"},{"_fileName":"events.js","_functionName":"emit","_lineNumber":"79","_columnNumber":"7","_msg":"    at emit@events.js:79:7"},{"_fileName":"net.js","_functionName":"Server.prototype._listen2/<","_lineNumber":"989","_columnNumber":"5","_msg":"    at Server.prototype._listen2/<@net.js:989:5"},{"_fileName":"node.js","_functionName":"_tickCallback","_lineNumber":"769","_columnNumber":"13","_msg":"    at _tickCallback@node.js:769:13"},{"_fileName":"node.js","_functionName":"_tickFromSpinner","_lineNumber":"745","_columnNumber":"7","_msg":"    at _tickFromSpinner@node.js:745:7"},{"_fileName":"/data/data/org.thaliproject.postcardapp/files/www/jxcore/thalicryptomanager.js","_functionName":"unknown","_lineNumber":35,"_columnNumber":6,"_msg":"    at "}]
-
-07-16 17:44:08.022  29230-29230/org.thaliproject.postcardapp E/jxcore﹕ Error!: getfileLocation(...) is undefined
-    Stack: [{"_fileName":"/data/data/org.thaliproject.postcardapp/files/www/jxcore/thalicryptomanager.js","_functionName":"module.exports.getPublicKeyHash","_lineNumber":"56","_columnNumber":"9","_msg":"    at module.exports.getPublicKeyHash@/data/data/org.thaliproject.postcardapp/files/www/jxcore/thalicryptomanager.js:56:9"},{"_fileName":"/data/data/org.thaliproject.postcardapp/files/www/jxcore/thalireplicationmanager.js","_functionName":"ThaliReplicationManager.prototype.start","_lineNumber":"73","_columnNumber":"3","_msg":"    at ThaliReplicationManager.prototype.start@/data/data/org.thaliproject.postcardapp/files/www/jxcore/thalireplicationmanager.js:73:3"},{"_fileName":"/data/data/org.thaliproject.postcardapp/files/www/jxcore/app.js","_functionName":"server<","_lineNumber":"97","_columnNumber":"3","_msg":"    at server<@/data/data/org.thaliproject.postcardapp/files/www/jxcore/app.js:97:3"},{"_fileName":"events.js","_functionName":"g","_lineNumber":"159","_columnNumber":"7","_msg":"    at g@events.js:159:7"},{"_fileName":"events.js","_functionName":"emit","_lineNumber":"79","_columnNumber":"7","_msg":"    at emit@events.js:79:7"},{"_fileName":"net.js","_functionName":"Server.prototype._listen2/<","_lineNumber":"989","_columnNumber":"5","_msg":"    at Server.prototype._listen2/<@net.js:989:5"},{"_fileName":"node.js","_functionName":"_tickCallback","_lineNumber":"769","_columnNumber":"13","_msg":"    at _tickCallback@node.js:769:13"},{"_fileName":"node.js","_functionName":"_tickFromSpinner","_lineNumber":"745","_columnNumber":"7","_msg":"    at _tickFromSpinner@node.js:745:7"},{"_fileName":"/data/data/org.thaliproject.postcardapp/files/www/jxcore/thalicryptomanager.js","_functionName":"unknown","_lineNumber":56,"_columnNumber":8,"_msg":"    at "}]
-
-*/
 
 
 module.exports = {
@@ -105,11 +93,6 @@ module.exports = {
   getPublicKeyHash2: function () {
     console.log('start getPublicKeyHash2()');
     
-/*
-  db.get('me').then(function (doc) {
-    res.render('ejs/index',  { user: doc.user });
-  });
-*/  
 
       /*Mobile.GetDocumentsPath(function (err, fileLocation) {
           if (err) {
@@ -125,8 +108,6 @@ module.exports = {
           var file = fileLocation + pkcs12FileName;
           console.log('checking for file INSIDE THEN: ', file);
         });*/
-
-        //if this fails, use the internal-fn "getfileLocation()"????? with 'then'
 
 
         getfileLocation()
@@ -283,24 +264,7 @@ module.exports = {
   
 };
 
-/*
-var fs = require('fs')
-var myNumber = undefined
 
-function addOne(callback) {
-  fs.readFile('number.txt', function doneReading(err, fileContents) {
-    myNumber = parseInt(fileContents)
-    myNumber++
-    callback()
-  })
-}
-
-function logMyNumber() {
-  console.log(myNumber)
-}
-
-addOne(logMyNumber)
-*/
 
 function internalfn() {
 	console.log('internalffffffffffffnnnnnnnnnnnnnnn');
