@@ -1,7 +1,7 @@
 var cards, count = 0;
 var userName = 'Self'; //Default to 'self'
 var url = 'http://localhost:5000/api/cards/';
-var saveCardloading = false;
+var loading = false;
 
 var addressPrefix = 'addressbook-';
 
