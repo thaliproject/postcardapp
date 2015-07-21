@@ -6,6 +6,8 @@ var bodyParser = require('body-parser');
 var ejsEngine = require('ejs-locals');
 var PouchDB = require('pouchdb');
 
+var addressPrefix = 'addressbook-';
+
 console.log('starting app.js');
 
 // Check if mobile or desktop
@@ -35,7 +37,6 @@ app.use( express.static( 'public' ) );
 
 // Add Allow x-domain calls
 app.use(function allowCrossDomain(req, res, next) {
-  console.log('app.use(function allowCrossDomain(req, res, next)');
   res.header('Access-Control-Allow-Origin', 'http://127.0.0.1:5000');
   res.header('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE');
   res.header('Access-Control-Allow-Headers', 'Content-Type');
@@ -43,8 +44,22 @@ app.use(function allowCrossDomain(req, res, next) {
 });
 
 app.get('/', function (req, res) {
-  console.log('app.get - function (req, res)');
-  res.render('ejs/index',  { user: 'user' + Math.floor(Math.random() * 100) });
+  var cryptomanager = require('./thalicryptomanager');
+  cryptomanager.getPublicKeyHash(function (publicKeyHash) {
+    console.log('app.get - getPublicKeyHash11111');
+    if (publicKeyHash == null) {
+      console.log('got null for publicKeyHash');
+      res.render('ejs/index',  { user: 'user' + Math.floor(Math.random() * 100) });
+    } else {
+      console.log('got publicKeyHash length: ', publicKeyHash.length);
+      console.log('got publicKeyHash: ', publicKeyHash);
+      var currentAddrEntry = addressPrefix + publicKeyHash;
+      console.log('currentAddrEntry: ', currentAddrEntry);
+      res.render('ejs/index',  { user: currentAddrEntry });
+    }
+    console.log('app.get - getPublicKeyHash99999');
+  });
+
   /*
   db.get('me').then(function (doc) {
     res.render('ejs/index',  { user: doc.user });
@@ -55,7 +70,6 @@ app.get('/', function (req, res) {
 });
 
 app.post('/login', function(req, res) {
-  console.log('app.post - login, function(req, res)');
   /*
   var userName = req.body.username.trim();
   if (userName.length > 0) {
@@ -80,7 +94,7 @@ app.post('/login', function(req, res) {
             })
             .catch(function (err) {
               res.render('ejs/login', { error: err });
-            });
+            }); 
         } else {
           res.render('ejs/index', { user: userName });
         }
@@ -96,9 +110,6 @@ var server = app.listen(5000, function () {
   console.log('Express server started. (port: 5000)');
 
   var ThaliReplicationManager = require('./thalireplicationmanager');
-  console.log('var ThaliReplicationManager = require');
   var manager = new ThaliReplicationManager(db);
-  console.log('var manager = new ThaliReplicationManager(db)');
-  manager.start(Math.floor(Math.random() * 100), 5000, 'thali');
-  console.log('manager.start');
+  manager.start(5000, 'thali');
 });

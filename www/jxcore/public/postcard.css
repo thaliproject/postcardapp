@@ -104,23 +104,23 @@ ul li textarea {
 }
 
 .card-title {
-    font-size: 120%;
+    font-size: 100%;
     font-weight: bold;
-    height: 30px;
-    width: 70%;
+    height: 50px;
+    width: 100%;
     border-style: hidden;
 }
 
 .card-destination {
-    font-size: 120%;
+    font-size: 100%;
     font-weight: bold;
-    height: 30px;
-    width: 70%;
+    height: 50px;
+    width: 100%;
     border-style: hidden;
 }
 
 .card-content {
-    font-size:120%;
+    font-size:80%;
     height: 100px;
     width: 95%;
 }
