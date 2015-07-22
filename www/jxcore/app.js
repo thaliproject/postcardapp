@@ -42,14 +42,18 @@ app.use(function allowCrossDomain(req, res, next) {
 });
 
 app.get('/', function (req, res) {
+  res.render('ejs/index',  { user: 'user' + Math.floor(Math.random() * 100) });
+  /*
   db.get('me').then(function (doc) {
     res.render('ejs/index',  { user: doc.user });
   }).catch(function (err) {
     res.render('ejs/login', { error: err });
   });
+  */
 });
 
 app.post('/login', function(req, res) {
+  /*
   var userName = req.body.username.trim();
   if (userName.length > 0) {
     db.get('me', function (err, doc) {
@@ -82,6 +86,7 @@ app.post('/login', function(req, res) {
   } else {
     res.render('ejs/login', { error: 'User name is required' });
   }
+  */
 });
 
 var server = app.listen(5000, function () {
