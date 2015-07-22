@@ -46,18 +46,14 @@ app.use(function allowCrossDomain(req, res, next) {
 app.get('/', function (req, res) {
   var cryptomanager = require('./thalicryptomanager');
   cryptomanager.getPublicKeyHash(function (publicKeyHash) {
-    console.log('app.get - getPublicKeyHash11111');
     if (publicKeyHash == null) {
-      console.log('got null for publicKeyHash');
-      res.render('ejs/index',  { user: 'user' + Math.floor(Math.random() * 100) });
+      console.log('could not get the device publicKeyHash');
+      return;
     } else {
-      console.log('got publicKeyHash length: ', publicKeyHash.length);
-      console.log('got publicKeyHash: ', publicKeyHash);
+      console.log('got publicKeyHash');
       var currentAddrEntry = addressPrefix + publicKeyHash;
-      console.log('currentAddrEntry: ', currentAddrEntry);
       res.render('ejs/index',  { user: currentAddrEntry });
     }
-    console.log('app.get - getPublicKeyHash99999');
   });
 
   /*

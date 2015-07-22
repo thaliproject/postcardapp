@@ -13,9 +13,6 @@ function saveCard(cardId, author, destination, content) {
     contentType: 'application/json',
     data: JSON.stringify({ author: author, destination: destination, content: content }),
     dataType: 'json',
-    success: function(data, status, xhr) {
-      console.log('success in saveCard');
-    },
     error: function(jqXHR, textStatus, errorThrown) {
       console.log('error in saveCard ' + JSON.stringify(jqXHR) + ' ' + textStatus + ' ' + errorThrown);
     }
@@ -27,9 +24,6 @@ function deleteCard(cardId) {
   $.ajax({
     url: url + cardId,
     type: 'DELETE',
-    success: function(data, status, xhr) {
-      console.log('success in deleteCard');
-    },
     error: function(jqXHR, textStatus, errorThrown) {
       console.log('error in deleteCard ' + JSON.stringify(jqXHR) + ' ' + textStatus + ' ' + errorThrown);
     }
@@ -67,8 +61,6 @@ function addNewCard(cardId, title, destination, content) {
   var className = 'color' + Math.ceil(Math.random() * 3);
   cardId || (cardId = generateUUID());
 
-  console.log('addNewCard - cardId: ', cardId);
-
   // add a new card to the end of the list
   cards.append('<li><div class="' + className + '">' +
     '<input type="hidden" id="cardId" value="' + cardId + '">' +
@@ -88,7 +80,6 @@ function addNewCard(cardId, title, destination, content) {
 
   //Add the update handler
   newCard.find('textarea.card-content').blur(function () {
-    console.log('Add the update handler - calling  - saveCard()');
     saveCard(newCard.find('input[type=hidden]').val(),
       newCard.find('textarea.card-title').val(),
       newCard.find('textarea.card-destination').val(),
@@ -118,7 +109,6 @@ function addNewCard(cardId, title, destination, content) {
   }
 
   if(!loading) {
-    console.log('if(!loading) - calling  - saveCard()');
     saveCard(
       newCard.find('input[type=hidden]').val(),
       newCard.find('textarea.card-title').val(),
@@ -136,26 +126,19 @@ function loadCards() {
     dataType: 'json',
     success: function (data) {
       loading = true;
-      console.log('userName is set to: ', userName);
       $.each(data.rows, function(_, element) {
-      console.log('found 1 element');
         if (element.doc._id != null
             && element.doc._id.match(addressPrefix) != null) {
-          console.log('found an addressbook entry: ', element.doc._id);
+          console.log('found an addressbook entry');
         } else {
-          console.log('found a postcard entry - element.id: ', element.id);
-          console.log('found a postcard entry - element.doc.id: ', element.doc.id);
-          console.log('found a postcard entry - element.doc._id: ', element.doc._id);
-          console.log('found a postcard entry - element.doc.author: ', element.doc.author);
-          console.log('found a postcard entry - element.doc.destination: ', element.doc.destination);
-          console.log('found a postcard entry - element.doc.content: ', element.doc.content);
+          console.log('found a postcard entry');
           addNewCard(element.id, element.doc.author,
             element.doc.destination, element.doc.content);
           count++;
         }
       });
       // add a card to the list if there aren't any
-      if (count === 0) { console.log('count === 0 - calling addNewCard()'); addNewCard(''); }
+      if (count === 0) { addNewCard(''); }
       loading = false;
     }
   });
@@ -188,7 +171,6 @@ $(document).ready(function () {
   $("#btnRefresh").click(refreshCards);
 
   userName = $('#userId').val();
-  console.log('userName is set to: ', userName);
 });
 
 function refreshCards() {
