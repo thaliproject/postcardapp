@@ -30,6 +30,7 @@ node_modules
 .idea/
 
 platforms/
+plugins/
 shortid
 ejs-locals
 express
@@ -37,3 +38,4 @@ fast-future
 gulp
 gulp-nodemon
 leveldown
+

@@ -105,7 +105,7 @@ app.post('/login', function(req, res) {
 var server = app.listen(5000, function () {
   console.log('Express server started. (port: 5000)');
 
-  var ThaliReplicationManager = require('./thalireplicationmanager');
+  var ThaliReplicationManager = require('./thali/thalireplicationmanager');
   var manager = new ThaliReplicationManager(db);
   manager.start(5000, 'thali');
 });
