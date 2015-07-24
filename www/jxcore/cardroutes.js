@@ -1,92 +1,79 @@
 var express = require('express');
 
-var shortid = require('shortid');
-
-var routes = function(db){
+function routes (db) {
     var cardRouter = express.Router();
 
     cardRouter.route('/cards')
-        .post(function(req,res){
-            var newCard = {
-                id:shortid.generate(),
-                author: req.body.author,
-                content: req.body.content
-            };
-            db.put({
-                _id: newCard.id,
-                author: newCard.author,
-                content: newCard.content
-            }, function (err, doc) {
-                console.log(doc);
-            });
-            db.get(newCard.id).then(function (doc) {
-                res.status(201).send(doc);
-            }).catch(function (err) {
-                console.log(err);
-            });
-        })
-        .get(function(req, res){
+        .get(function (req, res) {
+
             db.allDocs({
                 include_docs: true
-                //attachments: true
-            }).then(function (result) {
-                res.json(result);
+            }).then(function (docs) {
+                res.status(200).json(docs);
             }).catch(function (err) {
-                console.log(err);
+                res.status(err.status || 500).send(err.message || err);
             });
+
         });
 
     cardRouter.route('/cards/:cardId')
-        .get(function(req,res){
-            db.get(req.params.cardId).then(function (err,doc) {
-                if(err)
-                    res.status(500).send(err);
-                else
-                    res.json(doc);
-            }).catch(function (err) {
-                var responseJson = { result: 'doc not found'};
-                res.json(responseJson);
+        .get(function (req,res) {
+
+            db.get(req.params.cardId)
+                .then(function (doc) {
+                    res.status(200).json(doc);
+                })
+                .catch(function (err) {
+                    res.status(err.status || 500).send(err.message || err);
+                });
+
+        })
+        .put(function (req, res) {
+
+            db.get(req.params.cardId, function (err, doc) {
+                // Not found so let's add it
+                if (err && err.status === 404) {
+
+                    db.put({_id: req.params.cardId, author: req.body.author, content: req.body.content})
+                        .then(function (response) {
+                            res.status(200).json(response);
+                        })
+                        .catch(function (err) {
+                            res.status(err.status || 500).send(err.message || err);
+                        });
+                } else if (err) {
+                    res.status(err.status || 500).send(err.message || err);
+                } else {
+                    doc.content = req.body.content;
+                    db.put(doc)
+                        .then(function (response) {
+                            res.status(200).json(response);
+                        })
+                        .catch(function (err) {
+                            res.status(err.status || 500).send(err.message || err);
+                        });
+                }
             });
         })
-        .put(function(req,res){
-            db.get(req.params.cardId).then(function(doc) {
-                return db.put({
-                    _id: doc._id,
-                    _rev: doc._rev,
-                    author: req.body.author,
-                    content: req.body.content //Update the post card content
-                });
-            }).then(function(response) {
-                var responseJson = { result: 'doc updated'};
-                res.json(responseJson);
-            }).catch(function (err) {
-                console.log(err);
-                //Create the new card, if the doc is not available to update
-                var newCard = {
-                    id:req.params.cardId,
-                    author: req.body.author,
-                    content: req.body.content
-                };
-                db.put({
-                    _id: newCard.id,
-                    author: newCard.author,
-                    content: newCard.content
-                }, function (err, doc) {
-                    var responseJson = { result: 'doc created'};
-                    res.json(responseJson);
-                });
-            });
-        })
-        .delete(function(req, res){
-            db.get(req.params.cardId).then(function(doc) {
-                return db.remove(doc._id, doc._rev);
-            }).then(function (result) {
-                var responseJson = { result: 'doc deleted'};
-                res.json(responseJson);
-            }).catch(function (err) {
-                console.log(err);
-            });
+        .delete(function (req, res) {
+
+            // Race condition, so let's drop 404s if we get them
+            db.get(req.params.cardId, function (err, doc) {
+                if (err && err.status === 404) {
+                    res.status(200).end();
+                } else if (err) {
+                    res.status(err.status || 500).send(err.message || err);
+                } else {
+                    db.remove(doc)
+                        .then(function (response) {
+                            res.status(200).json(response);
+                        }).catch(function (err) {
+                            res.status(err.status || 500).send(err.message || err);
+                        });
+                }
+            })
         });
+
     return cardRouter;
 };
 

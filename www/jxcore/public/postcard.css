@@ -152,14 +152,14 @@ ul li div:hover, ul li div:focus {
     z-index:5;
 }
 
-/* define 3 different colours for the notes */
-ul li div.colour1 {
+/* define 3 different colors for the notes */
+ul li div.color1 {
     background: #ffc;
 }
-ul li div.colour2 {
+ul li div.color2 {
     background: #cfc;
 }
-ul li div.colour3 {
+ul li div.color3 {
     background: #ccf;
 }
 
