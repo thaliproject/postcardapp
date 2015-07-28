@@ -21,7 +21,7 @@ Therefore after cloning this project please:
 
 5. Then run 'cordova platform add android' (or what ever platform you are using) to add the platform support  
 
-7. From command line goto postcardapp/www/jxcore folder, and run 'jx install thali'
+7. From command line goto postcardapp/www/jxcore folder, and run 'jx install thali (or  sudo jx install)'
 
 8. Go to file explorer and goto postcardapp/www/jxcore/node_modules and search for *.gz" and delete all *.gz files
 
