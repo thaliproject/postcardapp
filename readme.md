@@ -17,11 +17,11 @@ Therefore after cloning this project please:
 2. If you havent installed Cordova (jx install cordova -g) on Windows / (sudo jx install cordova -g) on Unix
 3. Create a cordova project : Follow the instructions [here](https://cordova.apache.org/docs/en/4.0.0/guide_cli_index.md.html) to install node.js, Cordova and whatever platforms you require (e.g. cordova plafrom add android and cordova platform add ios).
 
-4. Go into your cordova application folder(postcard) and 'git clone https://github.com/jxcore/jxcore-cordova'
-5. Run 'cordova plugins add jxcore-cordova'
-6. Then run 'cordova platform add android' (or what ever platform you are using) to add the platform support  
+4. Go into your cordova application folder(postcard) 
 
-7. From command line goto postcardapp/www/jxcore folder, and run 'jx install'
+5. Then run 'cordova platform add android' (or what ever platform you are using) to add the platform support  
+
+7. From command line goto postcardapp/www/jxcore folder, and run 'jx install thali'
 
 8. Go to file explorer and goto postcardapp/www/jxcore/node_modules and search for *.gz" and delete all *.gz files
 
