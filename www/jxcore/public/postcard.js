@@ -1,9 +1,12 @@
 var cards, count = 0;
-var userName = 'Self'; //Default to 'self'
+var userName;
 var url = 'http://localhost:5000/api/cards/';
 var loading = false;
 
 var addressPrefix = 'addressbook-';
+var otherDeviceAddress = 'destination - N/A'; // default until a sync hapens
+                                                // with another device
+var timer;
 
 //Save the post card
 function saveCard(cardId, author, destination, content) {
@@ -56,7 +59,7 @@ function addCardEvent(cardElement) {
   });
 }
 
-//  adds a new postcard to the 'cards' list
+// adds a new postcard to the 'cards' list
 function addNewCard(cardId, title, destination, content) {
   var className = 'color' + Math.ceil(Math.random() * 3);
   cardId || (cardId = generateUUID());
@@ -99,8 +102,7 @@ function addNewCard(cardId, title, destination, content) {
   if (destination) {
     newCard.find('textarea.card-destination').val(destination);
   } else {
-    //TODO: query the DB and find the address of the "other" device"
-    newCard.find('textarea.card-destination').val('addr-dest');
+    newCard.find('textarea.card-destination').val(otherDeviceAddress);
   }
 
   // if a content is provided then set the content of the new card
@@ -129,9 +131,12 @@ function loadCards() {
       $.each(data.rows, function(_, element) {
         if (element.doc._id != null
             && element.doc._id.match(addressPrefix) != null) {
-          console.log('found an addressbook entry');
+          if(element.doc._id != userName) {
+            // found the address if the other device
+            otherDeviceAddress = element.doc._id;
+          }
         } else {
-          console.log('found a postcard entry');
+          // found a postcard entry
           addNewCard(element.id, element.doc.author,
             element.doc.destination, element.doc.content);
           count++;
@@ -160,9 +165,6 @@ $(document).ready(function () {
   // get references to the 'cards' list
   cards = $('#cards');
 
-  // load cards from local storage if one's available
-  loadCards();
-
   // clicking the 'New card' button adds a new card to the list
   $('#btnNew').click(function () {
     addNewCard('');
@@ -171,7 +173,54 @@ $(document).ready(function () {
   $("#btnRefresh").click(refreshCards);
 
   userName = $('#userId').val();
+
+  if(!userName) {
+    // hide the controls until the current device address is available
+    var e = document.getElementById('controls');
+    if(e) {
+      e.style.display = 'none';
+    } else {
+      console.log('could not get handle to controls.');
+    }
+
+    // start the timer to repeatedly request the current device address
+    timer = setInterval(function() {
+        getDeviceAddress();
+    }, 500); // send request every half a second
+  } else { // user name is available
+    // load cards from local storage if one's available
+    loadCards();
+  }
 });
+
+function getDeviceAddress() {
+  // make a request to get the current device address
+  $.ajax({
+    type: 'GET',
+    url: 'http://localhost:5000/getDeviceAddress/',
+    dataType: 'json',
+    
+    success: function (data) {
+      userName = data;
+      // cancel the timer
+      clearInterval(timer);
+      
+      var e = document.getElementById('controls');
+      if(e) {
+        e.style.display = 'block';
+      } else {
+        console.log('could not get handle to controls.');
+      }
+      
+      // load cards now as current username is now available
+      loadCards();
+    },
+    // got error for the request
+    error: function(jqXHR, textStatus, errorThrown) {
+      // do nothing - a new request will be sent again on the next timeout
+    }
+  });
+}
 
 function refreshCards() {
   $('#cards').empty();

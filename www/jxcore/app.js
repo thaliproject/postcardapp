@@ -7,12 +7,14 @@ var ejsEngine = require('ejs-locals');
 var PouchDB = require('pouchdb');
 
 var addressPrefix = 'addressbook-';
+var currentDeviceAddress;
 
 console.log('starting app.js');
 
 // Check if mobile or desktop
 var dbPath = path.join(os.tmpdir(), 'dbPath');
-var LevelDownPouchDB = process.platform === 'android' || process.platform === 'ios' ?
+var LevelDownPouchDB = process.platform === 'android'
+  || process.platform === 'ios' ?
   PouchDB.defaults({db: require('leveldown-mobile'), prefix: dbPath}) :
   PouchDB.defaults({db: require('leveldown'), prefix: dbPath});
 
@@ -24,7 +26,8 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
 // Add Express PouchDB
-app.use('/db', require('express-pouchdb')(LevelDownPouchDB, { mode: 'minimumForPouchDB'}));
+app.use('/db', require('express-pouchdb')(LevelDownPouchDB,
+  { mode: 'minimumForPouchDB'}));
 var db = new LevelDownPouchDB('thali');
 
 var cardRouter = require('./cardroutes')(db);
@@ -43,18 +46,55 @@ app.use(function allowCrossDomain(req, res, next) {
   next();
 });
 
+/**
+* This is the callback function that is passed to the getDeviceIdentity() API
+* of the replcationmanager. If the current device id is already available in
+* the replication manager, this function is called immediately. If not, this
+* function is called whenever the device identity becomes available.
+* @param {String} deviceIdentity the current device identity.
+*/
+function gotDeviceIdentity(deviceIdentity) {
+  if(deviceIdentity) {
+    currentDeviceAddress = addressPrefix + deviceIdentity;
+    // check if the db already has an addressbook entry for the current device
+    db.get(currentDeviceAddress).then(function (doc) {
+      // found current device address in db - nothing to do
+    }).catch(function (err) {
+      //did not find current device address - adding it now
+      db.put({_id: currentDeviceAddress , author: '', destination: '',
+        content: ''})
+        .then(function (response) {
+          // successfully saved the entry
+        })
+      .catch(function (err) {
+          // failed to saved the entry
+        console.log('failed to save the device address in db - err: ', err);
+      });
+    });
+  }
+  else {
+    console.log('deviceIdentity not obtained from the replicationmanager');
+  }
+}
+
+/**
+* If available, the current device address is returned.
+*/
+app.get('/getDeviceAddress', function (req, res) {
+  if(currentDeviceAddress) {
+    // return the current device address
+    res.status(200).json(currentDeviceAddress);
+  } else {
+    res.status(404); // return a failure
+  }
+});
+
 app.get('/', function (req, res) {
-  var cryptomanager = require('./thalicryptomanager');
-  cryptomanager.getPublicKeyHash(function (publicKeyHash) {
-    if (publicKeyHash == null) {
-      console.log('could not get the device publicKeyHash');
-      return;
-    } else {
-      console.log('got publicKeyHash');
-      var currentAddrEntry = addressPrefix + publicKeyHash;
-      res.render('ejs/index',  { user: currentAddrEntry });
-    }
-  });
+  if(currentDeviceAddress) {
+    res.render('ejs/index',  { user: currentDeviceAddress });
+  } else {
+    res.render('ejs/index',  { user: '' }); // send an empty string
+  }
 
   /*
   db.get('me').then(function (doc) {
@@ -107,5 +147,7 @@ var server = app.listen(5000, function () {
 
   var ThaliReplicationManager = require('./thali/thalireplicationmanager');
   var manager = new ThaliReplicationManager(db);
+  
+  manager.getDeviceIdentity(gotDeviceIdentity);
   manager.start(5000, 'thali');
 });
