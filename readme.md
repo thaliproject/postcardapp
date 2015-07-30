@@ -13,6 +13,9 @@ plugin it depends on.
 
 Therefore after cloning this project please:
 
+We don't get autoremove working until jxcore 0.3.0.5 at the earliest so we need to tell people
+about the find command
+
 1. Install JXcore from [here](http://jxcore.com/downloads) 
 2. Install Cordova 
  1. Windows - `jx install cordova -g`

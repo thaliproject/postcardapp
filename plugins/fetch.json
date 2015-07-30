@@ -3,7 +3,8 @@
         "source": {
             "type": "git",
             "url": "https://github.com/jxcore/jxcore-cordova",
-            "subdir": "."
+            "subdir": ".",
+            "ref": "0.0.3-dev"
         },
         "is_top_level": false,
         "variables": {}
@@ -19,7 +20,7 @@
     "org.thaliproject.p2p": {
         "source": {
             "type": "local",
-            "path": "../Thali_CordovaPlugin"
+            "path": "/Users/yarongoland/Desktop/depots/postcardapp/thaliDontCheckIn/Thali_CordovaPlugin-story_0_yarong"
         },
         "is_top_level": true,
         "variables": {}
