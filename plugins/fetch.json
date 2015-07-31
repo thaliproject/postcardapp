@@ -16,13 +16,5 @@
         },
         "is_top_level": true,
         "variables": {}
-    },
-    "org.thaliproject.p2p": {
-        "source": {
-            "type": "local",
-            "path": "/Users/yarongoland/Desktop/depots/postcardapp/thaliDontCheckIn/Thali_CordovaPlugin-story_0_yarong"
-        },
-        "is_top_level": true,
-        "variables": {}
     }
 }

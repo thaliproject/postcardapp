@@ -13,28 +13,21 @@ plugin it depends on.
 
 Therefore after cloning this project please:
 
-We don't get autoremove working until jxcore 0.3.0.5 at the earliest so we need to tell people
-about the find command
-
 1. Install JXcore from [here](http://jxcore.com/downloads) 
 2. Install Cordova 
  1. Windows - `jx install cordova -g`
- 2. Linux - `sudo jx install cordova -g`
-3. This depot is a Cordova project but you do need to add to it whatever platforms you are using:
- 1. Android - cordova platform add android
- 2. iOS - cordova platform add iOS
-4. TEMPORARY INSTRUCTIONS BECAUSE WE ARE BROKEN AGAINST THE LATEST JXCORE
- 4. Make sure you have installed Maven
- 1. Go to postcardapp and run `chmod u+x installone.sh installtwo.sh`
- 1. Go to postcardapp/platforms/android/AndroidManifest.xml and changed <users-sdk android:minSdkVersion="10" to be a 19 instead of a 10.
- 2. Go to postcardapp and run `./installone.sh`
- 3. Go to Thali_CordovaPlugin/plugin.xml and edit the element dependency on line 10 to change the url to "../jxcore-cordova"
- 5. Go to postcardapp and run `./installtwo.sh`
-5. Goto postcardapp/www/jxcore folder, and run `jx install` 
-6. Android Users: Do a search on postcard/www/jxcore/node_modules for any files ending in *.gz and delete them 
- 1. For Linux and OS/X you can run `find . -name "*.gz" -delete` from the node_modules directory.
-7. Run `cordova build android` or `cordova build ios` to see that the app builds for your platform.
-8. Now you can run the app
+ 2. Linux - `sudo jx install cordova -g` 
+1. `curl https://codeload.github.com/thaliproject/postcardapp/zip/story_0_yarong > foo.zip`
+2. `unzip foo.zip`
+3. Cd into the postcard app directory
+3. `cordova platform add android`
+ * Right now android is the only platform the postcard app works on
+3. Navigate down to www/jxcore and issue `jx npm install`
+ * Get comfy, this will take a little while
+4. From inside of www/jxcore issue `find . -name "*.gz" -delete`
+ * This command will go away when jxcore release 0.3.0.5 which supports --autoremove="*.gz"
+5. Issue `cordova build`
+
 
 
 

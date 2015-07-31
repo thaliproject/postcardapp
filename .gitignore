@@ -29,6 +29,9 @@ node_modules
 # Intellij and Android
 .idea/
 
+# VS Code
+.settings/
+
 platforms/
 plugins/
 shortid
@@ -39,3 +42,6 @@ gulp
 gulp-nodemon
 leveldown
 thaliDontCheckIn/
+
+# Mac
+.DS_Store
