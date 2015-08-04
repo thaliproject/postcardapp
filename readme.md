@@ -13,25 +13,25 @@ plugin it depends on.
 
 Therefore after cloning this project please:
 
-1. Install JXcore from [here](http://jxcore.com/downloads) and install Node.JS from [here](http://nodejs.org) (for desktop testing)
-2. If you havent installed Cordova (jx install cordova -g) on Windows / (sudo jx install cordova -g) on Unix
-3. Create a cordova project : Follow the instructions [here](https://cordova.apache.org/docs/en/4.0.0/guide_cli_index.md.html) to install node.js, Cordova and whatever platforms you require (e.g. cordova plafrom add android and cordova platform add ios).
-
-4. Go into your cordova application folder(postcard) and 'git clone https://github.com/jxcore/jxcore-cordova'
-5. Run 'cordova plugins add jxcore-cordova'
-6. Then run 'cordova platform add android' (or what ever platform you are using) to add the platform support  
-
-7. From command line goto postcardapp/www/jxcore folder, and run 'jx install'
-
-8. Go to file explorer and goto postcardapp/www/jxcore/node_modules and search for *.gz" and delete all *.gz files
-
-9. Now you can run 'cordova run android' from postcardapp folder (or whatever platform you are using) and it should just run.
-
-
-
-
-
-
+1. Install JXcore from [here](http://jxcore.com/downloads) 
+2. Install Cordova 
+ 1. Windows - `jx install cordova -g`
+ 2. Linux - `sudo jx install cordova -g`
+3. This depot is a Cordova project but you do need to add to it whatever platforms you are using:
+ 1. Android - cordova platform add android
+ 2. iOS - cordova platform add iOS
+4. TEMPORARY INSTRUCTIONS BECAUSE WE ARE BROKEN AGAINST THE LATEST JXCORE
+ 4. Make sure you have installed Maven
+ 1. Go to postcardapp and run `chmod u+x installone.sh installtwo.sh`
+ 1. Go to postcardapp/platforms/android/AndroidManifest.xml and changed <users-sdk android:minSdkVersion="10" to be a 19 instead of a 10.
+ 2. Go to postcardapp and run `./installone.sh`
+ 3. Go to Thali_CordovaPlugin/plugin.xml and edit the element dependency on line 10 to change the url to "../jxcore-cordova"
+ 5. Go to postcardapp and run `./installtwo.sh`
+5. Goto postcardapp/www/jxcore folder, and run `jx install` 
+6. Android Users: Do a search on postcard/www/jxcore/node_modules for any files ending in *.gz and delete them 
+ 1. For Linux and OS/X you can run `find . -name "*.gz" -delete` from the node_modules directory.
+7. Run `cordova build android` or `cordova build ios` to see that the app builds for your platform.
+8. Now you can run the app
 
 
 

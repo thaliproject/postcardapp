@@ -1,4 +1,13 @@
 {
+    "io.jxcore.node": {
+        "source": {
+            "type": "git",
+            "url": "https://github.com/jxcore/jxcore-cordova",
+            "subdir": "."
+        },
+        "is_top_level": false,
+        "variables": {}
+    },
     "cordova-plugin-whitelist": {
         "source": {
             "type": "registry",
@@ -7,11 +16,10 @@
         "is_top_level": true,
         "variables": {}
     },
-    "io.jxcore.node": {
+    "org.thaliproject.p2p": {
         "source": {
-            "type": "git",
-            "url": "https://github.com/jxcore/jxcore-cordova.git",
-            "subdir": "."
+            "type": "local",
+            "path": "../Thali_CordovaPlugin"
         },
         "is_top_level": true,
         "variables": {}

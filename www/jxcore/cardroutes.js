@@ -34,7 +34,7 @@ function routes (db) {
         // Not found so let's add it
         if (err && err.status === 404) {
 
-          db.put({_id: req.params.cardId, author: req.body.author, content: req.body.content})
+          db.put({_id: req.params.cardId, author: req.body.author, destination: req.body.destination, content: req.body.content})
             .then(function (response) {
               res.status(200).json(response);
             })

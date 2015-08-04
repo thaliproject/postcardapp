@@ -1,15 +1,20 @@
 var cards, count = 0;
-var userName = 'Self'; //Default to 'self'
+var userName;
 var url = 'http://localhost:5000/api/cards/';
 var loading = false;
 
+var addressPrefix = 'addressbook-';
+var otherDeviceAddress = 'All'; // default until a sync hapens
+                                                // with another device(s)
+var timerId;
+
 //Save the post card
-function saveCard(cardId, author, content) {
+function saveCard(cardId, author, destination, content) {
   $.ajax({
     url: url + cardId,
     type: 'PUT',
     contentType: 'application/json',
-    data: JSON.stringify({ author: author, content: content }),
+    data: JSON.stringify({ author: author, destination: destination, content: content }),
     dataType: 'json',
     error: function(jqXHR, textStatus, errorThrown) {
       console.log('error in saveCard ' + JSON.stringify(jqXHR) + ' ' + textStatus + ' ' + errorThrown);
@@ -54,8 +59,8 @@ function addCardEvent(cardElement) {
   });
 }
 
-//  adds a new postcard to the 'cards' list
-function addNewCard(cardId, title, content) {
+// adds a new postcard to the 'cards' list
+function addNewCard(cardId, title, destination, content) {
   var className = 'color' + Math.ceil(Math.random() * 3);
   cardId || (cardId = generateUUID());
 
@@ -63,6 +68,7 @@ function addNewCard(cardId, title, content) {
   cards.append('<li><div class="' + className + '">' +
     '<input type="hidden" id="cardId" value="' + cardId + '">' +
     '<textarea readonly class="card-title" placeholder="Owner" maxlength="10"/>' +
+    '<textarea readonly class="card-destination" placeholder="Destination" maxlength="10"/>' +
     '<textarea class="card-content" placeholder="Your content here"/>' +
     '<img  src="close.png"/>' +
     '</div></li>');
@@ -79,6 +85,7 @@ function addNewCard(cardId, title, content) {
   newCard.find('textarea.card-content').blur(function () {
     saveCard(newCard.find('input[type=hidden]').val(),
       newCard.find('textarea.card-title').val(),
+      newCard.find('textarea.card-destination').val(),
       newCard.find('textarea.card-content').val() );
   });
 
@@ -92,17 +99,25 @@ function addNewCard(cardId, title, content) {
     newCard.find('textarea.card-title').val(userName);//Use the current userName
   }
 
+  if (destination) {
+    newCard.find('textarea.card-destination').val(destination);
+  } else {
+    newCard.find('textarea.card-destination').val(otherDeviceAddress);
+  }
+
   // if a content is provided then set the content of the new card
   if (content) {
     newCard.find('textarea.card-content').val(content);
   }
 
-  if(!loading)
+  if(!loading) {
     saveCard(
       newCard.find('input[type=hidden]').val(),
       newCard.find('textarea.card-title').val(),
+      newCard.find('textarea.card-destination').val(),
       newCard.find('textarea.card-content').val()
     );
+  }
 }
 
 // load the cards saved in the local storage
@@ -114,8 +129,18 @@ function loadCards() {
     success: function (data) {
       loading = true;
       $.each(data.rows, function(_, element) {
-        if (element.id !== 'me') {
-          addNewCard(element.id, element.doc.author, element.doc.content);
+        // look for all addressbook entries
+        if (element.doc._id != null
+            && element.doc._id.match(addressPrefix) != null) {
+          if(element.doc.author != null
+            && element.doc.author != userName) {
+            // found the address of the other device
+            otherDeviceAddress = element.doc.author;
+          }
+        } else {
+          // found a postcard entry
+          addNewCard(element.id, element.doc.author,
+            element.doc.destination, element.doc.content);
           count++;
         }
       });
@@ -142,9 +167,6 @@ $(document).ready(function () {
   // get references to the 'cards' list
   cards = $('#cards');
 
-  // load cards from local storage if one's available
-  loadCards();
-
   // clicking the 'New card' button adds a new card to the list
   $('#btnNew').click(function () {
     addNewCard('');
@@ -153,7 +175,68 @@ $(document).ready(function () {
   $("#btnRefresh").click(refreshCards);
 
   userName = $('#userId').val();
+  
+  // hide the login items during initialization
+  var e = document.getElementById('login');
+  if(e) {
+    e.style.display = 'none';
+  } else {
+    console.log('could not get handle to login controls.');
+  }
+
+  if(!userName) {
+    // hide the controls until the current device address is available
+    var e = document.getElementById('controls');
+    if(e) {
+      e.style.display = 'none';
+    } else {
+      console.log('could not get handle to controls.');
+    }
+
+    // start the timer to get the user-name of the current device
+    timerId = setTimeout(function() {
+      getDeviceAddress();
+    }, 1000);
+  } else { // user name is available
+    // load cards from local storage if one's available
+    loadCards();
+  }
 });
+
+function getDeviceAddress() {
+
+  // make a request to get the current device address
+  $.ajax({
+    type: 'GET',
+    url: 'http://localhost:5000/getDeviceAddress/',
+    dataType: 'json',
+    
+    success: function (data) {
+      userName = data;
+      // show the controls as the current device address is now available
+      var e = document.getElementById('controls');
+      if(e) {
+        e.style.display = 'block';
+      } else {
+        console.log('could not get handle to controls.');
+      }
+      
+      // load cards now as current username is now available
+      loadCards();
+    },
+
+    // got error for the request
+    error: function(jqXHR, textStatus, errorThrown) {
+      // show the login items now as the current device address is unavailable
+      var e = document.getElementById('login');
+      if(e) {
+        e.style.display = 'block';
+      } else {
+        console.log('could not get handle to login controls.');
+      }
+    }
+  });
+}
 
 function refreshCards() {
   $('#cards').empty();
