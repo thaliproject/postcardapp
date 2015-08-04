@@ -4,9 +4,9 @@ var url = 'http://localhost:5000/api/cards/';
 var loading = false;
 
 var addressPrefix = 'addressbook-';
-var otherDeviceAddress = 'destination - N/A'; // default until a sync hapens
-                                                // with another device
-var timer;
+var otherDeviceAddress = 'All'; // default until a sync hapens
+                                                // with another device(s)
+var timerId;
 
 //Save the post card
 function saveCard(cardId, author, destination, content) {
@@ -129,11 +129,13 @@ function loadCards() {
     success: function (data) {
       loading = true;
       $.each(data.rows, function(_, element) {
+        // look for all addressbook entries
         if (element.doc._id != null
             && element.doc._id.match(addressPrefix) != null) {
-          if(element.doc._id != userName) {
-            // found the address if the other device
-            otherDeviceAddress = element.doc._id;
+          if(element.doc.author != null
+            && element.doc.author != userName) {
+            // found the address of the other device
+            otherDeviceAddress = element.doc.author;
           }
         } else {
           // found a postcard entry
@@ -173,6 +175,14 @@ $(document).ready(function () {
   $("#btnRefresh").click(refreshCards);
 
   userName = $('#userId').val();
+  
+  // hide the login items during initialization
+  var e = document.getElementById('login');
+  if(e) {
+    e.style.display = 'none';
+  } else {
+    console.log('could not get handle to login controls.');
+  }
 
   if(!userName) {
     // hide the controls until the current device address is available
@@ -183,10 +193,10 @@ $(document).ready(function () {
       console.log('could not get handle to controls.');
     }
 
-    // start the timer to repeatedly request the current device address
-    timer = setInterval(function() {
-        getDeviceAddress();
-    }, 500); // send request every half a second
+    // start the timer to get the user-name of the current device
+    timerId = setTimeout(function() {
+      getDeviceAddress();
+    }, 1000);
   } else { // user name is available
     // load cards from local storage if one's available
     loadCards();
@@ -194,6 +204,7 @@ $(document).ready(function () {
 });
 
 function getDeviceAddress() {
+
   // make a request to get the current device address
   $.ajax({
     type: 'GET',
@@ -202,9 +213,7 @@ function getDeviceAddress() {
     
     success: function (data) {
       userName = data;
-      // cancel the timer
-      clearInterval(timer);
-      
+      // show the controls as the current device address is now available
       var e = document.getElementById('controls');
       if(e) {
         e.style.display = 'block';
@@ -215,9 +224,16 @@ function getDeviceAddress() {
       // load cards now as current username is now available
       loadCards();
     },
+
     // got error for the request
     error: function(jqXHR, textStatus, errorThrown) {
-      // do nothing - a new request will be sent again on the next timeout
+      // show the login items now as the current device address is unavailable
+      var e = document.getElementById('login');
+      if(e) {
+        e.style.display = 'block';
+      } else {
+        console.log('could not get handle to login controls.');
+      }
     }
   });
 }
