@@ -12,7 +12,7 @@
     "leveldown-mobile": "^1.0.7",
     "multiplex": "^6.2.2",
     "pouchdb": "^3.6.0",
-    "thali": "^1.0.17"
+    "thali": "^1.0.19"
   },
   "devDependencies": {},
   "scripts": {
