@@ -16,7 +16,7 @@ Therefore after cloning this project please:
 1. Install JXcore from [here](http://jxcore.com/downloads) 
 2. Install Cordova 
  1. Windows - `jx install cordova -g`
- 2. Linux - `sudo jx install cordova -g` 
+ 2. Linux & OS/X - `sudo jx install cordova -g` 
  
 ```
 curl https://codeload.github.com/thaliproject/postcardapp/zip/story_0 > thali.zip
@@ -29,4 +29,5 @@ find . -name "*.gz" -delete
 cordova build
 ```
 
+On Windows one needs to use [Git Bash](https://git-scm.com/download/win) or equivalent to run the above commands.
 
