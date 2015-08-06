@@ -29,7 +29,11 @@ node_modules
 # Intellij and Android
 .idea/
 
+# VS Code
+.settings/
+
 platforms/
+plugins/
 shortid
 ejs-locals
 express
@@ -37,3 +41,7 @@ fast-future
 gulp
 gulp-nodemon
 leveldown
+thaliDontCheckIn/
+
+# Mac
+.DS_Store
