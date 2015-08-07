@@ -8,17 +8,57 @@ Postcard App Demo with the following features
 
 This is intended as a sample project illustrating how to use the [Thali Project](http://www.thaliproject.org) APIs.
 
-This project is based on Cordova. It does not however ship with any Cordova platforms nor with the JXCORE-CORDOVA
-plugin it depends on.
+# Dependencies
 
-Therefore after cloning this project please:
+## Installing Android Studio
 
-1. Install JXcore from [here](http://jxcore.com/downloads) 
-2. Install Cordova 
- 1. Windows - `jx install cordova -g`
- 2. Linux & OS/X - `sudo jx install cordova -g` 
- 
+To get started, first download [Android Studio](http://developer.android.com/sdk/index.html) and follow the instructions below.
+
+Make sure to set your `ANDROID_HOME` environment variable:
+
+Mac OS X (put in your `~/.bash_profile` file):
 ```
+export ANDROID_HOME=~/Library/Android/sdk
+export PATH=${PATH}:$ANDROID_HOME/tools:$ANDROID_HOME/platform-tools
+```
+
+Linux (put in your `~/.bashrc` file):
+```
+export ANDROID_HOME=/<installation location>/Android/sdk
+export PATH=${PATH}:$ANDROID_HOME/tools:$ANDROID_HOME/platform-tools
+```
+
+Windows:
+```
+set ANDROID_HOME=C:\<installation location>\Android\sdk
+set PATH=%PATH%;%ANDROID_HOME%\tools;%ANDROID_HOME%\platform-tools
+```
+
+### JXcore
+
+Follow the instructions at [http://jxcore.com/downloads/](http://jxcore.com/downloads/). Their download page is a little confusing so please pay attention to the section at the top that says in a tiny little font 'Installation'. When you're done, check that the installation worked:
+```
+$ jx -jxv
+v 0.3.0.5
+```
+
+### Install Apache Cordova
+
+Ensure that Apache Cordova is installed globally by using JXcore's `jx install` command.
+
+Mac/Linux:
+```
+$ sudo jx install -g cordova
+```
+
+Windows:
+```
+$ jx install -g cordova
+```
+
+# Building the postcard app on Android
+
+```shell
 curl https://codeload.github.com/thaliproject/postcardapp/zip/story_0 > thali.zip
 unzip thali.zip
 cd postcardapp-story_0
@@ -30,4 +70,3 @@ cordova build
 ```
 
 On Windows one needs to use [Git Bash](https://git-scm.com/download/win) or equivalent to run the above commands.
-
