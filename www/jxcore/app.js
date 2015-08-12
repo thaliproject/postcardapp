@@ -6,8 +6,10 @@ var bodyParser = require('body-parser');
 var ejsEngine = require('ejs-locals');
 var PouchDB = require('pouchdb');
 var ThaliReplicationManager = require('thali/thalireplicationmanager');
+var ThaliLogger = require('thali/thalilogger');
+var winston = ThaliLogger();
 
-console.log('starting app.js');
+winston.info('starting app.js');
 
 var dbPath = path.join(os.tmpdir(), 'dbPath');
 var LevelDownPouchDB = process.platform === 'android' || process.platform === 'ios' ?
