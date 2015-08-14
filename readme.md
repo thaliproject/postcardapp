@@ -4,11 +4,26 @@ Postcard App Demo with the following features
 
 2. Sync the cards from other devices over http
 
-![alt text](demo.gif "Postcard app demo") 
+![alt text](demo.gif "Postcard app demo")
 
 This is intended as a sample project illustrating how to use the [Thali Project](http://www.thaliproject.org) APIs.
 
 # Dependencies
+
+## Windows Prerequisites
+
+If you are using Windows to build the Postcard App, you will need to use [node-gyp](https://github.com/TooTallNate/node-gyp) to compile [leveldown](https://github.com/Level/leveldown)
+
+The following software is required:
+- Visual Studio 2013/2015
+- Python 2.7.x
+
+Follow the [node-gyp installation documentation](https://github.com/TooTallNate/node-gyp#installation) to ensure that Python is properly set.  The easiest way for Python to work is to have it set in your PATH environment variable.
+
+To change the version of Visual Studio used, use the `--msvs_version` option during the installation, for example to use Visual Studio 2015:
+```
+$ jx npm install --production --msvs_version=2015
+```
 
 ## Installing Android Studio
 
