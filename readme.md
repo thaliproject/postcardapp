@@ -12,7 +12,7 @@ This is intended as a sample project illustrating how to use the [Thali Project]
 
 ## Windows Prerequisites
 
-If you are using Windows to build the Postcard App, you will need to use [node-gyp]() to compile [leveldown]()
+If you are using Windows to build the Postcard App, you will need to use [node-gyp](https://github.com/TooTallNate/node-gyp) to compile [leveldown](https://github.com/Level/leveldown)
 
 The following software is required:
 - Visual Studio 2013/2015
