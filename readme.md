@@ -15,7 +15,7 @@ This is intended as a sample project illustrating how to use the [Thali Project]
 If you are using Windows to build the Postcard App, you will need to use [node-gyp](https://github.com/TooTallNate/node-gyp) to compile [leveldown](https://github.com/Level/leveldown)
 
 The following software is required:
-- Visual Studio 2013/2015
+- Visual Studio 2013 (note: VS 2015 doesn't appear to work yet)
 - Python 2.7.x
 
 Follow the [node-gyp installation documentation](https://github.com/TooTallNate/node-gyp#installation) to ensure that Python is properly set.  The easiest way for Python to work is to have it set in your PATH environment variable.
@@ -82,8 +82,7 @@ unzip thali.zip
 cd postcardapp-story_0
 cordova platform add android
 cd www/jxcore
-jx npm install --production
-find . -name "*.gz" -delete
+jx npm install --production --autoremove "*.gz"
 cordova build
 ```
 
