@@ -20,9 +20,9 @@ The following software is required:
 
 Follow the [node-gyp installation documentation](https://github.com/TooTallNate/node-gyp#installation) to ensure that Python is properly set.  The easiest way for Python to work is to have it set in your PATH environment variable.
 
-To change the version of Visual Studio used, use the `--msvs_version` option during the installation, for example to use Visual Studio 2015:
+Note that if you have multiple versions of Visual Studio installed then you have to use the '--msvs_version' switch to tell the system to use VS 2013.
 ```
-$ jx npm install --production --msvs_version=2015
+$ jx npm install --production --autoremove="*.gz" --msvs_version=2013
 ```
 
 ## Installing Android Studio
