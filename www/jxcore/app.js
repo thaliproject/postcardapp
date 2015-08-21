@@ -7,13 +7,18 @@ var ejsEngine = require('ejs-locals');
 var PouchDB = require('pouchdb');
 var ThaliReplicationManager = require('thali/thalireplicationmanager');
 
-console.log('starting app.js');
+var env = process.env.NODE_ENV || 'production';
+if (env==='development') {
+    console.log('localhost', env, 'environment');
+    var Mobile = require('thali/mockmobile.js'); // DEV TESTING ONLY
+}
 
 var dbPath = path.join(os.tmpdir(), 'dbPath');
 var LevelDownPouchDB = process.platform === 'android' || process.platform === 'ios' ?
     PouchDB.defaults({db: require('leveldown-mobile'), prefix: dbPath}) :
     PouchDB.defaults({db: require('leveldown'), prefix: dbPath});
 
+console.log('starting app.js', env);
 var app = express();
 app.disable('x-powered-by');
 

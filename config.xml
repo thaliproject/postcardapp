@@ -23,5 +23,17 @@
     <platform name="ios">
         <allow-intent href="itms:*" />
         <allow-intent href="itms-apps:*" />
+        <preference name="BackupWebStorage" value="local" />
+        <preference name="EnableViewportScale" value="false" />
+        <preference name="KeyboardDisplayRequiresUserAction" value="false" />
+        <preference name="SuppressesIncrementalRendering" value="true" />
+        <feature name="StatusBar">
+    		<param name="ios-package" value="CDVStatusBar" onload="true" />
+    	</feature>
+        <preference name="StatusBarOverlaysWebview" value="true" />
+        <preference name="StatusBarStyle" value="lightcontent" />
+        <preference name="StatusBarBackgroundColor" value="#000000" />
     </platform>
+    <preference name="DisallowOverscroll" value="true" />
+
 </widget>
