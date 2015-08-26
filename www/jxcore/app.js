@@ -7,10 +7,14 @@ var ejsEngine = require('ejs-locals');
 var PouchDB = require('pouchdb');
 var ThaliReplicationManager = require('thali/thalireplicationmanager');
 
-var env = process.env.NODE_ENV || 'production';
-if (env==='development') {
-    console.log('localhost', env, 'environment');
-    var Mobile = require('thali/mockmobile.js'); // DEV TESTING ONLY
+console.log('starting app.js');
+var app = express();
+app.disable('x-powered-by');
+
+var env = process.env.NODE_ENV || 'production'; // default to production
+if ('development' === env) {
+    console.log('localhost "' + app.get('env') + '" environment');
+    var Mobile = require('thali/mockmobile.js'); // LOCALHOST DEV TESTING ONLY
 }
 
 var dbPath = path.join(os.tmpdir(), 'dbPath');
@@ -18,9 +22,7 @@ var LevelDownPouchDB = process.platform === 'android' || process.platform === 'i
     PouchDB.defaults({db: require('leveldown-mobile'), prefix: dbPath}) :
     PouchDB.defaults({db: require('leveldown'), prefix: dbPath});
 
-console.log('starting app.js', env);
-var app = express();
-app.disable('x-powered-by');
+
 
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
@@ -33,7 +35,9 @@ app.use('/api', cardRouter);
 
 app.engine('ejs',ejsEngine);
 app.set('view engine','ejs');
-app.use( express.static( 'public' ) );
+
+app.use( express.static(path.join(__dirname, 'public') ) );
+app.use( '/bower_components', express.static( path.join(__dirname, 'bower_components') ) );
 
 app.use(function allowCrossDomain(req, res, next) {
     res.header('Access-Control-Allow-Origin', 'http://127.0.0.1:5000');
@@ -43,7 +47,8 @@ app.use(function allowCrossDomain(req, res, next) {
 });
 
 app.get('/', function (req, res) {
-    res.render('ejs/index',  { user: 'user' + Math.floor(Math.random() * 100) });
+    //res.render('ejs/index',  { user: 'user' + Math.floor(Math.random() * 100) });
+    res.sendFile(path.join(__dirname + '/index.html'));
 });
 
 var server = app.listen(5000, function () {

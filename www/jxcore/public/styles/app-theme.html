@@ -1,0 +1,24 @@
+<style is="custom-theme">
+
+	/* these are tweaks to Polymer elements to make for better design */
+	
+	iron-autogrow-textarea.tweaked {
+		border: 0; /* 1px black outline doesn't look good */
+		bottom: 9px; /* I seem to get a horrible v-scrollbar if I don't adjust this :( */
+		width: 100%; /* sometimes it won't fill to use full width? */
+	}
+
+	iron-autogrow-textarea.tweaked #textarea {
+		box-sizing: border-box;
+		padding: 20px; /* if box-sizing is supported then add padding to give space 
+		around editable text */
+		padding-right: 40px; /* needs more padding on rhs */
+		word-wrap: break-word; /* break long single line strings */
+	}
+
+	.gridview {
+		@apply(--layout-horizontal);
+		@apply(--layout-wrap);
+	}
+	
+</style>

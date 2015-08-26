@@ -1,0 +1,55 @@
+<script>
+var PageBehaviors = PageBehaviors || {}; // namespace
+
+/*
+ * This behaviour helps to traverse dom tree. 
+ */
+
+PageBehaviors.TreeTraversing = {
+
+	getParentAttribute : function(element, parentSelector, attributeName) {
+		element = this.getParentElement(element, parentSelector);
+		if (element && element.hasAttribute(attributeName)) {
+			return element.getAttribute(attributeName);
+		}
+		return false;
+	},
+
+	getParentElement : function(element, parentSelector) {
+		var isMatch;
+		if (parentSelector.charAt(0) === '#') {
+			parentSelector = parentSelector.substr(1);
+			isMatch = this._hasId;
+        } else if (parentSelector.charAt(0) === '.') {
+        	parentSelector = parentSelector.substr(1);
+        	isMatch = this._hasClass;
+        } else if (parentSelector.charAt(0) === '[') {
+        	parentSelector = parentSelector.slice(1,-1);
+        	isMatch = this._hasAttribute;
+        } else {
+        	parentSelector = parentSelector.toLowerCase();
+        	isMatch = this._hasTag;
+        }
+		for (; element && element !== document ; element = element.parentElement) {
+        	if( isMatch(element, parentSelector) ) {
+        		return element;
+        	}
+    	}
+    	return false;
+	},
+
+	_hasId : function (element, selector) {
+		return element.id === selector;
+	},
+	_hasClass : function (element, selector) {
+		return element.classList.contains(selector);
+	},
+	_hasAttribute : function (element, selector) {
+		return element.hasAttribute(selector);
+	},
+	_hasTag : function (element, selector) {
+		return element.tagName.toLowerCase() === selector;
+	},
+
+};
+</script>

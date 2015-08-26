@@ -1,0 +1,37 @@
+<script>
+var PageBehaviors = PageBehaviors || {}; // namespace
+
+/*
+ * This behaviour is for smoothing multi-platform nuances and UX niggles.
+ */
+
+PageBehaviors.MultiPlatform = {
+
+	shouldFocus : function(input) {
+		setTimeout(function() {
+  			input.focus();
+		}, 0);
+	},
+
+	shouldAutoFocus : function(input) {
+		if( !this._isiOS() ) {
+			input.focus(); // iOS devices already autofocus selected inputs
+			console.log("shouldAutoFocus");
+		}
+	},
+
+	shouldFocusWithoutScrollUp : function(e) {
+		if( this._isiOS() ) {
+    		// hack for iOS to prevent scrolling view up when soft keyboard pops up
+    		e.target.style.webkitTransform = 'translate3d(0px,-10000px,0)'; 
+    		webkitRequestAnimationFrame(function() { this.style.webkitTransform = ''; }.bind(e.target));
+    		console.log("shouldFocusWithoutScrollUp");
+    	}
+	},
+
+	_isiOS : function() {
+		return navigator.userAgent.match(/iPhone|iPad|iPod/i);
+	}
+
+};
+</script>

@@ -1,0 +1,314 @@
+<link rel="import" href="/bower_components/polymer/polymer.html">
+<link rel="import" href="/elements/behaviors/button-listeners.html">
+<link rel="import" href="/elements/behaviors/tree-traversing.html">
+<link rel="import" href="/elements/behaviors/path-components.html">
+<link rel="import" href="/elements/behaviors/multi-platform.html">
+
+<dom-module id="page-home">
+
+<template>
+  <iron-ajax url="/api/cards" last-response="{{listData}}" on-response="_onResponseReceived"></iron-ajax>
+  <iron-selector attr-for-selected="index" on-tap="_itemSelected">
+    <iron-list id="my-postcards" items="{{listData.rows}}" as="item" class="fit">
+      <template>
+        <paper-card id="{{index}}" class="row" elevation="3">
+          <div class="card-content postcard">
+            <p>{{item.doc.content}}</p>
+            <paper-input label="Edit message" value="{{item.doc.content}}" class="inlineInput" hidden></paper-input>
+            <p>[[item.doc.author]]</p>
+            <paper-fab id="{{item.doc._id}}" icon="delete" class="FAB" hidden></paper-fab>
+          </div>
+        </paper-card>
+      </template>
+    </iron-list>
+  </iron-selector>
+  <aside id="placeholder" class="fit layout vertical center-center" hidden>
+    <div>
+      <paper-button class="postcard" raised on-click="_addCard"><iron-icon icon="add"></iron-icon>Create postcard</paper-button>
+      <div class="gutter"></div>
+    </div>
+  </aside>
+</template>
+
+<script>
+Polymer({
+  is: "page-home",
+  behaviors: [
+      PageBehaviors.ButtonListeners, 
+      PageBehaviors.TreeTraversing,
+      PageBehaviors.PathComponents,
+      PageBehaviors.MultiPlatform
+    ],
+  properties: {
+    listData: {
+      type: Object,
+      notify: true
+    },
+    addButton: Object,
+    refreshButton: Object,
+    selectedIndex: Number,
+    _isSaving: false
+  },
+  observers: [
+    '_listDataChanged(listData.*)'
+  ],
+  created: function() {
+    console.log(this.localName + ' was created');
+  },
+  ready : function() {
+    console.log(this.localName + ' ready');
+  },
+  attached: function() {
+    console.log(this.localName + ' was attached');
+  },
+  detached: function() {
+    console.log(this.localName + ' was detached');
+  },
+  viewWillAppear: function() {
+    console.log(this.localName + ' viewWillAppear');
+    this.activate();
+    // load data
+    if (!this._isSaving) {
+      this._reloadData();
+    }
+  },
+  viewWillDisappear: function() {
+    console.log(this.localName + ' viewWillDisappear');
+    this.deactivate();
+    this.querySelector("aside").setAttribute("hidden", true); // prevents FOC on back
+  },
+  activate: function() {
+    console.log(this.localName + " activate... active status:" + this._isActivated);
+    myApp.title = "Postcards";
+
+    this.addButton = document.querySelector("#addButton");
+    this.refreshButton = document.querySelector("#refreshButton");
+
+    var toolbarButtonArray = [this.addButton, this.refreshButton];
+    var toolbarFunctionArray = [this._addCard, this._reloadData.bind(this)];
+    this.activateButtons(toolbarButtonArray, toolbarFunctionArray);    
+  },
+  deactivate: function() {
+    console.log(this.localName + " deactivate... active status:" + this._isActivated);
+    this.deactivateButtons([this.addButton, this.refreshButton]);
+  },
+  _addCard: function(e) {
+    console.log("add card: " + e);
+    getURL("editor");
+  },
+  _reloadData: function(e) {
+    console.log("Reload Data...");
+    this._generateRequest();
+  },
+
+  // enable editting for selected postcard 
+  _itemSelected: function(e) {
+    var selectedIndex = this.getParentAttribute(e.target, 'paper-card', 'id');
+    var cardId = this.getParentAttribute(e.target, 'paper-fab', 'id');
+    var isInput = this.getParentElement(e.target, "input");
+    var isDelete = this.getParentElement(e.target, "paper-fab");
+    if (!isInput && !isDelete) {
+      console.log("_itemSelected: " + selectedIndex);
+      this.selectedIndex = selectedIndex; // saves 'real' iron-list selected index
+      this._toggleInlineEditor( this.getParentElement(e.target, 'paper-card') );
+    } else if ( isDelete ) {
+      this._deleteCard(selectedIndex, cardId); // delete selected card
+    }
+  },
+
+  // edit card (listData.* changeRecord contains path, value, base object properties)
+  _listDataChanged: function(changeRecord) {
+    console.log("listData.* changeRecord:");
+    console.log(changeRecord); 
+    if ( this.getPathLastComponent(changeRecord) === "content") {
+      // path doesn't get index reliably as list is virtual list - recreate issue by deleting top items and modify last item remaining
+      var index = this.selectedIndex; // this.getPathIndex(changeRecord);
+      var cardId = this.getPathIndexProperty(changeRecord, index, '_id'); // this.get( this.getPathProperty(changeRecord,'_id') ); //this.get('listData.rows.0.doc._id');
+      var author = myApp.username;
+      var content = changeRecord.value;
+      console.log("content text edited at index:" + index + " #" + cardId);
+      if ( cardId && typeof cardId != 'undefined' && cardId.length>0 ) {
+        this._saveCard(cardId, author, content);
+      } else {
+        console.log("Error could not get card _id with content: " + content);
+      }
+    } else if ( this.getPathLastComponent(changeRecord) === "length") {
+      console.log("total no. of cards changed");
+      this._displayUserView();
+    }
+  },
+
+  // delete card
+  _deleteCard: function(index, cardId) {
+    console.log("delete index #" + index + " cardId:" + cardId);
+    var self = this;
+    $.ajax({
+        url: myApp.url + cardId,
+        type: 'DELETE',
+        error: function(jqXHR, textStatus, errorThrown) {
+          console.log('@ error in delete Card ' + JSON.stringify(jqXHR) + ' ' + textStatus + ' ' + errorThrown);
+          alert("Error deleting card");
+        },
+        success: function(data, textStatus, jqXHR) {
+          console.log("@ delete Card success: " + textStatus);
+          console.log(data);
+          // if 'ok' update client UI else alert user with error
+          if(data.ok && data.ok===true) {
+            self.splice('listData.rows', index, 1);
+            self._restoreAllRows(); // restore default view after delete
+            document.activeElement.blur(); // item removed - hide iOS keyboard
+          } else {
+            alert("Delete card error");
+          }
+        }
+    });
+  },
+
+  // create item & save card
+  createItem: function(content) {
+    var cardId = generateUUID();
+    var author = myApp.username;
+    console.log("+ Create item:" + content + " id:"+ cardId);
+    this._saveCard(cardId, author, content, true);
+  },
+  _saveCard: function(cardId, author, content, needsReload) {
+    var self = this;
+    this._isSaving = true;
+    console.log("=> Save item:" + content + " id:"+ cardId + " by:"+ author);
+    $.ajax({
+        url: myApp.url + cardId,
+        type: 'PUT',
+        contentType: 'application/json',
+        data: JSON.stringify({ 
+          author: author, 
+          content: content
+        }),
+        dataType: 'json',
+        error: function(jqXHR, textStatus, errorThrown) {
+          console.log('@ error in save Card ' + JSON.stringify(jqXHR) + ' ' + textStatus + ' ' + errorThrown);
+          alert("Error saving card");
+        },
+        success: function(data, textStatus, jqXHR) {
+          console.log("@ save Card success: " + textStatus);
+          console.log(data);
+          // if 'ok' update client UI else alert user with error
+          if(data.ok && data.ok===true) {
+            console.log("OK",textStatus);
+            self._isSaving = false;
+            if (needsReload) {
+              self._reloadData(); // new item created - reload list data
+            }
+          } else {
+            alert("Save card error");
+          }
+        }
+    });
+  },
+
+  // iron-ajax request
+  _generateRequest: function() {
+    var ironAjax = this.querySelector("iron-ajax");
+    console.log(ironAjax);
+    if(ironAjax){
+        console.log("generateRequest");
+        ironAjax.generateRequest();
+    }
+  },
+
+  // iron-ajax response
+  _onResponseReceived: function () {
+      console.log("_onResponseReceived");
+      console.log(this.listData);
+
+      if(!this.listData || !this.listData.rows || this.listData.total_rows==0 ) {
+        alert("Error. Peer session expired or failed to get any data.");
+        return;
+      }
+
+      console.log("listData offset:" + this.listData.offset + " total_rows:" + this.listData.total_rows );
+
+      // splice out 'me' record
+      if(this.listData.rows.length>0) {
+        var row;
+        for(var i=0; i<this.listData.rows.length; i++) {
+          row = this.listData.rows[i];
+          if(row.id === 'me') {
+            console.log("me:" + row.doc.user);
+            this.splice('listData.rows',i,1);
+            break;
+          }
+        }
+      }
+  },
+  
+  // toggle inline edit field
+  _toggleInlineEditor: function(target) {
+    if( !isFunction(target.querySelector) ) {
+      return; // list background was clicked instead of a row cell
+    }
+    var viewText = target.querySelector('p');
+    var inputText = target.querySelector('paper-input');
+    var deleteButton = target.querySelector('paper-fab');
+    var isHidden = inputText.hasAttribute('hidden');
+    var isStateEditing = this._restoreAllRows();
+    console.log("inline editor - isStateEditing:" + isStateEditing + " isHidden:" + isHidden);
+    if(!isStateEditing) {
+      if(isHidden) {
+        // show input text and delete btn
+        deleteButton.removeAttribute("hidden");
+        inputText.removeAttribute("hidden");
+        this.shouldAutoFocus( inputText.querySelector('input') );
+        viewText.style.visibility = "hidden";
+        viewText.classList.add("truncate");
+      } else {
+        // hide input text and delete btn
+        deleteButton.setAttribute("hidden", true);
+        inputText.setAttribute("hidden", true);
+        viewText.classList.remove("truncate");
+        viewText.style.visibility = "visible";
+      }
+      this.querySelector('iron-list').fire('resize');
+    } else {
+      // done editting - hide iOS soft keyboard
+      document.activeElement.blur(); 
+      inputText.blur();
+    }
+  },
+
+  // hide all edit fields in list
+  _restoreAllRows: function() {
+    var isStateEditing = false;
+    var elements = this.querySelectorAll('.row');
+    for (var i=0; i<elements.length; i++) {
+      var element = elements[i];
+      var viewText = element.querySelector('p');
+      var inputText = element.querySelector('paper-input');
+      var deleteButton = element.querySelector('paper-fab');
+      if(!inputText.hasAttribute('hidden')){
+        isStateEditing = true;
+      }
+      // hide input text and delete btn
+      deleteButton.setAttribute("hidden", true);
+      inputText.setAttribute("hidden", true);
+      viewText.classList.remove("truncate");
+      viewText.style.visibility = "visible";
+    }
+    this.querySelector('iron-list').fire('resize'); // repaint
+    return isStateEditing;
+  },
+
+  // displays user prompt instead if no cards to display
+  _displayUserView: function() {
+    if (this.listData.rows.length>0) {
+      this.querySelector("aside").setAttribute("hidden", true);
+      this.querySelector('iron-list').removeAttribute("hidden");
+    } else {
+      console.log("prompt user to go create a postcard!");
+      this.querySelector("aside").removeAttribute("hidden");
+      this.querySelector('iron-list').setAttribute("hidden", true);
+    }   
+  }
+
+});
+</script>
+</dom-module>

@@ -1,0 +1,20 @@
+{
+  "name": "PostCardApp",
+  "version": "1.0.0",
+  "license": "MIT",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "iron-elements": "PolymerElements/iron-elements#~1.0.3",
+    "jquery": "~2.1.4",
+    "neon-animation": "PolymerElements/neon-animation#~1.0.6",
+    "page.js": "~1.6.3",
+    "paper-elements": "PolymerElements/paper-elements#~1.0.4",
+    "underscore": "~1.8.3"
+  }
+}

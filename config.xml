@@ -35,5 +35,4 @@
         <preference name="StatusBarBackgroundColor" value="#000000" />
     </platform>
     <preference name="DisallowOverscroll" value="true" />
-
 </widget>

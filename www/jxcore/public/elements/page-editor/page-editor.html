@@ -1,0 +1,108 @@
+<link rel="import" href="/bower_components/polymer/polymer.html">
+<link rel="import" href="/elements/behaviors/button-listeners.html">
+<link rel="import" href="/elements/behaviors/multi-platform.html">
+
+<dom-module id="page-editor">
+
+<template>
+  <textarea id="textbox" class="postcard flex" value="{{editText::input}}" placeholder="Message" on-focus="shouldFocusWithoutScrollUp"></textarea>
+</template>
+
+<script>
+Polymer({
+  is: "page-editor",
+  behaviors: [
+      PageBehaviors.ButtonListeners,
+      PageBehaviors.MultiPlatform
+    ],
+  properties: {
+    editText: {
+      type: String,
+      value: "",
+    },
+    dataModel: {
+      type: Object
+    },
+    backButton: Object,
+    saveButton: Object,
+    textBox: Object,
+  },
+  created: function() {
+    console.log(this.localName + ' was created');
+  },
+  ready : function() {
+    console.log(this.localName + ' ready');
+  },
+  attached: function() {
+    console.log(this.localName + ' was attached');
+  },
+  detached: function() {
+    console.log(this.localName + ' was detached');
+  },
+  viewWillAppear: function(id) {
+    console.log(this.localName + ' viewWillAppear: ' + id);
+    this.activate();
+    if(id == 0){
+      this.editText = ""; // new message 
+    }
+  },
+  viewWillDisappear: function() {
+    console.log(this.localName + ' viewWillDisappear');
+    this.deactivate(); // needed for direct access and localhost proxy on iOS
+  },
+  activate: function() {
+    console.log(this.localName + " activate... active status:" + this._isActivated);
+    myApp.title = "New Postcard";
+
+    // local scope
+    this.textBox = this.querySelector("textarea");
+
+    // document scope
+    this.backButton = document.querySelector("#backButton");
+    this.saveButton = document.querySelector("#saveButton");
+
+    var toolbarButtonArray = [this.backButton, this.saveButton];
+    var toolbarFunctionArray = [this._backButtonHandler, this._saveButtonHandler.bind(this)];
+    this.activateButtons(toolbarButtonArray, toolbarFunctionArray);
+    
+    this._useFullHeight("textarea"); // NB: only use with standard textarea
+
+    this.shouldFocus(this.textBox); // UX send focus to textarea
+  },
+  deactivate: function() {
+    console.log(this.localName + " deactivate... active status:" + this._isActivated);
+    this.deactivateButtons([this.backButton, this.saveButton]);
+  },
+  _backButtonHandler: function(routeDestination) {
+    console.log("<- don't save and go back to:" + routeDestination);
+    getURL("home");
+  },
+  _saveButtonHandler: function(e) {
+    if(this.editText.length == 0){
+      alert("Please enter a message");
+      console.log("Please enter a message! editText:" + this.editText);
+      this.shouldFocus(this.textBox); // UX send focus to textarea
+      return;
+    }
+    console.log("save message:" + this.editText);
+    // get reference to page and call the createItem method
+    document.querySelector("page-home").createItem(this.editText);
+    // go back 
+    getURL("home");
+  },
+  _useFullHeight: function(selector) {
+    var element = this.querySelector(selector); //document.getElementById(elementId);
+    if(element){
+      console.log('useFullHeight');
+      var h = window.innerHeight;
+      var y = document.getElementById('mainToolbar').offsetHeight + document.getElementById('dropShadow').offsetHeight;
+      var remainingHeight = h - y;
+      console.log("remainingHeight = " + remainingHeight + " --y:"+y);
+      element.style.height = remainingHeight+'px';
+    } else {
+      console.log('useFullHeight did not get an element "' + selector +'"');
+    }
+  }
+});
+</script>
+</dom-module>

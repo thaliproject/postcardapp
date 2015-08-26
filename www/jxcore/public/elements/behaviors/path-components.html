@@ -1,0 +1,54 @@
+<script>
+var PageBehaviors = PageBehaviors || {}; // namespace
+
+/*
+ * This behaviour helps to work with observable path components
+ * Example changeRecord: 
+ * {path: "dataModel.rows.0.doc.content", value: "coolio", base: Object}
+ */
+
+PageBehaviors.PathComponents = {
+
+	getPathLastComponent : function(changeRecord) {
+		var components = changeRecord.path.split('.');
+		return components[components.length-1];
+	},
+
+	getPathIndexProperty : function(changeRecord, index, property) {
+		var components = changeRecord.path.split('.');
+		for (var i=0; i<components.length; i++) {
+			if (this._isInt(components[i])) {
+				components[i] = index;
+				components.splice(-1,1);
+				return this.get( components.join('.') +'.'+ property ); // returns value using real path index to property
+			}
+		}
+		return false;
+	},
+
+	// getPathIndex : function(changeRecord) {
+	// 	var components = changeRecord.path.split('.');
+	// 	for (var i=0; i<components.length; i++) {
+	// 		if (this._isInt(components[i])) {
+	// 			return components[i];
+	// 		}
+	// 	}
+	// 	return false;
+	// },
+
+	// getPathProperty : function(changeRecord, property) {
+	// 	var components = changeRecord.path.split('.');
+	// 	components.splice(-1,1);
+	// 	return components.join('.') +'.'+ property; // returns path to property
+	// },
+
+	_isInt : function (value) {
+  		if (isNaN(value)) {
+  		  return false;
+  		}
+  		var x = parseFloat(value);
+  		return (x | 0) === x;
+	}
+
+};
+</script>

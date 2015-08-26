@@ -1,0 +1,81 @@
+<script>
+var PageBehaviors = PageBehaviors || {}; // namespace
+
+/*
+ * This behaviour helps to manage a page's button and event listeners lifecycle. 
+ *
+ * When opening a page event listeners can be added on demand using 
+ * this._attachTempListener(element, event, function)
+ *
+ * When closing all added page listeners can be removed using 
+ * this._deattachTempListeners()
+ *
+ */
+
+PageBehaviors.ButtonListeners = {
+
+	properties: {
+		_tempListeners: {
+      		type: Array,
+      		value: []
+    	},
+    	_isActivated: {
+      		type: Boolean,
+      		value: false
+    	},
+    	_dontHideIds: {
+    		type: Array,
+    		value: ["mainToolbar"]
+    	}
+	},
+
+	activateButtons : function(buttonArray, buttonFunctionArray) {
+		if(!this._isActivated && buttonArray.length===buttonFunctionArray.length) {
+			console.log(this.localName + " activate toolbar buttons");
+			var button, func;
+			for(var i=0; i<buttonArray.length; i++) {
+				button = buttonArray[i];
+				func = buttonFunctionArray[i];
+				if(button && func) {
+					button.removeAttribute("hidden");
+					console.log("show button:" + button);
+					this._attachTempListener(button, "click", func);
+				} else {
+					console.log("error could not attach button listener with " + this.localName);
+				}
+			}
+			this._isActivated = true;
+		}
+	},
+
+	deactivateButtons : function(buttonArray) {
+		if(this._isActivated) {
+			console.log(this.localName + " deactivate toolbar buttons");
+			for(var button; buttonArray.length>0;) {
+				button = buttonArray.pop();
+				if(button && this._dontHideIds.indexOf(button.id)==-1) {
+					button.setAttribute("hidden", true);
+				}
+			}
+			this._deattachTempListeners();
+			this._isActivated = false;
+		}
+	},
+
+	_attachTempListener : function(element, event, func) {
+  		element.addEventListener(event, func);
+  		this.push('_tempListeners', {element:element,event:event,func:func} );
+	},
+
+	_deattachTempListeners : function() {
+    	for(var tl; this._tempListeners.length>0; ) {
+    		tl = this.pop('_tempListeners');
+    		tl.element.removeEventListener(tl.event, tl.func);
+    		console.log("- removed temp listener: " + tl.event);
+    	}
+    	console.log("- clear " + this._tempListeners.length);
+	 	this.set('_tempListeners',[]);
+	}
+
+};
+</script>
