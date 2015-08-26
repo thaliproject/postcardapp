@@ -123,6 +123,11 @@ body, .noSelect {
 	color: #333;
 }
 
+/* iOS 8.4 drop-shadow */
+.postcard {
+	box-shadow: 0px 10px 10px #AAA;
+}
+
 /* row text format */
 .postcard h6, .postcard p, textarea.postcard {
 	font-size: 24px;

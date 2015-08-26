@@ -7,22 +7,28 @@ var PageBehaviors = PageBehaviors || {}; // namespace
 
 PageBehaviors.MultiPlatform = {
 
-	shouldFocus : function(input) {
-		setTimeout(function() {
-  			input.focus();
-		}, 0);
+	// triggers input.focus() with a timeout
+	autoFocus : function(input) {
+		this._focus(input, 0);
 	},
 
-	shouldAutoFocus : function(input) {
+	// triggers input.focus() on everything except on iOS devices. For example after an alert or if input has already received autofocus it can result in disabling soft-keyboard text entry.
+	shouldFocus : function(input) {
 		if( !this._isiOS() ) {
-			input.focus(); // iOS devices already autofocus selected inputs
-			console.log("shouldAutoFocus");
+			this._focus(input, 0);
 		}
 	},
+	
+	_focus : function(input, delay) {
+		setTimeout(function() {
+			console.log("focus");
+  			input.focus();
+		}, delay);
+	},
 
+	// hack for iOS to prevent scrolling view up when soft keyboard pops up
 	shouldFocusWithoutScrollUp : function(e) {
 		if( this._isiOS() ) {
-    		// hack for iOS to prevent scrolling view up when soft keyboard pops up
     		e.target.style.webkitTransform = 'translate3d(0px,-10000px,0)'; 
     		webkitRequestAnimationFrame(function() { this.style.webkitTransform = ''; }.bind(e.target));
     		console.log("shouldFocusWithoutScrollUp");

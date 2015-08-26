@@ -47,7 +47,8 @@ Polymer({
     addButton: Object,
     refreshButton: Object,
     selectedIndex: Number,
-    _isSaving: false
+    _isSaving: false,
+    _lastChangeRecord: Object
   },
   observers: [
     '_listDataChanged(listData.*)'
@@ -75,7 +76,9 @@ Polymer({
   viewWillDisappear: function() {
     console.log(this.localName + ' viewWillDisappear');
     this.deactivate();
-    this.querySelector("aside").setAttribute("hidden", true); // prevents FOC on back
+    // prevent FOC on go back
+    this.querySelector("aside").setAttribute("hidden", true);
+    this.querySelector("iron-list").setAttribute("hidden", true); 
   },
   activate: function() {
     console.log(this.localName + " activate... active status:" + this._isActivated);
@@ -108,10 +111,12 @@ Polymer({
     var isInput = this.getParentElement(e.target, "input");
     var isDelete = this.getParentElement(e.target, "paper-fab");
     if (!isInput && !isDelete) {
+      this._saveLastChanges();
       console.log("_itemSelected: " + selectedIndex);
       this.selectedIndex = selectedIndex; // saves 'real' iron-list selected index
       this._toggleInlineEditor( this.getParentElement(e.target, 'paper-card') );
     } else if ( isDelete ) {
+      document.activeElement.blur(); // should dismiss iOS keyboard
       this._deleteCard(selectedIndex, cardId); // delete selected card
     }
   },
@@ -121,20 +126,30 @@ Polymer({
     console.log("listData.* changeRecord:");
     console.log(changeRecord); 
     if ( this.getPathLastComponent(changeRecord) === "content") {
-      // path doesn't get index reliably as list is virtual list - recreate issue by deleting top items and modify last item remaining
+      // path doesn't get index reliably as list is virtual list (recreate issue by deleting top items and modify last item remaining)
       var index = this.selectedIndex; // this.getPathIndex(changeRecord);
       var cardId = this.getPathIndexProperty(changeRecord, index, '_id'); // this.get( this.getPathProperty(changeRecord,'_id') ); //this.get('listData.rows.0.doc._id');
       var author = myApp.username;
       var content = changeRecord.value;
       console.log("content text edited at index:" + index + " #" + cardId);
       if ( cardId && typeof cardId != 'undefined' && cardId.length>0 ) {
-        this._saveCard(cardId, author, content);
+        //this._saveCard(cardId, author, content); // live save
+        this._lastChangeRecord = changeRecord;
+        this._lastChangeRecord.cardId = cardId;
       } else {
         console.log("Error could not get card _id with content: " + content);
       }
     } else if ( this.getPathLastComponent(changeRecord) === "length") {
       console.log("total no. of cards changed");
       this._displayUserView();
+    }
+  },
+  // save changes once editing is done
+  _saveLastChanges: function() {
+    if(this._lastChangeRecord && this._lastChangeRecord.cardId) {
+      console.log("Save last changes: " + this._lastChangeRecord.value);
+      this._saveCard(this._lastChangeRecord.cardId, myApp.username, this._lastChangeRecord.value);
+      this._lastChangeRecord = null;
     }
   },
 
@@ -156,7 +171,6 @@ Polymer({
           if(data.ok && data.ok===true) {
             self.splice('listData.rows', index, 1);
             self._restoreAllRows(); // restore default view after delete
-            document.activeElement.blur(); // item removed - hide iOS keyboard
           } else {
             alert("Delete card error");
           }
@@ -244,6 +258,8 @@ Polymer({
   // toggle inline edit field
   _toggleInlineEditor: function(target) {
     if( !isFunction(target.querySelector) ) {
+      document.activeElement.blur(); // dismiss iOS keyboard
+      this._restoreAllRows();
       return; // list background was clicked instead of a row cell
     }
     var viewText = target.querySelector('p');
@@ -257,7 +273,7 @@ Polymer({
         // show input text and delete btn
         deleteButton.removeAttribute("hidden");
         inputText.removeAttribute("hidden");
-        this.shouldAutoFocus( inputText.querySelector('input') );
+        this.shouldFocus( inputText.querySelector('input') );
         viewText.style.visibility = "hidden";
         viewText.classList.add("truncate");
       } else {
@@ -269,7 +285,7 @@ Polymer({
       }
       this.querySelector('iron-list').fire('resize');
     } else {
-      // done editting - hide iOS soft keyboard
+      // done editing - hide iOS soft keyboard
       document.activeElement.blur(); 
       inputText.blur();
     }

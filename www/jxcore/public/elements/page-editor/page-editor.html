@@ -42,13 +42,14 @@ Polymer({
   viewWillAppear: function(id) {
     console.log(this.localName + ' viewWillAppear: ' + id);
     this.activate();
+    // new message 
     if(id == 0){
-      this.editText = ""; // new message 
+      this.editText = "";
     }
   },
   viewWillDisappear: function() {
     console.log(this.localName + ' viewWillDisappear');
-    this.deactivate(); // needed for direct access and localhost proxy on iOS
+    this.deactivate();
   },
   activate: function() {
     console.log(this.localName + " activate... active status:" + this._isActivated);
@@ -65,9 +66,8 @@ Polymer({
     var toolbarFunctionArray = [this._backButtonHandler, this._saveButtonHandler.bind(this)];
     this.activateButtons(toolbarButtonArray, toolbarFunctionArray);
     
+    this.autoFocus(this.textBox); // UX send autofocus to textarea
     this._useFullHeight("textarea"); // NB: only use with standard textarea
-
-    this.shouldFocus(this.textBox); // UX send focus to textarea
   },
   deactivate: function() {
     console.log(this.localName + " deactivate... active status:" + this._isActivated);
@@ -78,9 +78,9 @@ Polymer({
     getURL("home");
   },
   _saveButtonHandler: function(e) {
-    if(this.editText.length == 0){
-      alert("Please enter a message");
+    if(this.editText.length == 0) {
       console.log("Please enter a message! editText:" + this.editText);
+      alert("Please enter a message");
       this.shouldFocus(this.textBox); // UX send focus to textarea
       return;
     }
