@@ -33,8 +33,8 @@ body, .noSelect {
 /* iOS nav bar style */
 #appName {	
 	display: block;
-	width: 200px;
-	margin-left: -100px;
+	width: 120px;
+	margin-left: -60px;
 	position: absolute;
 	left: 50%;
 	top: 20px;
@@ -42,6 +42,8 @@ body, .noSelect {
 	overflow: hidden;
 	white-space: nowrap;
 	text-overflow: ellipsis;
+	background: transparent;
+	font-size: 18px;
 }
 #toolbarButtons {
 	position: absolute;

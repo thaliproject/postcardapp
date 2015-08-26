@@ -126,7 +126,7 @@ Polymer({
     console.log("listData.* changeRecord:");
     console.log(changeRecord); 
     if ( this.getPathLastComponent(changeRecord) === "content") {
-      // path doesn't get index reliably as list is virtual list (recreate issue by deleting top items and modify last item remaining)
+      // path doesn't get index reliably as list is virtual (recreate issue by deleting top items and modify last item remaining)
       var index = this.selectedIndex; // this.getPathIndex(changeRecord);
       var cardId = this.getPathIndexProperty(changeRecord, index, '_id'); // this.get( this.getPathProperty(changeRecord,'_id') ); //this.get('listData.rows.0.doc._id');
       var author = myApp.username;
@@ -157,6 +157,7 @@ Polymer({
   _deleteCard: function(index, cardId) {
     console.log("delete index #" + index + " cardId:" + cardId);
     var self = this;
+    this._lastChangeRecord = null; // scrub any changes if deleting
     $.ajax({
         url: myApp.url + cardId,
         type: 'DELETE',
