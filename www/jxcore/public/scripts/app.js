@@ -9,6 +9,39 @@ myApp.url = "http://localhost:5000/api/cards/";
 // myApp session vars
 myApp.username = "";
 
+// Polymer template is bound
+myApp.addEventListener('dom-change', function() {
+	console.log("Debug mode enabled:", IS_DEBUG);
+	if (IS_DEBUG) {
+		// myApp debug console
+		myApp.debugButton = document.querySelector("#debugButton");
+		myApp.debugConsole = document.querySelector("#debugConsoleLog");
+		myApp.isDebugConsoleOpen = false;
+		myApp.debugLineNo = 0;
+		if(myApp.debugButton) {
+			myApp.debugButton.removeAttribute("hidden");
+			myApp.debugButton.addEventListener("click", toggleDebugConsole);
+		}
+	}
+});
+
+function toggleDebugConsole(e) {
+	myApp.isDebugConsoleOpen = !myApp.isDebugConsoleOpen;
+	
+	if(myApp.isDebugConsoleOpen) {
+		log("toggleDebugConsole:", myApp.isDebugConsoleOpen);
+		myApp.debugConsole.removeAttribute("hidden");
+	} else {
+		myApp.debugConsole.setAttribute("hidden", true);
+	}
+}
+
+function log(message) {
+	//debugConsole.value += message+"\n";
+	myApp.debugConsole.value = myApp.debugLineNo +': '+ message +"\n"+ myApp.debugConsole.value;
+	myApp.debugLineNo++;
+}
+
 // myApp client-side route handler
 function getURL(route, paramArray){
 	if(route == myApp.route) {

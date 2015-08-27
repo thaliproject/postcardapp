@@ -1,21 +1,77 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <meta charset="utf-8" />
-    <link type="text/css" rel="stylesheet" href="postcard.css"/>
-    <script type="text/javascript" src="jquery-1.11.3.js"></script>
-    <script type="text/javascript" src="json2.js"></script>
-    <script type="text/javascript" src="postcard.js"></script>
+  <meta charset="utf-8"/>
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1"/>
+  <meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0"/>
+  <meta name="mobile-web-app-capable" content="yes"/>
+  <meta name="apple-mobile-web-app-capable" content="yes"/>
+  <meta name="apple-mobile-web-app-status-bar-style" content="default"/>
+  <meta name="format-detection" content="telephone=no"/>
+  <!-- server -->
+  <script type="text/javascript">
+  var IS_DEBUG = "<%= isDebug %>"==="true" ? true : false;
+  </script>
+  <!-- common -->
+  <script src="bower_components/webcomponentsjs/webcomponents-lite.js"></script>
+  <script src="bower_components/underscore/underscore.js"></script>
+  <script src="bower_components/jquery/dist/jquery.js"></script>
+  <!-- import polymer 1.0 elements -->
+  <link rel="import" href="elements/elements.html"/>
+  <link rel="import" href="elements/routing.html"/>
+  <!-- pages -->
+  <link rel="import" href="elements/page-login/page-login.html"/>
+  <link rel="import" href="elements/page-home/page-home.html"/>
+  <link rel="import" href="elements/page-editor/page-editor.html"/>
+  <!-- styles -->
+  <link rel="import" href="styles/app-theme.html"/>
+  <link rel="stylesheet" type="text/css" href="styles/main.css"/>
+  <title>App</title>
 </head>
-<body>
-<div id="controls" style="height: 6px;">
-    <img id="btnNew" src="newpost.png"/>
-    <img id="btnRefresh" src="refresh.png"/>
-    <span class="stretch"></span>
-    <input type='hidden' id='userId' value='<%= user %>' />
-</div>
-<div style="left:0px">
-    <ul id="cards"/>
-</div>
+<body unresolved fullbleed layout vertical>
+<template is="dom-bind" id="my-app">
+  <paper-header-panel>
+
+    <!-- top bar -->
+    <paper-toolbar id="mainToolbar">
+      <!-- Application name -->
+      <div class="middle middle-container center horizontal layout">
+        <div id="leftToolbarButtons">
+          <paper-icon-button id="backButton" icon="arrow-back" hidden></paper-icon-button>
+          <paper-icon-button id="refreshButton" icon="refresh" hidden></paper-icon-button>
+          <paper-icon-button id="debugButton" icon="bug-report" hidden></paper-icon-button>
+        </div>
+        <div id="appName">{{title}}</div>
+      </div>
+      <span class="flex"></span>
+      <!-- Toolbar icons -->
+      <div id="rightToolbarButtons">
+        <paper-icon-button id="deleteButton" icon="delete" class="concealed" hidden></paper-icon-button>
+        <paper-icon-button id="addButton" icon="add" hidden></paper-icon-button>
+        <paper-icon-button id="saveButton" icon="done" hidden></paper-icon-button>
+      </div>
+    </paper-toolbar>
+    <!-- end top bar -->
+
+    <!-- debugger -->
+    <textarea id="debugConsoleLog" hidden></textarea>
+
+    <!-- contents iron-pages -->
+    <main class="content">
+      <iron-pages attr-for-selected="data-route" selected="{{route}}">
+        <!-- login page -->
+        <page-login data-route="login"></page-login>
+        <!-- home page -->
+        <page-home data-route="home"></page-home>
+        <!-- editor page -->
+        <page-editor data-route="editor"></page-editor>
+      </iron-pages>
+    </main>
+    <!-- end contents -->
+
+  </paper-header-panel>
+</template>
+<!-- polymer app js -->
+<script type="text/javascript" src="scripts/app.js"></script>
 </body>
 </html>

@@ -12,7 +12,7 @@ PageBehaviors.MultiPlatform = {
 		this._focus(input, 0);
 	},
 
-	// triggers input.focus() on everything except on iOS devices. For example after an alert or if input has already received autofocus it can result in disabling soft-keyboard text entry.
+	// triggers input.focus() on everything except on iOS devices. For example if an input has already received autofocus it can result in disabling soft-keyboard text entry.
 	shouldFocus : function(input) {
 		if( !this._isiOS() ) {
 			this._focus(input, 0);
