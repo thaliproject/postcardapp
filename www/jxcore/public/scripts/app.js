@@ -8,7 +8,6 @@ myApp.url = "http://localhost:5000/api/cards/";
 
 // myApp session vars
 myApp.username = "";
-myApp.params = null;
 
 // myApp client-side route handler
 function getURL(route, paramArray){
@@ -41,6 +40,6 @@ function generateUUID() {
 }
 
 function isFunction(functionToCheck) {
-  var getType = {};
-  return functionToCheck && getType.toString.call(functionToCheck) === '[object Function]';
+	var getType = {};
+	return functionToCheck && getType.toString.call(functionToCheck) === '[object Function]';
 }

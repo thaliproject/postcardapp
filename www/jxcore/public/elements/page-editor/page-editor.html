@@ -20,12 +20,10 @@ Polymer({
       type: String,
       value: "",
     },
-    dataModel: {
-      type: Object
-    },
     backButton: Object,
     saveButton: Object,
     textBox: Object,
+    editDoc: Object
   },
   created: function() {
     console.log(this.localName + ' was created');
@@ -43,18 +41,24 @@ Polymer({
     console.log(this.localName + ' viewWillAppear: ' + id);
     this.activate();
     // new message 
-    if(id == 0){
+    if(id === "new"){
+      myApp.title = "New Postcard";
       this.editText = "";
+      this.autoFocus(this.textBox); // UX send autofocus to textarea
+    } else {
+      myApp.title = "Edit Postcard";
+      this._getCard(id);
+      this.shouldFocus(this.textBox); // UX send autofocus to textarea
     }
   },
   viewWillDisappear: function() {
     console.log(this.localName + ' viewWillDisappear');
     this.deactivate();
+    this.editDoc = null; // reset edit doc
   },
   activate: function() {
     console.log(this.localName + " activate... active status:" + this._isActivated);
-    myApp.title = "New Postcard";
-
+    
     // local scope
     this.textBox = this.querySelector("textarea");
 
@@ -66,7 +70,6 @@ Polymer({
     var toolbarFunctionArray = [this._backButtonHandler, this._saveButtonHandler.bind(this)];
     this.activateButtons(toolbarButtonArray, toolbarFunctionArray);
     
-    this.autoFocus(this.textBox); // UX send autofocus to textarea
     this._useFullHeight("textarea"); // NB: only use with standard textarea
   },
   deactivate: function() {
@@ -79,16 +82,32 @@ Polymer({
   },
   _saveButtonHandler: function(e) {
     if(this.editText.length == 0) {
-      console.log("Please enter a message! editText:" + this.editText);
-      alert("Please enter a message");
+      console.log("Please enter a message");
+      alert("Please enter a message"); // notify user
       this.shouldFocus(this.textBox); // UX send focus to textarea
       return;
     }
-    console.log("save message:" + this.editText);
-    // get reference to page and call the createItem method
-    document.querySelector("page-home").createItem(this.editText);
+    if(!this.editDoc) {
+      console.log("save new message:" + this.editText);
+      // get reference to page and call the createItem method
+      document.querySelector("page-home").createItem(this.editText);
+    } else {
+      console.log("save edited message:" + this.editText);
+      // get reference to page and call the updateItem method
+      document.querySelector("page-home").updateItem(this.editText, this.editDoc._id);
+    }
+    
     // go back 
     getURL("home");
+  },
+  _getCard: function(index) {
+    var doc = document.querySelector("page-home").get('listData.rows.'+index+'.doc');
+    if(doc && doc._id && doc.content) {
+      this.editText = doc.content;
+      this.editDoc = doc;
+    } else {
+      console.log("Error looking up doc object at index:",index);
+    }
   },
   _useFullHeight: function(selector) {
     var element = this.querySelector(selector); //document.getElementById(elementId);

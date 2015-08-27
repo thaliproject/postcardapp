@@ -131,10 +131,11 @@ body, .noSelect {
 }
 
 /* row text format */
-.postcard h6, .postcard p, textarea.postcard {
+.postcard h6, .postcard p, .postcard pre, textarea.postcard {
 	font-size: 24px;
 	padding: 0 10px;
 	word-wrap: break-word; /* prevent horizontal scroll here - break long single line strings */
+	white-space: pre-wrap; /* make pre text wrap */
 }
 
 /* edit text style */

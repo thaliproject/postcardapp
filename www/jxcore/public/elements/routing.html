@@ -67,7 +67,7 @@ window.addEventListener('WebComponentsReady', function(e) {
 			// set polymer page route
 			myApp.route = "home";
 		} else {
-			console.log("--home--> no session, login first...");
+			console.log("no session, login first...");
 			login(); // redirect to login
 		}
 	}
@@ -75,11 +75,10 @@ window.addEventListener('WebComponentsReady', function(e) {
 	var editor = function(ctx) {
 		//console.log("has session:" + hasSession());
 		if (hasSession()) {
-			var id = 0;
+			var id = "new";
 			if (ctx && ctx.params && ctx.params.id){
 				var params = ctx.params;
 				id = params.id;
-				myApp.params = params; // saving params to global scope - until I find a better way to pass data? eg. route params
 				console.log("--editor-"+id+"-");
 				console.log(params);
 			} else {
@@ -97,7 +96,7 @@ window.addEventListener('WebComponentsReady', function(e) {
 			// set polymer page route
 			myApp.route = "editor";
 		} else {
-			console.log("--editor--> no session, login first...");
+			console.log("no session, login first...");
 			login(); // redirect to login
 		}
 	}

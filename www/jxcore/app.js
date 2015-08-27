@@ -14,7 +14,7 @@ app.disable('x-powered-by');
 var env = process.env.NODE_ENV || 'production'; // default to production
 if ('development' === env) {
     console.log('localhost "' + app.get('env') + '" environment');
-    var Mobile = require('thali/mockmobile.js'); // LOCALHOST DEV TESTING ONLY
+    var Mobile = require('thali/mockmobile.js');
 }
 
 var dbPath = path.join(os.tmpdir(), 'dbPath');
@@ -47,7 +47,6 @@ app.use(function allowCrossDomain(req, res, next) {
 });
 
 app.get('/', function (req, res) {
-    //res.render('ejs/index',  { user: 'user' + Math.floor(Math.random() * 100) });
     res.sendFile(path.join(__dirname + '/index.html'));
 });
 

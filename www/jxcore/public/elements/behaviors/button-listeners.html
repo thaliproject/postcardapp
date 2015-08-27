@@ -37,7 +37,9 @@ PageBehaviors.ButtonListeners = {
 				button = buttonArray[i];
 				func = buttonFunctionArray[i];
 				if(button && func) {
-					button.removeAttribute("hidden");
+					if(!button.classList.contains("concealed")) {
+						button.removeAttribute("hidden");
+					}
 					console.log("show button:" + button);
 					this._attachTempListener(button, "click", func);
 				} else {
