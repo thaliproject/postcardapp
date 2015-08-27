@@ -11,10 +11,9 @@
   <iron-selector attr-for-selected="index" on-tap="_itemSelected">
     <iron-list id="my-postcards" items="{{listData.rows}}" as="item" class="fit">
       <template>
-        <paper-card id="{{index}}" class="row" elevation="3">
+        <paper-card id="{{index}}" class="row">
           <div class="card-content postcard">
             <pre>{{item.doc.content}}</pre>
-<!--             <paper-input label="Edit message" value="{{item.doc.content}}" class="inlineInput" hidden></paper-input> -->
             <p>[[item.doc.author]]</p>
             <paper-fab id="{{item.doc._id}}" icon="delete" class="FAB" hidden></paper-fab>
           </div>
@@ -48,13 +47,8 @@ Polymer({
     refreshButton: Object,
     deleteButton: Object,
     _isSaving: false,
-    _isEditMode: false,
-    // _lastChangeRecord: Object,
-    // selectedIndex: Number
+    _isEditMode: false
   },
-  // observers: [
-  //   '_listDataChanged(listData.*)'
-  // ],
   created: function() {
     console.log(this.localName + ' was created');
   },
@@ -117,10 +111,7 @@ Polymer({
     var isInput = this.getParentElement(e.target, "input");
     var isDelete = this.getParentElement(e.target, "paper-fab");
     if (!isInput && !isDelete) {
-      //this._saveLastChanges();
       console.log("_itemSelected: " + selectedIndex);
-      //this.selectedIndex = selectedIndex; // saves 'real' iron-list selected index
-      //this._toggleInlineEditor( this.getParentElement(e.target, 'paper-card') );
       getURL("editor/"+selectedIndex);
     } else if ( isDelete ) {
       document.activeElement.blur(); // should dismiss iOS keyboard
@@ -128,43 +119,10 @@ Polymer({
     }
   },
 
-  // inline edit card (listData.* changeRecord contains path, value, base object properties)
-  // _listDataChanged: function(changeRecord) {
-  //   console.log("listData.* changeRecord:");
-  //   console.log(changeRecord); 
-  //   if ( this.getPathLastComponent(changeRecord) === "content") {
-  //     // path doesn't get index reliably as list is virtual (recreate issue by deleting top items and modify last item remaining)
-  //     var index = this.selectedIndex; // this.getPathIndex(changeRecord);
-  //     var cardId = this.getPathIndexProperty(changeRecord, index, '_id'); // this.get( this.getPathProperty(changeRecord,'_id') ); //this.get('listData.rows.0.doc._id');
-  //     var author = myApp.username;
-  //     var content = changeRecord.value;
-  //     console.log("content text edited at index:" + index + " #" + cardId);
-  //     if ( cardId && typeof cardId != 'undefined' && cardId.length>0 ) {
-  //       //this._saveCard(cardId, author, content); // live save
-  //       this._lastChangeRecord = changeRecord;
-  //       this._lastChangeRecord.cardId = cardId;
-  //     } else {
-  //       console.log("Error could not get card _id with content: " + content);
-  //     }
-  //   } else if ( this.getPathLastComponent(changeRecord) === "length") {
-  //     console.log("total no. of cards changed");
-  //     this._updateUserView();
-  //   }
-  // },
-  // // save changes once editing is done
-  // _saveLastChanges: function() {
-  //   if(this._lastChangeRecord && this._lastChangeRecord.cardId) {
-  //     console.log("Save last changes: " + this._lastChangeRecord.value);
-  //     this._saveCard(this._lastChangeRecord.cardId, myApp.username, this._lastChangeRecord.value);
-  //     this._lastChangeRecord = null;
-  //   }
-  // },
-
   // delete card
   _deleteCard: function(index, cardId) {
     console.log("delete index #" + index + " cardId:" + cardId);
     var self = this;
-    //this._lastChangeRecord = null; // scrub any changes if deleting
     $.ajax({
         url: myApp.url + cardId,
         type: 'DELETE',
@@ -178,7 +136,6 @@ Polymer({
           // if 'ok' update client UI else alert user with error
           if(data.ok && data.ok===true) {
             self.splice('listData.rows', index, 1);
-            //self._restoreAllRows(); // restore default view after an inline edit delete
             self._updateUserView(); // update user view after delete
           } else {
             alert("Delete card error");
@@ -295,64 +252,6 @@ Polymer({
       element.removeAttribute("hidden");
     }
   },
-
-  // toggle inline edit field
-  // _toggleInlineEditor: function(target) {
-  //   if( !isFunction(target.querySelector) ) {
-  //     document.activeElement.blur(); // dismiss iOS keyboard
-  //     this._restoreAllRows();
-  //     return; // list background was clicked instead of a row cell
-  //   }
-  //   var viewText = target.querySelector('p');
-  //   var inputText = target.querySelector('paper-input');
-  //   var deleteButton = target.querySelector('paper-fab');
-  //   var isHidden = inputText.hasAttribute('hidden');
-  //   var isStateEditing = this._restoreAllRows();
-  //   console.log("inline editor - isStateEditing:" + isStateEditing + " isHidden:" + isHidden);
-  //   if(!isStateEditing) {
-  //     if(isHidden) {
-  //       // show input text and delete btn
-  //       deleteButton.removeAttribute("hidden");
-  //       inputText.removeAttribute("hidden");
-  //       this.shouldFocus( inputText.querySelector('input') );
-  //       viewText.style.visibility = "hidden";
-  //       viewText.classList.add("truncate");
-  //     } else {
-  //       // hide input text and delete btn
-  //       deleteButton.setAttribute("hidden", true);
-  //       inputText.setAttribute("hidden", true);
-  //       viewText.classList.remove("truncate");
-  //       viewText.style.visibility = "visible";
-  //     }
-  //     this.querySelector('iron-list').fire('resize');
-  //   } else {
-  //     // done editing - hide iOS soft keyboard
-  //     document.activeElement.blur(); 
-  //     inputText.blur();
-  //   }
-  // },
-
-  // hide all edit fields in list
-  // _restoreAllRows: function() {
-  //   var isStateEditing = false;
-  //   var elements = this.querySelectorAll('.row');
-  //   for (var i=0; i<elements.length; i++) {
-  //     var element = elements[i];
-  //     var viewText = element.querySelector('p');
-  //     var inputText = element.querySelector('paper-input');
-  //     var deleteButton = element.querySelector('paper-fab');
-  //     if(!inputText.hasAttribute('hidden')){
-  //       isStateEditing = true;
-  //     }
-  //     // hide input text and delete btn
-  //     deleteButton.setAttribute("hidden", true);
-  //     inputText.setAttribute("hidden", true);
-  //     viewText.classList.remove("truncate");
-  //     viewText.style.visibility = "visible";
-  //   }
-  //   this.querySelector('iron-list').fire('resize'); // repaint
-  //   return isStateEditing;
-  // },
 
   // displays user prompt instead if no cards to display
   _updateUserView: function() {

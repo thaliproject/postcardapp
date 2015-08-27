@@ -12,7 +12,6 @@ window.addEventListener('WebComponentsReady', function(e) {
 	var lastPage = "";
 
 	function hasSession() {
-		//return true; // FOR TESTING ONLY - TODO: setup 'environment' config for dev mode
 		console.log("session username:" + myApp.username);
 		if (myApp.username != "" && myApp.username.length > 0) {
 			return true;
@@ -38,10 +37,10 @@ window.addEventListener('WebComponentsReady', function(e) {
 		lastPage = newPage;
 	}
 
-	// Define page.js route callbacks. (Note: Redirects will occur if things are arranged in the wrong order)	
+	// Define page.js route callbacks.
 	var login = function(ctx) {
 		console.log("--login--");
-		notifyLastPage(pageLogin); // "login"
+		notifyLastPage(pageLogin);
 
 		// trigger Polymer event (handles case when a page is visited directly)
 		if (pageLogin && isFunction(pageLogin.viewWillAppear)) {
@@ -57,7 +56,7 @@ window.addEventListener('WebComponentsReady', function(e) {
 		//console.log("has session:" + hasSession());
 		if (hasSession()) {
 			console.log("--home--");
-			notifyLastPage(pageHome); // "home"
+			notifyLastPage(pageHome);
 			// trigger Polymer event (handles case when a page is visited directly)
 			if (pageHome && isFunction(pageHome.viewWillAppear)) {
 				pageHome.viewWillAppear();
@@ -73,7 +72,6 @@ window.addEventListener('WebComponentsReady', function(e) {
 	}
 	
 	var editor = function(ctx) {
-		//console.log("has session:" + hasSession());
 		if (hasSession()) {
 			var id = "new";
 			if (ctx && ctx.params && ctx.params.id){
@@ -84,7 +82,7 @@ window.addEventListener('WebComponentsReady', function(e) {
 			} else {
 				console.log("--editor-new--");
 			}
-			notifyLastPage(pageEditor); // "editor"
+			notifyLastPage(pageEditor);
 			
 			// trigger Polymer event (handles case when a page is visited directly)
 			if (pageEditor && isFunction(pageEditor.viewWillAppear)) {

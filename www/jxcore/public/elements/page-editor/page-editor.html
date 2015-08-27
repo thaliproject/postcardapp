@@ -40,12 +40,14 @@ Polymer({
   viewWillAppear: function(id) {
     console.log(this.localName + ' viewWillAppear: ' + id);
     this.activate();
-    // new message 
+    
     if(id === "new"){
+      // new message 
       myApp.title = "New Postcard";
       this.editText = "";
       this.autoFocus(this.textBox); // UX send autofocus to textarea
     } else {
+      // edit message 
       myApp.title = "Edit Postcard";
       this._getCard(id);
       this.shouldFocus(this.textBox); // UX send autofocus to textarea
@@ -55,6 +57,7 @@ Polymer({
     console.log(this.localName + ' viewWillDisappear');
     this.deactivate();
     this.editDoc = null; // reset edit doc
+    document.activeElement.blur(); // reset text input cursor
   },
   activate: function() {
     console.log(this.localName + " activate... active status:" + this._isActivated);
@@ -110,7 +113,7 @@ Polymer({
     }
   },
   _useFullHeight: function(selector) {
-    var element = this.querySelector(selector); //document.getElementById(elementId);
+    var element = this.querySelector(selector);
     if(element){
       console.log('useFullHeight');
       var h = window.innerHeight;

@@ -26,22 +26,6 @@ PageBehaviors.PathComponents = {
 		return false;
 	},
 
-	// getPathIndex : function(changeRecord) {
-	// 	var components = changeRecord.path.split('.');
-	// 	for (var i=0; i<components.length; i++) {
-	// 		if (this._isInt(components[i])) {
-	// 			return components[i];
-	// 		}
-	// 	}
-	// 	return false;
-	// },
-
-	// getPathProperty : function(changeRecord, property) {
-	// 	var components = changeRecord.path.split('.');
-	// 	components.splice(-1,1);
-	// 	return components.join('.') +'.'+ property; // returns path to property
-	// },
-
 	_isInt : function (value) {
   		if (isNaN(value)) {
   		  return false;
