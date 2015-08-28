@@ -3,8 +3,9 @@ var myApp = document.querySelector('#my-app');
 
 // myApp defaults
 myApp.title = "Postcards";
-myApp.route = "home"; // default route but should redirect to 'login' if no app.name set
-myApp.url = "http://localhost:5000/api/cards/";
+myApp.route = "home"; // default route but will redirect to 'login' if no app.username set
+myApp.api = "http://localhost:5000/api/";
+myApp.url = myApp.api + "cards/";
 
 // myApp session vars
 myApp.username = "";
@@ -16,7 +17,7 @@ var log = function(message) {
 
 // Setup debug mode once Polymer template is bound
 myApp.addEventListener('dom-change', function() {
-	console.log("Debug mode: " + IS_DEBUG);
+	console.log("Config - development:" + IS_DEVELOPMENT + " debug:" + IS_DEBUG);
 	if (IS_DEBUG) {
 		myApp.debugButton = document.querySelector("#debugButton");
 		myApp.debugConsole = document.querySelector("#debugConsoleLog");
@@ -42,7 +43,7 @@ function toggleDebugConsole(e) {
 	}
 }
 
-// drop in logging function for debug mode 
+// drop-in logging function for debug mode 
 function logText(message) {
 	myApp.debugConsole.value = myApp.debugLineNo +': '+ message +"\n"+ myApp.debugConsole.value;
 	myApp.debugLineNo++;

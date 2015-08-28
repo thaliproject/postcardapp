@@ -8,13 +8,11 @@ function routes (db) {
         var username = req.body.username.trim();
         res.setHeader('Content-Type', 'application/json');
         console.log("username:" + username);
-
         // user input validation
         if (username.length <= 0) {
             res.send(JSON.stringify({ error: 'Username is required' }));
             return;
         }
-        
         // send reponse
         db.get('me', function (err, doc) {
             if(err && err.status === 404) {
@@ -47,6 +45,15 @@ function routes (db) {
                 res.send(JSON.stringify({ user: username }));
                 return;
             }
+        });
+    });
+
+    cardRouter.route('/me').get(function(req, res) {
+        db.get('me').then(function(doc){
+            res.status(200).json(doc);
+        })
+        .catch(function(err){
+            res.status(err.status || 500).send(err.message || err);
         });
     });
 

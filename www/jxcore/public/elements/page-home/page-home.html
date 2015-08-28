@@ -112,7 +112,9 @@ Polymer({
     var isDelete = this.getParentElement(e.target, "paper-fab");
     if (!isInput && !isDelete) {
       console.log("_itemSelected: " + selectedIndex);
-      getURL("editor/"+selectedIndex);
+      if(selectedIndex!=false && selectedIndex>=0){
+        getURL("editor/"+selectedIndex);
+      }
     } else if ( isDelete ) {
       document.activeElement.blur(); // should dismiss iOS keyboard
       this._deleteCard(selectedIndex, cardId); // delete selected card
@@ -131,7 +133,7 @@ Polymer({
           alert("Error deleting card");
         },
         success: function(data, textStatus, jqXHR) {
-          console.log("@ delete Card success: " + textStatus);
+          console.log("@ deleted Card - " + textStatus);
           console.log(data);
           // if 'ok' update client UI else alert user with error
           if(data.ok && data.ok===true) {
@@ -173,7 +175,7 @@ Polymer({
           alert("Error saving card");
         },
         success: function(data, textStatus, jqXHR) {
-          console.log("@ save Card success: " + textStatus);
+          console.log("@ saved Card - " + textStatus);
           console.log(data);
           // if 'ok' update client UI else alert user with error
           if(data.ok && data.ok===true) {
@@ -205,7 +207,7 @@ Polymer({
       console.log(this.listData);
 
       if(!this.listData || !this.listData.rows || this.listData.total_rows==0 ) {
-        alert("Error. Peer session expired or failed to get any data.");
+        alert("Error. Peer session expired or failed to get any data."); // Reset app
         return;
       }
 
@@ -242,7 +244,6 @@ Polymer({
       var deleteButton = element.querySelector('paper-fab');
       this._setVisibility(deleteButton, isHidden);
     }
-    this.querySelector('iron-list').fire('resize'); // repaint
   },
 
   _setVisibility: function(element, isHidden) {

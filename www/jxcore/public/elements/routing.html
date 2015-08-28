@@ -37,6 +37,8 @@ window.addEventListener('WebComponentsReady', function(e) {
 		lastPage = newPage;
 	}
 
+
+
 	// Define page.js route callbacks.
 	var login = function(ctx) {
 		console.log("--login--");
@@ -53,7 +55,6 @@ window.addEventListener('WebComponentsReady', function(e) {
 	}
 
 	var home = function(ctx) {
-		//console.log("has session:" + hasSession());
 		if (hasSession()) {
 			console.log("--home--");
 			notifyLastPage(pageHome);

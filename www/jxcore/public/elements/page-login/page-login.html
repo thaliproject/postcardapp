@@ -1,19 +1,26 @@
 <link rel="import" href="/bower_components/polymer/polymer.html">
+<link rel="import" href="/elements/behaviors/multi-platform.html">
 
 <dom-module id="page-login">
 
 <template>
-  <form is="iron-form" id="form-login" method="post" action="/api/login" class="inset" >
+  <form is="iron-form" id="form-login" method="post" action="/api/login" class="inset" hidden>
     <paper-input name="username" label="Username" bind-value="{{username::input}}" error-message="{{error_username}}" required></paper-input>
     <div class="alignCenter">
       <paper-button class="accent" raised on-click="submitForm">Save</paper-button>
     </div>
   </form>
+  <aside id="placeholder" class="fit layout vertical center-center">
+    <h1>loading&hellip;</h1>
+  </aside>
 </template>
 
 <script>
 Polymer({
   is: "page-login",
+  behaviors: [
+      PageBehaviors.MultiPlatform
+    ],
   properties: {
     username: {
       type: String,
@@ -35,6 +42,28 @@ Polymer({
   },
   ready: function() {
     console.log(this.localName + ' ready');
+    // find me
+    var self = this;
+    $.ajax({
+      url: myApp.api + 'me',
+      type: 'GET',
+      error: function(jqXHR, textStatus, errorThrown) {
+        console.log('@ no record of me ' + JSON.stringify(jqXHR) + ' ' + textStatus + ' ' + errorThrown);
+        self._login();
+      },
+      success: function(data, textStatus, jqXHR) {
+        console.log("@ found me: " + textStatus);
+        console.log(data);
+        if(data.user && data.user.length>0) {
+          console.log("Hello, " + data.user);
+          myApp.username = data.user; // create session
+          getURL("home"); // found 'me' record - no need to login
+        } else {
+          console.log("Error, no user property");
+          self._login();
+        }
+      }
+    });
   },
   attached: function() {
     console.log(this.localName + ' was attached');
@@ -48,20 +77,15 @@ Polymer({
   viewWillDisappear: function() {
     console.log(this.localName + " viewWillDisappear");
   },
+  _login: function() {
+    console.log("show login form");
+    this.querySelector("aside").setAttribute("hidden", true);
+    this.querySelector("form").removeAttribute("hidden");
+    this.shouldFocus( this.querySelector("input") );
+  },
   submitForm: function(event) {
     console.log('submit form');
-    this._saveUsername();
     document.getElementById('form-login').submit();
-  },
-  _saveUsername: function() {
-    if (this.username.length >0 ){
-      myApp.username = this.username;
-      console.log("name:" + this.username);
-      return true;
-    } else {
-      console.log("Error with name input");
-      return false;
-    }
   },
   _formInvalid: function(e) {
     // notify user what went wrong on client
@@ -72,9 +96,15 @@ Polymer({
   },
   _formResponse: function(e) {
     console.log("Server Response: ",e.detail);
-    // check server response and proceed if name is saved
-    this._saveUsername();
-    getURL("home");
+    console.log(e);
+    // check server response
+    if(e.detail && e.detail.user) {
+      console.log("save username: " + e.detail.user);
+      myApp.username = e.detail.user; //this.username;
+      getURL("home");
+    } else {
+      alert("Error, unable to save user session. Please try again.");
+    }
   },
   _formError: function(e) {
     // handle what went wrong on server
