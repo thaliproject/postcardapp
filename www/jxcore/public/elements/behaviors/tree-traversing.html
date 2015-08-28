@@ -16,22 +16,26 @@ PageBehaviors.TreeTraversing = {
 	},
 
 	getParentElement : function(element, parentSelector) {
-		var isMatch;
-		if (parentSelector.charAt(0) === '#') {
-			parentSelector = parentSelector.substr(1);
-			isMatch = this._hasId;
-        } else if (parentSelector.charAt(0) === '.') {
-        	parentSelector = parentSelector.substr(1);
-        	isMatch = this._hasClass;
-        } else if (parentSelector.charAt(0) === '[') {
-        	parentSelector = parentSelector.slice(1,-1);
-        	isMatch = this._hasAttribute;
-        } else {
-        	parentSelector = parentSelector.toLowerCase();
-        	isMatch = this._hasTag;
+		var matchTest;
+		switch (parentSelector.charAt(0)) {
+			case '#':
+				parentSelector = parentSelector.substr(1);
+				matchTest = this._hasId;
+				break;
+			case '.':
+				parentSelector = parentSelector.substr(1);
+        		matchTest = this._hasClass;
+        		break;
+        	case '[':
+        		parentSelector = parentSelector.slice(1,-1);
+        		matchTest = this._hasAttribute;
+        		break;
+        	default:
+        		parentSelector = parentSelector.toLowerCase();
+        		matchTest = this._hasTag;
         }
 		for (; element && element !== document ; element = element.parentElement) {
-        	if( isMatch(element, parentSelector) ) {
+        	if( matchTest(element, parentSelector) ) {
         		return element;
         	}
     	}

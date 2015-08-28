@@ -5,47 +5,49 @@ function routes (db) {
 
     // Running as (Polymer) SPA - so just send JSON response
     cardRouter.route('/login').post(function(req, res) {
-        var userName = req.body.username.trim();
+        var username = req.body.username.trim();
         res.setHeader('Content-Type', 'application/json');
-        console.log("userName:" + userName);
-        if (userName.length > 0) {
-            db.get('me', function (err, doc) {
-                if (err && err.status === 404) {
-                    db.put({ _id: 'me', user: userName })
+        console.log("username:" + username);
+
+        // user input validation
+        if (username.length <= 0) {
+            res.send(JSON.stringify({ error: 'Username is required' }));
+            return;
+        }
+        
+        // send reponse
+        db.get('me', function (err, doc) {
+            if(err && err.status === 404) {
+                db.put({ _id: 'me', user: username })
                     .then(function () {
-                        //res.render('ejs/index', { user: userName });
-                        res.send(JSON.stringify({ user: userName }));
+                        res.send(JSON.stringify({ user: username }));
+                        return;
                     })
                     .catch(function (err) {
-                        //res.render('ejs/login', { error: err });
                         res.send(JSON.stringify({ error: err }));
+                        return;
                     });
-                } else if (err) {
-                    //res.render('ejs/login', { error: err });
+            } else if (err) {
+                res.send(JSON.stringify({ error: err }));
+                return;
+            }
+            // Change the user name if it doesn't match
+            if (doc.user !== username) {
+                doc.user = username;
+                db.put(doc)
+                .then(function () {
+                    res.send(JSON.stringify({ user: username }));
+                    return;
+                })
+                .catch(function (err) {
                     res.send(JSON.stringify({ error: err }));
-                } else {
-                    // Change the user name if it doesn't match
-                    if (doc.user !== userName) {
-                        doc.user = userName;
-                        db.put(doc)
-                        .then(function () {
-                            //res.render('ejs/index', { user: userName });
-                            res.send(JSON.stringify({ user: userName }));
-                        })
-                        .catch(function (err) {
-                            //res.render('ejs/login', { error: err });
-                            res.send(JSON.stringify({ error: err }));
-                        });
-                    } else {
-                        //res.render('ejs/index', { user: userName });
-                        res.send(JSON.stringify({ user: userName }));
-                    }
-                }
-            });
-        } else {
-            //res.render('ejs/login', { error: 'User name is required' });
-            res.send(JSON.stringify({ error: 'User name is required' }));
-        }
+                    return;
+                });
+            } else {
+                res.send(JSON.stringify({ user: username }));
+                return;
+            }
+        });
     });
 
     cardRouter.route('/cards')

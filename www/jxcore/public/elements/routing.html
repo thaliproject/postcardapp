@@ -9,7 +9,7 @@ window.addEventListener('WebComponentsReady', function(e) {
 	var pageHome = document.querySelector('page-home');
 	var pageEditor = document.querySelector('page-editor');
 
-	var lastPage = "";
+	var lastPage;
 
 	function hasSession() {
 		console.log("session username:" + myApp.username);
@@ -21,7 +21,7 @@ window.addEventListener('WebComponentsReady', function(e) {
 	}
 
 	function notifyLastPage(newPage) {
-		if (lastPage == "") {
+		if (!lastPage) {
 			lastPage = newPage;
 			console.log("first page is:" + newPage);
 			return;

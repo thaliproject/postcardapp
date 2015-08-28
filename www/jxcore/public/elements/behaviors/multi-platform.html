@@ -31,7 +31,6 @@ PageBehaviors.MultiPlatform = {
 		if( this._isiOS() ) {
     		e.target.style.webkitTransform = 'translate3d(0px,-10000px,0)'; 
     		webkitRequestAnimationFrame(function() { this.style.webkitTransform = ''; }.bind(e.target));
-    		console.log("shouldFocusWithoutScrollUp");
     	}
 	},
 

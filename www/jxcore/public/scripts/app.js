@@ -9,11 +9,15 @@ myApp.url = "http://localhost:5000/api/cards/";
 // myApp session vars
 myApp.username = "";
 
-// Polymer template is bound
+// default logging function to call
+var log = function(message) {
+	console.log(message);
+};
+
+// Setup debug mode once Polymer template is bound
 myApp.addEventListener('dom-change', function() {
-	console.log("Debug mode enabled:", IS_DEBUG);
+	console.log("Debug mode: " + IS_DEBUG);
 	if (IS_DEBUG) {
-		// myApp debug console
 		myApp.debugButton = document.querySelector("#debugButton");
 		myApp.debugConsole = document.querySelector("#debugConsoleLog");
 		myApp.isDebugConsoleOpen = false;
@@ -22,22 +26,24 @@ myApp.addEventListener('dom-change', function() {
 			myApp.debugButton.removeAttribute("hidden");
 			myApp.debugButton.addEventListener("click", toggleDebugConsole);
 		}
+		if (myApp.debugConsole) {
+			log = logText;
+			log("Welcome to Postcard");
+		}
 	}
 });
 
 function toggleDebugConsole(e) {
 	myApp.isDebugConsoleOpen = !myApp.isDebugConsoleOpen;
-	
 	if(myApp.isDebugConsoleOpen) {
-		log("toggleDebugConsole:", myApp.isDebugConsoleOpen);
 		myApp.debugConsole.removeAttribute("hidden");
 	} else {
 		myApp.debugConsole.setAttribute("hidden", true);
 	}
 }
 
-function log(message) {
-	//debugConsole.value += message+"\n";
+// drop in logging function for debug mode 
+function logText(message) {
 	myApp.debugConsole.value = myApp.debugLineNo +': '+ message +"\n"+ myApp.debugConsole.value;
 	myApp.debugLineNo++;
 }
