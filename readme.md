@@ -81,9 +81,10 @@ curl https://codeload.github.com/thaliproject/postcardapp/zip/story_0 > thali.zi
 unzip thali.zip
 cd postcardapp-story_0
 cordova platform add android
+cordova platform add ios
 cd www/jxcore
 jx npm install --production --autoremove "*.gz"
-cordova build
+cordova build android ios
 ```
 
 On Windows one needs to use [Git Bash](https://git-scm.com/download/win) or equivalent to run the above commands.
