@@ -30,7 +30,7 @@ function routes (db) {
                 return;
             }
             // Change the user name if it doesn't match
-            if (doc.user !== username) {
+            if (doc && doc.user !== username) {
                 doc.user = username;
                 db.put(doc)
                 .then(function () {
@@ -88,7 +88,12 @@ function routes (db) {
                 // Not found so let's add it
                 if (err && err.status === 404) {
 
-                    db.put({_id: req.params.cardId, author: req.body.author, content: req.body.content})
+                    db.put({
+                            _id: req.params.cardId, 
+                            author: req.body.author, 
+                            content: req.body.content,
+                            dateCreated: Math.floor((new Date()).getTime() / 1000)
+                        })
                         .then(function (response) {
                             res.status(200).json(response);
                         })

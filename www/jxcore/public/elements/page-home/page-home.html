@@ -13,6 +13,7 @@
       <template>
         <paper-card id="{{index}}" class="row">
           <div class="card-content postcard">
+            <span>[[_humanizeDate(item.doc.dateCreated)]]</span>
             <pre>{{item.doc.content}}</pre>
             <p>[[item.doc.author]]</p>
             <paper-fab id="{{item.doc._id}}" icon="delete" class="FAB" hidden></paper-fab>
@@ -95,6 +96,9 @@ Polymer({
     console.log(this.localName + " deactivate... active status:" + this._isActivated);
     this.deactivateButtons([this.addButton, this.refreshButton, this.deleteButton]);
   },
+  _humanizeDate: function(date) {
+    return moment.utc(date,'X').fromNow();
+  },
   _addCard: function(e) {
     console.log("add card: " + e);
     getURL("editor");
@@ -112,7 +116,7 @@ Polymer({
     var isDelete = this.getParentElement(e.target, "paper-fab");
     if (!isInput && !isDelete) {
       console.log("_itemSelected: " + selectedIndex);
-      if(selectedIndex!=false && selectedIndex>=0){
+      if(selectedIndex!==false && selectedIndex>=0){
         getURL("editor/"+selectedIndex);
       }
     } else if ( isDelete ) {
@@ -225,6 +229,12 @@ Polymer({
           }
         }
       }
+
+      //sort records by date created
+      this.set('listData.rows', _.sortBy(this.listData.rows, function(o){
+        return -o.doc.dateCreated;
+      } 
+      ));
 
       this._updateUserView();
   },

@@ -12,6 +12,7 @@
   "dependencies": {
     "iron-elements": "PolymerElements/iron-elements#~1.0.3",
     "jquery": "~2.1.4",
+    "moment": "~2.10.6",
     "neon-animation": "PolymerElements/neon-animation#~1.0.6",
     "page.js": "~1.6.3",
     "paper-elements": "PolymerElements/paper-elements#~1.0.4",
