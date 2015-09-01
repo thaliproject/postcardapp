@@ -17,5 +17,8 @@
     "page.js": "~1.6.3",
     "paper-elements": "PolymerElements/paper-elements#~1.0.4",
     "underscore": "~1.8.3"
+  },
+  "devDependencies": {
+    "faker": "Faker#~3.0.1"
   }
 }

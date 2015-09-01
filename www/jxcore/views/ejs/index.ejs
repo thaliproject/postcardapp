@@ -17,6 +17,7 @@
   <script src="bower_components/webcomponentsjs/webcomponents-lite.js"></script>
   <script src="bower_components/underscore/underscore.js"></script>
   <script src="bower_components/moment/moment.js"></script>
+  <script src="bower_components/faker/build/build/faker.js"></script>
   <script src="bower_components/jquery/dist/jquery.js"></script>
   <!-- import polymer 1.0 elements -->
   <link rel="import" href="elements/elements.html"/>
@@ -25,6 +26,8 @@
   <link rel="import" href="elements/page-login/page-login.html"/>
   <link rel="import" href="elements/page-home/page-home.html"/>
   <link rel="import" href="elements/page-editor/page-editor.html"/>
+  <!-- modals -->
+  <link rel="import" href="elements/modal-identity/modal-identity.html"/>
   <!-- styles -->
   <link rel="import" href="styles/app-theme.html"/>
   <link rel="stylesheet" type="text/css" href="styles/main.css"/>
@@ -42,6 +45,7 @@
           <paper-icon-button id="backButton" icon="arrow-back" hidden></paper-icon-button>
           <paper-icon-button id="refreshButton" icon="refresh" hidden></paper-icon-button>
           <paper-icon-button id="debugButton" icon="bug-report" hidden></paper-icon-button>
+          <paper-icon-button id="discoverButton" icon="social:group-add"></paper-icon-button>
         </div>
         <div id="appName">{{title}}</div>
       </div>
@@ -55,7 +59,7 @@
     </paper-toolbar>
     <!-- end top bar -->
 
-    <!-- debugger -->
+    <!-- debugger pane -->
     <textarea id="debugConsoleLog" hidden></textarea>
 
     <!-- contents iron-pages -->
@@ -72,6 +76,8 @@
     <!-- end contents -->
 
   </paper-header-panel>
+  <!-- modals -->
+  <modal-identity entry-animation="slide-from-bottom-animation" exit-animation="slide-from-top-animation"></modal-identity modal>
 </template>
 <!-- polymer app js -->
 <script type="text/javascript" src="scripts/app.js"></script>

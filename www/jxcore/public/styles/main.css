@@ -96,6 +96,7 @@ body, .noSelect {
 
 /* iron-list row */
 .row {
+	width: 100%;
 	padding-bottom: 20px;
 }
 
@@ -189,4 +190,30 @@ paper-fab.FAB {
 .gutter {
 	width: 100%;
 	height: 100px;
+}
+
+/* modal page */
+modal-identity {
+	z-index: 1;
+	position: absolute;
+	left: 0;
+	top: 0;
+	width: 100%;
+	height: 100%;
+	margin: 0;
+	padding: 0;
+	background: white;
+}
+
+@keyframes rotating {
+    from{
+        transform: rotate(0deg);
+    }
+    to{
+        transform: rotate(360deg);
+    }
+}
+
+.rotating {
+    animation: rotating 2s linear infinite;
 }

@@ -1,0 +1,157 @@
+<link rel="import" href="/bower_components/polymer/polymer.html">
+<link rel="import" href="/bower_components/iron-overlay-behavior/iron-overlay-behavior.html">
+<link rel="import" href="/bower_components/neon-animation/neon-animation-runner-behavior.html">
+<link rel="import" href="/elements/behaviors/tree-traversing.html">
+
+<dom-module id="modal-identity">
+
+<template>
+  <paper-header-panel>
+    <paper-toolbar>
+      <div class="middle middle-container center horizontal   layout">
+        <div>Add nearby person&hellip;</div>
+      </div>
+      <span class="flex"></span>
+      <div id="rightToolbarButtons">
+        <paper-icon-button id="closeButton" icon="close" dialog-dismiss></paper-icon-button>
+      </div>
+    </paper-toolbar>
+  
+  	<main class="content">
+      <iron-selector attr-for-selected="index" on-tap="_itemSelected">
+        <iron-list items="{{listData}}" as="item" class="fit" hidden>
+          <template>
+            <paper-card id="{{index}}" class="row">
+              <div class="layout horizontal center">
+                <iron-icon icon="assignment-ind"></iron-icon>
+                <h1>[[item.username]]</h1>
+              </div>
+            </paper-card>
+          </template>
+        </iron-list>
+      </iron-selector>
+
+      <aside class="fit vertical layout center-center">
+        <iron-icon icon="autorenew" class="rotating"></iron-icon>
+        <p>Finding</p>
+      </aside>
+    </main>
+  </paper-header-panel>
+</template>
+
+<script>
+Polymer({
+  is: "modal-identity",
+
+  behaviors: [
+      Polymer.PaperDialogBehavior,
+      Polymer.NeonAnimationRunnerBehavior,
+      PageBehaviors.TreeTraversing,
+    ],
+
+  listeners: {
+    'neon-animation-finish': '_onNeonAnimationFinish',
+    // 'track': '_handleTrack'
+  },
+
+  properties: {
+    listData: {
+      type: Array,
+      value: [],
+      notify: true
+    },
+    mockEventEmitter: {
+      type: Object
+    }
+  },
+
+  created: function() {
+  },
+
+  _itemSelected: function(e) {
+    var selectedIndex = this.getParentAttribute(e.target, 'paper-card', 'id');
+    console.log("#"+selectedIndex);
+  },
+
+  _mockEvent: function() {
+    var username = faker.internet.userName();
+    var pk = faker.random.uuid();
+    console.log("+ mock user:"+username +" pk:"+pk);
+    var item = {
+      username : username,
+      pk : pk
+    };
+    this.push('listData', item);
+    this._updateUserView();
+  },
+
+  _renderOpened: function() {
+    if (this.withBackdrop) {
+      this.backdropElement.open();
+    }
+
+    // reset
+    this.set('listData', []); 
+    this._updateUserView();
+
+    this.playAnimation('entry');
+
+    // start service
+    console.log("start discovery service...");
+    this.mockEventEmitter = setInterval(this._mockEvent.bind(this), 1000);
+  },
+
+  _renderClosed: function() {
+    if (this.withBackdrop) {
+      this.backdropElement.close();
+    }
+    this.playAnimation('exit');
+
+    // stop service
+    if(this.mockEventEmitter) {
+      console.log("stop discovery service");
+      clearInterval(this.mockEventEmitter);
+    }
+  },
+
+  _onNeonAnimationFinish: function() {
+    if (this.opened) {
+      this._finishRenderOpened();
+      this.style.top = '0px';
+    } else {
+      this._finishRenderClosed();
+    }
+  },
+
+  _handleTrack: function(e) {
+    switch(e.detail.state) {
+      case 'start':
+        console.log('Tracking started!');
+        break;
+      case 'track':
+        // console.log('Tracking in progress... dy:' + e.detail.dy);
+        // console.log("this.style.top" + this.style.top);
+        // this.style.top = e.detail.dy + 'px';
+        break;
+      case 'end':
+        console.log('Tracking ended! dy:' + e.detail.dy );
+        if(e.detail.dy > 100){
+          this.close();
+        }
+        break;
+    }
+  },
+
+  // displays spinner until peer discovered
+  _updateUserView: function() {
+    if (this.listData.length>0) {
+      this.querySelector("aside").setAttribute("hidden", true);
+      this.querySelector('iron-list').removeAttribute("hidden");
+    } else {
+      this.querySelector("aside").removeAttribute("hidden");
+      this.querySelector('iron-list').setAttribute("hidden", true);
+    }   
+  }
+});
+</script>
+</dom-module>
