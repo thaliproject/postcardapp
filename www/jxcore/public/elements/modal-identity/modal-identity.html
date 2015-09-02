@@ -8,34 +8,54 @@
 <template>
   <paper-header-panel>
     <paper-toolbar>
-      <div class="middle middle-container center horizontal   layout">
-        <div>Add nearby person&hellip;</div>
+      <div class="middle middle-container center horizontal layout">
+        <div>[[title]]</div>
       </div>
       <span class="flex"></span>
       <div id="rightToolbarButtons">
         <paper-icon-button id="closeButton" icon="close" dialog-dismiss></paper-icon-button>
       </div>
     </paper-toolbar>
-  
-  	<main class="content">
-      <iron-selector attr-for-selected="index" on-tap="_itemSelected">
-        <iron-list items="{{listData}}" as="item" class="fit" hidden>
-          <template>
-            <paper-card id="{{index}}" class="row">
-              <div class="layout horizontal center">
-                <iron-icon icon="assignment-ind"></iron-icon>
-                <h1>[[item.username]]</h1>
-              </div>
-            </paper-card>
-          </template>
-        </iron-list>
-      </iron-selector>
 
-      <aside class="fit vertical layout center-center">
-        <iron-icon icon="autorenew" class="rotating"></iron-icon>
-        <p>Finding</p>
-      </aside>
-    </main>
+    <!--  -->
+  	<neon-animated-pages class="fit" selected="{{selectedPage}}" attr-for-selected="data-page" entry-animation="slide-from-right-animation" exit-animation="slide-left-animation" on-iron-select="_pageChanged">
+
+      <neon-animatable id="0" title="" data-page="blank" class="fit">
+      </neon-animatable>
+
+      <neon-animatable id="1" title="Connect" data-page="instructions" class="fit layout vertical center-center">
+        <h1>Ready?</h1>
+        <p>Tell other party to start scanning for &ldquo;<span>[[username]]</span>&rdquo; now.</p>
+        <paper-button raised class="accent" on-tap="_onStart">Start Scanning</paper-button>
+        <div class="gutter"></div>
+      </neon-animatable>
+
+      <neon-animatable id="2" title="People nearby" data-page="start">
+        <iron-selector attr-for-selected="index" on-tap="_itemSelected">
+          <iron-list items="{{listItems}}" as="item" class="fit" hidden>
+            <template>
+              <paper-material id="{{index}}" class="row">
+                <div class="fit layout horizontal center">
+                  <p class="truncate flex">[[item.username]]</p>
+                  <iron-icon icon="chevron-right"></iron-icon>
+                </div>
+              </paper-material>
+            </template>
+          </iron-list>
+          <aside class="fit vertical layout center-center">
+            <iron-icon icon="autorenew" class="rotating"></iron-icon>
+            <p>Finding</p>
+          </aside>
+        </iron-selector>
+      </neon-animatable>
+
+      <neon-animatable id="3" title="Pair" data-page="person">
+        <h1>Pair with contact</h1>
+        <p>TODO</p>
+      </neon-animatable>
+
+    </neon-animated-pages>
+
   </paper-header-panel>
 </template>
 
@@ -55,7 +75,21 @@ Polymer({
   },
 
   properties: {
-    listData: {
+    username: {
+      type: String,
+      value: ""
+    },
+    title: {
+      type: String,
+      value: "Connect",
+      nofity: true
+    },
+    selectedPage: {
+      type: String,
+      value: "blank",
+      nofity: true
+    },
+    listItems: {
       type: Array,
       value: [],
       notify: true
@@ -65,53 +99,131 @@ Polymer({
     }
   },
 
-  created: function() {
+  _setState: function() {
+    this.username = myApp.username;
+  },
+
+  _resetState: function() {
+    this._stopScanning();
+    this.set('listItems', []);
+    this._updateUserView();
+    this.selectedPage = "blank";
+  },
+
+  _pageChanged: function(e) {
+    var id = e.detail.item.id;
+    var title = e.detail.item.title;
+    console.log(this.localName + ' - page selection changed #' + id + " title:"+ title);
+    // do stuff for the page selected
+    this.title = title;
+    switch (parseInt(id)) {
+      case 0:
+        break;
+      case 1:
+        console.log("#1 instructions");
+        break;
+      case 2:
+        console.log("#2 find");
+        this._startScanning();
+        break;
+      case 3:
+        console.log("#3 pair");
+        break;
+      default:
+    }
+  },
+
+  _onStart: function(e) {
+    this.set('listItems', []); // clear list 
+    this.selectedPage = "start";
   },
 
   _itemSelected: function(e) {
-    var selectedIndex = this.getParentAttribute(e.target, 'paper-card', 'id');
-    console.log("#"+selectedIndex);
+    var selectedIndex = this.getParentAttribute(e.target, 'paper-material', 'id');
+    if(selectedIndex!==false && selectedIndex>=0){
+      var item = this.listItems[selectedIndex];
+      console.log("#"+selectedIndex + " name:" + item.username + " pk:" + item.pk);
+      this._stopScanning();
+
+      // TODO: select person to pair with
+      this.selectedPage = "person";
+    }
   },
 
   _mockEvent: function() {
-    var username = faker.internet.userName();
-    var pk = faker.random.uuid();
-    console.log("+ mock user:"+username +" pk:"+pk);
-    var item = {
-      username : username,
-      pk : pk
-    };
-    this.push('listData', item);
+    var isAvailable = (Math.random() > 0.5);
+
+    if(isAvailable){
+      // simulate available - add to list
+      var username = faker.internet.userName();
+      var pk = faker.random.uuid();
+      this._addPerson(pk, username);
+    } else if (this.listItems.length > 0) {
+      // simulate unavailable - remove from list
+      var index = Math.floor(Math.random() * this.listItems.length);
+      var item = this.listItems[index];
+      this._removePerson(item.pk);
+    }
+    
     this._updateUserView();
   },
 
-  _renderOpened: function() {
-    if (this.withBackdrop) {
-      this.backdropElement.open();
-    }
-
-    // reset
-    this.set('listData', []); 
-    this._updateUserView();
-
-    this.playAnimation('entry');
-
-    // start service
+  // start service
+  _startScanning: function() {
     console.log("start discovery service...");
     this.mockEventEmitter = setInterval(this._mockEvent.bind(this), 1000);
   },
 
+  // stop service
+  _stopScanning: function() {
+    if(this.mockEventEmitter) {
+      console.log("stop discovery service");
+      clearInterval(this.mockEventEmitter);
+      this.mockEventEmitter = null;
+    }
+  },
+
+  _addPerson: function(pk, username) {
+    console.log("+ person:"+username +" pk:"+pk);
+    var item = {
+        username : username,
+        pk : pk
+      };
+
+    this.push('listItems', item); 
+  },
+
+  _removePerson: function(pk) {
+    var item;
+    for(var i=0; i<this.listItems.length; i++) {
+      item = this.listItems[i];
+      if(pk === item.pk) {
+        console.log("- person:"+item.username +" pk:"+item.pk);
+        this.splice('listItems',i,1);
+        return;
+      }
+    }
+  },
+
+  _renderOpened: function() {
+    this._setState(); // set state when opened
+
+    if (this.withBackdrop) {
+      this.backdropElement.open();
+    }
+    this.playAnimation('entry');
+
+    //
+    this.selectedPage = "instructions";
+  },
+
   _renderClosed: function() {
+    this._resetState(); // reset state for next time
+
     if (this.withBackdrop) {
       this.backdropElement.close();
     }
     this.playAnimation('exit');
-
-    // stop service
-    if(this.mockEventEmitter) {
-      console.log("stop discovery service");
-      clearInterval(this.mockEventEmitter);
-    }
   },
 
   _onNeonAnimationFinish: function() {
@@ -144,7 +256,7 @@ Polymer({
 
   // displays spinner until peer discovered
   _updateUserView: function() {
-    if (this.listData.length>0) {
+    if (this.listItems.length>0) {
       this.querySelector("aside").setAttribute("hidden", true);
       this.querySelector('iron-list').removeAttribute("hidden");
     } else {

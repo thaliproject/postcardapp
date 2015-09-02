@@ -95,28 +95,9 @@ body, .noSelect {
 }
 
 /* iron-list row */
-.row {
+paper-card.row {
 	width: 100%;
 	padding-bottom: 20px;
-}
-
-/* iron-list row divider */
-.divider {
-	width: 100%;
-	height: 1px;
-	background-color: #eeeedd;
-	position: absolute;
-	left: 0;
-	bottom: 0;
-}
-
-/* clickable area for row */
-.cell {
-	position: absolute;
-	left: 0;
-	top: 0;
-	width: 100%;
-	height: 100%;
 }
 
 /* row inline editing with paper-input */
@@ -150,7 +131,8 @@ body, .noSelect {
 }
 
 /* row text format */
-.postcard h6, .postcard p, .postcard pre, textarea.postcard {
+.postcard h6, .postcard p, .postcard pre, textarea.postcard,  
+.row p {
 	font-size: 24px;
 	padding: 0 10px;
 	word-wrap: break-word; /* prevent horizontal scroll here - break long single line strings */
@@ -205,6 +187,7 @@ modal-identity {
 	background: white;
 }
 
+/* spinner */
 @keyframes rotating {
     from{
         transform: rotate(0deg);
@@ -216,4 +199,29 @@ modal-identity {
 
 .rotating {
     animation: rotating 2s linear infinite;
+}
+
+/* row style */
+paper-material.row {
+	width: 100%;
+	height: 80px;
+}
+
+/* iron-list row divider */
+.divider {
+	width: 100%;
+	height: 1px;
+	background-color: #ddd;
+	position: absolute;
+	left: 0;
+	bottom: 0;
+}
+
+.card {
+	background: white;
+	color: #333;
+}
+
+.demo {
+	background: magenta;
 }

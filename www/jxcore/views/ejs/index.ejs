@@ -63,16 +63,14 @@
     <textarea id="debugConsoleLog" hidden></textarea>
 
     <!-- contents iron-pages -->
-    <main class="content">
-      <iron-pages attr-for-selected="data-route" selected="{{route}}">
-        <!-- login page -->
-        <page-login data-route="login"></page-login>
-        <!-- home page -->
-        <page-home data-route="home"></page-home>
-        <!-- editor page -->
-        <page-editor data-route="editor"></page-editor>
-      </iron-pages>
-    </main>
+    <iron-pages attr-for-selected="data-route" selected="{{route}}">
+      <!-- login page -->
+      <page-login data-route="login"></page-login>
+      <!-- home page -->
+      <page-home data-route="home"></page-home>
+      <!-- editor page -->
+      <page-editor data-route="editor"></page-editor>
+    </iron-pages>
     <!-- end contents -->
 
   </paper-header-panel>
