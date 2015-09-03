@@ -1,0 +1,49 @@
+<script>
+var PageBehaviors = PageBehaviors || {}; // namespace
+
+/*
+ * Helper methods for common UI functions
+ */
+
+PageBehaviors.UIHelper = {
+
+	hide : function(element) {
+		if (element && element instanceof Node) {
+			element.setAttribute('hidden', true);
+		}
+	},
+
+	show : function(element) {
+		if (element && element instanceof Node) {
+			element.removeAttribute('hidden');
+		}
+	},
+
+	hideAll : function(elementArray) {
+		for (var i=0; i<elementArray.length; i++) {
+			this.hide( elementArray[i] );
+		}
+	},
+
+	showAll : function(elementArray) {
+		for (var i=0; i<elementArray.length; i++) {
+			this.show( elementArray[i] );
+		}
+	},
+
+	hideAllTags : function(tagArray, element) {
+		if (element === undefined) element = this;
+		for (var i=0; i<tagArray.length; i++) {
+			this.hideAll( element.querySelectorAll(tagArray[i]) );
+		}
+	},
+
+	showAllTags : function(tagArray, element) {
+		if (element === undefined) element = this;
+		for (var i=0; i<tagArray.length; i++) {
+			this.showAll( element.querySelectorAll(tagArray[i]) );
+		}
+	},
+	
+};
+</script>

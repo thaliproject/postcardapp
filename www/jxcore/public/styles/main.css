@@ -94,6 +94,17 @@ body, .noSelect {
 	color: #fff;
 }
 
+.accent-warn {
+	background-color: #F34383;
+	color: #fff;
+}
+
+.accent-default {
+	background-color: #2BD52D;
+	color: #fff;
+}
+
+
 /* iron-list row */
 paper-card.row {
 	width: 100%;
@@ -220,6 +231,13 @@ paper-material.row {
 .card {
 	background: white;
 	color: #333;
+}
+
+.scratch {
+	background: #ccc;
+	padding: 15px;
+	border-radius: 1px;
+	border: 1px solid #bbb;
 }
 
 .demo {

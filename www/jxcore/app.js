@@ -15,19 +15,31 @@ var env = process.env.NODE_ENV || 'production'; // default to production
 if ('development' === env) {
     console.log('localhost "' + app.get('env') + '" environment');
     var Mobile = require('thali/mockmobile.js');
+    // testing - https://github.com/pouchdb/express-pouchdb/issues/124
+    var PrivatePouchDB = PouchDB.defaults({prefix: path.join(os.tmpdir(),'dbPrivate') });
+    app.use('/dblocal/', require('express-pouchdb')(PrivatePouchDB, {
+        mode: 'minimumForPouchDB',
+        // overrideMode: {
+        //     include: ['fauxton']
+        // }
+    }));
+    var dbPrivate = new PrivatePouchDB('contacts');
+    // TODO
+    //var contactsRouter = require('./contactroutes')(dbPrivate);
+    //app.use('/private-api', contactsRouter);
 }
 
 var dbPath = path.join(os.tmpdir(), 'dbPath');
 var LevelDownPouchDB = process.platform === 'android' || process.platform === 'ios' ?
     PouchDB.defaults({db: require('leveldown-mobile'), prefix: dbPath}) :
     PouchDB.defaults({db: require('leveldown'), prefix: dbPath});
-
+console.log('dbPath:'+dbPath);
 
 
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
-app.use('/db', require('express-pouchdb')(LevelDownPouchDB, { mode: 'minimumForPouchDB'}));
+app.use('/db', require('express-pouchdb')(LevelDownPouchDB, { mode: 'minimumForPouchDB' }));
 var db = new LevelDownPouchDB('thali');
 
 var cardRouter = require('./cardroutes')(db);
