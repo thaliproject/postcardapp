@@ -63,7 +63,7 @@
           <h1 class="scratch">[[pairingCode]]</h1>
           <div class="layout horizontal">
             <paper-button class="accent-warn" on-tap="_onDeclineHandler"><iron-icon icon="cancel"></iron-icon> Decline</paper-button>
-            <paper-button class="accent-default" on-tap="_onAcceptHandler"><iron-icon icon="check-circle"></iron-icon> Accept</paper-button>
+            <paper-button class="accent-default" on-tap="_onConfirmationHandler"><iron-icon icon="check-circle"></iron-icon> Confirm</paper-button>
           </div>
           <div class="gutter"></div>
         </main>
@@ -131,6 +131,11 @@ Polymer({
     pairingCode : {
       type: String,
       value: "123456",
+      notify: true
+    },
+    toastText : {
+      type: String,
+      value: "",
       notify: true
     }
   },
@@ -248,7 +253,7 @@ Polymer({
     }
   },
 
-  _onAcceptHandler: function(e) {
+  _onConfirmationHandler: function(e) {
     console.log("TODO: add contact to private db");
   },
 
@@ -283,6 +288,22 @@ Polymer({
     }
   },
 
+  _raiseParingRequest : function() {
+    if (this.listItems.length > 0) {
+      var peer = this.listItems[0];
+      var text = "Verify code " + this.pairingCode + " sent from " + peer.username;
+      console.log("*** raise pairing request ***\n" + text);
+      this.set('toastText', text);
+      var toast = document.querySelector('paper-toast');
+      if( toast ){
+        console.log("*** toast ***");
+        toast.text = text;
+        toast.duration = 8000;
+        toast.show();
+      }
+    }
+  },
+
   /* scanning */
 
   // start service
@@ -291,6 +312,8 @@ Polymer({
     if(!this.taskScanning) {
       this.taskScanning = setInterval(this._mockEvent.bind(this), 1000);
     }
+    // simulate pairing request during scanning state
+    setTimeout(this._raiseParingRequest.bind(this), 6000);
   },
 
   // stop service

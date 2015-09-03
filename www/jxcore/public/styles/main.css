@@ -240,6 +240,18 @@ paper-material.row {
 	border: 1px solid #bbb;
 }
 
+paper-toast {
+	background: #3E51B5;
+	color: white;
+	z-index: 13; /* appear in front of modal @12 iron-list @1 */
+	width: calc(100% - 22px); /* minus left: value*2 */
+
+}
+
+paper-toast>span#label {
+	/*font-weight: bold;*/
+}
+
 .demo {
 	background: magenta;
 }
