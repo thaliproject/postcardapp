@@ -182,27 +182,32 @@ Polymer({
 
   _setState: function() {
     this.username = myApp.username;
-    this.set('title', "Add Contact");
+    this.set('title', this._getSelectedPageTitle()); // update page title 
+    //this.set('title', "Add Contact");
+    this._gotoPageAtIndex(0); //this._gotoPage("start");
   },
 
   _resetState: function() {
     this._stopAll();
     this.set('listItems', []);
     this._resetPageViews();
-    this._gotoPageAtIndex(0);
     this.hideSelector("#notificationsPanel");
     this.set('lastPage', null);
     this.set('selectedItem', null);
   },
 
+  _getSelectedPageTitle: function() {
+    var titleAttribute = 'data-title';
+    if (this.selectedPage) {
+      return this.querySelector('neon-animatable[id="'+this.selectedPage+'"]').getAttribute(titleAttribute);
+    }
+    return "Add Contact"; // default title
+  },
+
   _pageChanged: function(e) {
     //var id = e.detail.item.id;
-    var title = "";
-    // get selected page title attribute
-    if (this.selectedPage) {
-      title = this.querySelector('neon-animatable[id="'+this.selectedPage+'"]').getAttribute('data-title'); //e.detail.item.title;
-      console.log("#" + this.lastPage + " -> selectedPage: #" + this.selectedPage + " title: " + title);
-    }
+    console.log("#" + this.lastPage + " -> selectedPage: #" + this.selectedPage);
+    this.set('title', this._getSelectedPageTitle()); // update page title
 
     // stop active processes on last page 
     if(this.lastPage==="pair") {
@@ -247,7 +252,6 @@ Polymer({
         break;
       default:
     }
-    this.set('title', title); // update page title
   },
 
   _pageDidAnimate: function() {
@@ -598,13 +602,9 @@ Polymer({
     }
     this.cancelAnimation(); // sweet hack to prevent animation stack breaking due to double click
     this.playAnimation('entry');
-
-    this._gotoPage("start");
   },
 
   _renderClosed: function() {
-    this._resetState(); // reset state for next time
-
     if (this.withBackdrop) {
       this.backdropElement.close();
     }
@@ -613,12 +613,14 @@ Polymer({
   },
 
   _onNeonAnimationFinish: function() {
-    console.log("*** modal closed ***");
     if (this.opened) {
+      console.log("*** modal opened ***");
       this._finishRenderOpened();
       this.style.top = '0px';
     } else {
+      this._resetState(); // reset state for next time
       this._finishRenderClosed();
+      console.log("*** modal closed ***");
     }
   }
 

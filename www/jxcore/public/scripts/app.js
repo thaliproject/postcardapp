@@ -43,10 +43,6 @@ myApp.addEventListener('dom-change', function() {
 function openModalDialog(e) {
 	console.log("openModalDialog");
 	myApp.modalDialog.open();
-	// setTimeout(function(){
-	// 	console.log("found person");
-	// 	myApp.modalDialog.querySelector("#more").removeAttribute("hidden");
-	// }, 1000);
 }
 
 function toggleDebugConsole(e) {
