@@ -11,33 +11,36 @@ console.log('starting app.js');
 var app = express();
 app.disable('x-powered-by');
 
+app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({ extended: true }));
+
 var env = process.env.NODE_ENV || 'production'; // default to production
 if ('development' === env) {
     console.log('localhost "' + app.get('env') + '" environment');
     var Mobile = require('thali/mockmobile.js');
-    // testing - https://github.com/pouchdb/express-pouchdb/issues/124
-    var PrivatePouchDB = PouchDB.defaults({prefix: path.join(os.tmpdir(),'dbPrivate') });
+
+    // wip - https://github.com/pouchdb/express-pouchdb/issues/124
+    var dbPathPrefix = path.join(os.tmpdir(),'db_');
+    var dbName = 'private';
+    
+    var PrivatePouchDB = PouchDB.defaults({ prefix: dbPathPrefix });
     app.use('/dblocal/', require('express-pouchdb')(PrivatePouchDB, {
         mode: 'minimumForPouchDB',
         // overrideMode: {
         //     include: ['fauxton']
         // }
     }));
-    var dbPrivate = new PrivatePouchDB('contacts');
-    // TODO
-    //var contactsRouter = require('./contactroutes')(dbPrivate);
-    //app.use('/private-api', contactsRouter);
+    var dbPrivate = new PrivatePouchDB( dbName );
+    console.log('privateDBPath: '+dbPathPrefix+dbName);
+    // private api router for storing contacts
+    var privateRouter = require('./privateroutes')(dbPrivate);
+    app.use('/_api', privateRouter); // private api
 }
 
 var dbPath = path.join(os.tmpdir(), 'dbPath');
 var LevelDownPouchDB = process.platform === 'android' || process.platform === 'ios' ?
     PouchDB.defaults({db: require('leveldown-mobile'), prefix: dbPath}) :
     PouchDB.defaults({db: require('leveldown'), prefix: dbPath});
-console.log('dbPath:'+dbPath);
-
-
-app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({ extended: true }));
 
 app.use('/db', require('express-pouchdb')(LevelDownPouchDB, { mode: 'minimumForPouchDB' }));
 var db = new LevelDownPouchDB('thali');

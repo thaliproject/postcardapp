@@ -4,8 +4,12 @@ var myApp = document.querySelector('#my-app');
 // myApp defaults
 myApp.title = "Postcards";
 myApp.route = "home"; // default route but will redirect to 'login' if no app.username set
-myApp.api = "http://localhost:5000/api/";
+myApp.host = "http://localhost:5000/";
+myApp.api = myApp.host + "api/";
 myApp.url = myApp.api + "cards/";
+// private api routes
+myApp._api = myApp.host + "_api/";
+myApp._url = myApp._api + "contacts/";
 
 // myApp session vars
 myApp.username = "";

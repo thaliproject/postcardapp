@@ -92,12 +92,19 @@
 
       <!-- slide page: save user contact -->
       <neon-animatable id="save" data-title="Save contact">
-        <form is="iron-form" class="inset">
-          <paper-input name="username" label="Username" error-message="[[errorUsername]]" value=" " required></paper-input>
+        <form is="iron-form" class="inset" hidden>
+          <paper-input name="username" label="Username" bind-value="{{selectedItem.username::input}" prevent-invalid-input allowed-pattern="[A-Za-z0-9_\.]" always-float-label required></paper-input>
+          <input is="iron-input" name="_id" bind-value="{{selectedItem.id::input}}" type="hidden" />
+          <input is="iron-input" name="_username" bind-value="{{selectedItem.username::input}}" type="hidden" />
           <div class="alignCenter">
             <paper-button class="accent" raised on-click="_onSubmitForm">Save</paper-button>
           </div>
         </form>
+        <aside class="fit vertical layout center-center">
+          <iron-icon icon="autorenew" class="rotating"></iron-icon>
+          <p>One moment please</p>
+          <div class="gutter"></div>
+        </aside>
       </neon-animatable>
 
     </neon-animated-pages>
@@ -146,7 +153,8 @@ Polymer({
       value: []
     },
     selectedItem : {
-      type: Object
+      type: Object,
+      notify: true
     },
     taskScanning: {
       type: Object
@@ -169,10 +177,16 @@ Polymer({
       type: Array,
       value: []
     },
+    petName: {
+      type: String,
+      value: "bob",
+      notify: true
+    },
     errorUsername: {
       type: String,
       value: "Please enter unique username."
-    }
+    },
+    _isSaving: false,
   },
 
   ready: function() {
@@ -495,16 +509,22 @@ Polymer({
   /* form */
 
   _onSubmitForm: function() {
-    var isSuccess = true; // 
+    var isSuccess = true;  
     console.log("TODO: Verify and save contact's unique username to private db...");
+    // TODO: hide form and show spinner
     this.querySelector('form').submit();
   },
 
   _checkUsernameAvailable: function() {
-    var suggestedUsername = this.selectedItem.username;
-    console.log("contact username available: " + suggestedUsername);
     // TODO check if username is unique...
-    this.querySelector('input[name="username"]').value = suggestedUsername;
+    var suggestedUsername = 'x' + this.selectedItem.username + 'x';
+    console.log("suggested username available: " + suggestedUsername);
+
+    this._showSelectedPageView("form");
+
+    //this.set('selectedItem.username', suggestedUsername);
+    this.set('petName', suggestedUsername);
+    this.querySelector('input[name="username"]').value = suggestedUsername; // hack to update paper input
   },
 
   _formInvalid: function(e) {
@@ -513,13 +533,52 @@ Polymer({
   },
   _formSubmit: function(e) {
     console.log("Form was submitted");
+    console.log(e.detail);
+    var contactId = e.detail._id;
+    var username = e.detail.username;
+    console.log("=> _id:"+contactId + " username:"+username);
+    this._saveContact(contactId, username); // <-- save
   },
   _formResponse: function(e) {
     console.log("Server Response:", e.detail);
-    this.close(); // dismiss modal when done
+    //this.close(); // dismiss modal when done
   },
   _formError: function(e) {
     console.log("Form Error:", e.detail);
+  },
+
+  /* ajax */
+
+  _saveContact: function(contactId, username) {
+    var self = this;
+    this._isSaving = true;
+    console.log("=> Save contact:" + username + " id:"+ contactId);
+    $.ajax({
+        url: myApp._url + contactId,
+        type: 'PUT',
+        contentType: 'application/json',
+        data: JSON.stringify({ 
+          username: username
+        }),
+        dataType: 'json',
+        error: function(jqXHR, textStatus, errorThrown) {
+          console.log('@ error in save Contact ' + JSON.stringify(jqXHR) + ' ' + textStatus + ' ' + errorThrown);
+          alert("Error saving Contact");
+        },
+        success: function(data, textStatus, jqXHR) {
+          console.log("@ saved Contact - " + textStatus);
+          console.log(data);
+          // if 'ok' update client UI else alert user with error
+          if(data.ok && data.ok===true) {
+            console.log("OK", textStatus);
+            self._isSaving = false;
+            // TODO: toast alert with saved contact 
+            self.close(); // dismiss modal when done (unless we want to add another?)
+          } else {
+            alert("Save Contact error");
+          }
+        }
+    });
   },
 
   /*  clean-up resources on close */
@@ -595,7 +654,7 @@ Polymer({
   /* animation behavior methods */
 
   _renderOpened: function() {
-    this._setState(); // set state when opened
+    this._setState(); // set state when opened before playing entry animation
 
     if (this.withBackdrop) {
       this.backdropElement.open();
