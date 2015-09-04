@@ -5,9 +5,6 @@
 <link rel="import" href="/elements/behaviors/ui-helper.html">
 
 <dom-module id="modal-identity">
-<style>
-/*:host { display: none; }*/
-</style>
 
 <template>
   <paper-header-panel>
@@ -17,26 +14,43 @@
       </div>
       <div id="appName">[[title]]</div>
       <div id="rightToolbarButtons">
+        <div id="notifications" hidden on-tap="_onReadNotifications">
+          <paper-icon-button id="notificationsButton" icon="social:notifications"></paper-icon-button>
+          <paper-badge for="notificationsButton" label="[[listNotifications.length]]" class="icon"></paper-badge>
+        </div>
         <paper-icon-button id="closeButton" icon="close" dialog-dismiss></paper-icon-button>
       </div>
     </paper-toolbar>
 
-    <!-- modal pages -->
-  	<neon-animated-pages class="fit" selected="{{selectedPage}}" attr-for-selected="id" entry-animation="slide-from-right-animation" exit-animation="slide-left-animation" on-iron-select="_pageChanged" animate-initial-selection="true">
+    <!-- notifications panel -->
+    <section id="notificationsPanel" class="fit" hidden>
+      <details class="fit vertical layout center-center">
+        <h1>Nothing to see here!</h1>
+      </details>
+      <iron-list items="{{listNotifications}}" as="item" class="fit" hidden>
+        <template>
+          <paper-material id="{{index}}" class="row">
+            <div class="fit layout horizontal center">
+              <p class="truncate flex">[[item.message]]</p>
+            </div>
+          </paper-material>
+        </template>
+      </iron-list>
+    </section>
 
-      <!-- slide 0 -->
-      <!-- <neon-animatable id="blank" data-title="" class="fit">
-      </neon-animatable> -->
+    <!-- slide pages -->
+  	<neon-animated-pages class="fit" selected="{{selectedPage}}" attr-for-selected="id" entry-animation="slide-from-right-animation" exit-animation="slide-left-animation" on-iron-select="_pageChanged" on-neon-animation-finish="_pageDidAnimate">
 
-      <!-- slide 1 -->
+      <!-- slide page: user instructions -->
       <neon-animatable id="start" data-title="Add Contact" class="fit layout vertical center-center">
         <h1>Ready?</h1>
-        <p>Tell other party to start scanning for &ldquo;<span>[[username]]</span>&rdquo; now.</p>
+        <p>Ask other party to start scanning now.</p>
         <paper-button raised class="accent" on-tap="_onStartHandler">Start Scanning</paper-button>
         <div class="gutter"></div>
+        <p class="diminished">Your username is &ldquo;<span>[[username]]</span>&rdquo;</p>
       </neon-animatable>
 
-      <!-- slide 2 -->
+      <!-- slide page: start scanning -->
       <neon-animatable id="scan" data-title="People nearby">
         <iron-selector attr-for-selected="index" on-tap="_onItemSelected" hidden>
           <iron-list items="{{listItems}}" as="item" class="fit">
@@ -56,11 +70,13 @@
         </aside>
       </neon-animatable>
 
-      <!-- slide 3 -->
+      <!-- slide page: select contact -->
       <neon-animatable id="pair" data-title="Verification">
         <main class="fit vertical layout center-center" hidden>
-          <p>Does your contact request code match?</p>
+          <h1>Ask <span>[[selectedItem.username]]</span></h1>
+          <p>Does your code match?</p>
           <h1 class="scratch">[[pairingCode]]</h1>
+          <!-- <p>sent from <span>[[username]]</span></p> -->
           <div class="layout horizontal">
             <paper-button class="accent-warn" on-tap="_onDeclineHandler"><iron-icon icon="cancel"></iron-icon> Decline</paper-button>
             <paper-button class="accent-default" on-tap="_onConfirmationHandler"><iron-icon icon="check-circle"></iron-icon> Confirm</paper-button>
@@ -72,6 +88,16 @@
           <p>Attempting to pair with <span>[[selectedItem.username]]</span></p>
           <div class="gutter"></div>
         </aside>
+      </neon-animatable>
+
+      <!-- slide page: save user contact -->
+      <neon-animatable id="save" data-title="Save contact">
+        <form is="iron-form" class="inset">
+          <paper-input name="username" label="Username" error-message="[[errorUsername]]" value=" " required></paper-input>
+          <div class="alignCenter">
+            <paper-button class="accent" raised on-click="_onSubmitForm">Save</paper-button>
+          </div>
+        </form>
       </neon-animatable>
 
     </neon-animated-pages>
@@ -92,7 +118,11 @@ Polymer({
 
   listeners: {
     'neon-animation-finish': '_onNeonAnimationFinish',
-    // 'track': '_handleTrack'
+    // 'track': '_handleTrack',
+    'iron-form-invalid': '_formInvalid',
+    'iron-form-submit': '_formSubmit',
+    'iron-form-response': '_formResponse',
+    'iron-form-error': '_formError'
   },
 
   properties: {
@@ -102,25 +132,21 @@ Polymer({
     },
     title: {
       type: String,
-      value: "",
-      nofity: true
+      value: ""
     },
     selectedPage: {
       type: String,
-      value: "start",
-      nofity: true
+      value: "start"
     },
     lastPage: {
       type: String,
     },
     listItems: {
       type: Array,
-      value: [],
-      notify: true
+      value: []
     },
     selectedItem : {
-      type: Object,
-      notify: true
+      type: Object
     },
     taskScanning: {
       type: Object
@@ -128,16 +154,30 @@ Polymer({
     taskPairing: {
       type: Object
     },
+    taskNotification: {
+      type: Object
+    },
     pairingCode : {
       type: String,
-      value: "123456",
-      notify: true
+      value: "123456"
     },
     toastText : {
       type: String,
-      value: "",
-      notify: true
+      value: ""
+    },
+    listNotifications : {
+      type: Array,
+      value: []
+    },
+    errorUsername: {
+      type: String,
+      value: "Please enter unique username."
     }
+  },
+
+  ready: function() {
+    console.log(this.localName + ' ready page:' + this.selectedPage);
+    this.lastPage = this.selectedPage; // set last page
   },
 
   _setState: function() {
@@ -150,30 +190,41 @@ Polymer({
     this.set('listItems', []);
     this._resetPageViews();
     this._gotoPageAtIndex(0);
+    this.hideSelector("#notificationsPanel");
     this.set('lastPage', null);
-    this.set('selectedItem', null); 
+    this.set('selectedItem', null);
   },
 
   _pageChanged: function(e) {
-    var id = e.detail.item.id;
-    console.log(this.localName + ' - page selection changed from:' + this.lastPage + ' to: ' + id);
-
+    //var id = e.detail.item.id;
     var title = "";
     // get selected page title attribute
     if (this.selectedPage) {
       title = this.querySelector('neon-animatable[id="'+this.selectedPage+'"]').getAttribute('data-title'); //e.detail.item.title;
-      console.log("selectedPage: " + this.selectedPage + " title: " + title);
+      console.log("#" + this.lastPage + " -> selectedPage: #" + this.selectedPage + " title: " + title);
     }
 
-    // last page
-    if(this.lastPage && this.lastPage==="pair") {
+    // stop active processes on last page 
+    if(this.lastPage==="pair") {
+      //Polymer.dom(this.$.backButton).setAttribute("hidden",true);
       this._stopPairing();
+    } else if(this.lastPage==="scan"){
+      this._stopScanning();
     }
-    this.lastPage = id;
+    //this.lastPage = this.selectedPage;
+
+    // hide notifications panel
+    this.hideSelector("#notificationsPanel");
+
+    // detect if back button is needed?
+    if(this.selectedPage && this._getPageIndex(this.selectedPage) > 0) {
+      Polymer.dom(this.$.backButton).removeAttribute("hidden");
+    } else {
+      Polymer.dom(this.$.backButton).setAttribute("hidden",true);
+    }
     
     // do stuff for the page selected
-    Polymer.dom(this.$.backButton).setAttribute("hidden",true);
-    switch (id) {
+    switch (this.selectedPage) {
       case "start":
         console.log("#1 start");
         break;
@@ -183,17 +234,29 @@ Polymer({
         break;
       case "pair":
         console.log("#3 pair");
-        Polymer.dom(this.$.backButton).removeAttribute("hidden");
+        //Polymer.dom(this.$.backButton).removeAttribute("hidden");
         if(this.selectedItem){
-          //title += " with " + this.selectedItem.username;
           this._startPairing();
         } else {
           // TODO: show error view to user
         }
         break;
+      case "save":
+        console.log("#4 save");
+        this._checkUsernameAvailable();
+        break;
       default:
     }
     this.set('title', title); // update page title
+  },
+
+  _pageDidAnimate: function() {
+    // reset last page view state
+    if(this.lastPage) {
+      console.log('#'+this.lastPage + " page did disappear");
+      this._resetPageView( this.querySelector('#'+this.lastPage) );
+    }
+    this.lastPage = this.selectedPage;
   },
 
   _getPageIndex: function(pageName) {
@@ -222,23 +285,36 @@ Polymer({
     if (index <= children.length-1) {
       this._gotoPage( children[index].id );
     } else {
-      console.log("Error: page index request out of range.");
+      console.log("Error, page index request out of range.");
+    }
+  },
+
+  _goPrevPage: function() {
+    var pageIndex = this._getPageIndex( this.selectedPage );
+    if(pageIndex > 0) {
+      this._gotoPageAtIndex(pageIndex-1);
+    } else {
+      console.log("Error, can't go to previous page. @" + pageIndex);
+    }
+  },
+
+  _goNextPage: function() {
+    var pageIndex = this._getPageIndex( this.selectedPage );
+    var totalPages = this.querySelector('neon-animated-pages').querySelectorAll('neon-animatable').length;
+    if(pageIndex+1 < totalPages) {
+      this._gotoPageAtIndex(pageIndex+1);
+    } else {
+      console.log("Error, can't go to next page. @" + pageIndex);
     }
   },
 
   _onBackHandler: function(e) {
-    var pageIndex = this._getPageIndex( this.selectedPage );
-    if(pageIndex > 0) {
-      this._resetSelectedPageView();
-      this._gotoPageAtIndex(pageIndex-1);
-    } else {
-      console.log("Error, can't go back at index: " + pageIndex);
-    }
+    this._goPrevPage();
   },
 
   _onStartHandler: function(e) {
     this.set('listItems', []); // clear list 
-    this._gotoPage("scan");
+    this._goNextPage(); //this._gotoPage("scan");
   },
 
   _onItemSelected: function(e) {
@@ -248,13 +324,14 @@ Polymer({
       console.log("selected #"+selectedIndex + " name:" + this.selectedItem.username + " id:" + this.selectedItem.id);
       this._stopScanning();
 
-      // TODO: select person to pair with
-      this._gotoPage("pair");
+      // select person to pair with
+      this._goNextPage(); // this._gotoPage("pair");
     }
   },
 
   _onConfirmationHandler: function(e) {
     console.log("TODO: add contact to private db");
+    this._goNextPage(); // this._gotoPage("save");
   },
 
   _onDeclineHandler: function(e) {
@@ -262,61 +339,23 @@ Polymer({
     this._onBackHandler();
   },
 
-  _mockEvent: function() {
-    var isAvailable = (Math.random() > 0.5);
-    var isViewRequiringUpdate = false;
-
-    if(isAvailable){
-      // simulate available - add to list
-      var username = faker.internet.userName();
-      var id = faker.random.uuid();
-      isViewRequiringUpdate = this._addPerson(id, username);
-    } else if (this.listItems.length > 0) {
-      // simulate unavailable - remove from list
-      var index = Math.floor(Math.random() * this.listItems.length);
-      var item = this.listItems[index];
-      isViewRequiringUpdate = this._removePerson(item.id);
-    }
-    if(!isViewRequiringUpdate) {
-      return;
-    }
-    // update view
-    if(this.listItems.length>0) {
-      this._showSelectedPageView("iron-selector"); // iron-list
-    } else {
-      this._showSelectedPageView("aside");
-    }
-  },
-
-  _raiseParingRequest : function() {
-    if (this.listItems.length > 0) {
-      var peer = this.listItems[0];
-      var text = "Verify code " + this.pairingCode + " sent from " + peer.username;
-      console.log("*** raise pairing request ***\n" + text);
-      this.set('toastText', text);
-      var toast = document.querySelector('paper-toast');
-      if( toast ){
-        console.log("*** toast ***");
-        toast.text = text;
-        toast.duration = 8000;
-        toast.show();
-      }
-    }
-  },
-
   /* scanning */
 
-  // start service
   _startScanning: function() {
     console.log("start discovery service...");
+    this._updateScanningView();
+
+    // runs indefinately until view changed
     if(!this.taskScanning) {
-      this.taskScanning = setInterval(this._mockEvent.bind(this), 1000);
+      this.taskScanning = setInterval(this._mockScanningEvent.bind(this), 2000);
     }
+
     // simulate pairing request during scanning state
-    setTimeout(this._raiseParingRequest.bind(this), 6000);
+    if(!this.taskNotification) {
+      this.taskNotification = setTimeout(this._mockPairingNotification.bind(this), 7000);
+    }
   },
 
-  // stop service
   _stopScanning: function() {
     if(this.taskScanning) {
       console.log("stop discovery service");
@@ -325,8 +364,38 @@ Polymer({
     }
   },
 
+  _mockScanningEvent: function() {
+    var isAvailable = (Math.random() > 0.5);
+    var isViewRequiringUpdate = false;
+
+    if(isAvailable || this.listItems.length==0){
+      // simulate peer available - add to list
+      var username = faker.internet.userName();
+      var id = faker.random.uuid();
+      isViewRequiringUpdate = this._addPerson(id, username);
+    } else if (this.listItems.length > 0) {
+      // simulate peer unavailable - remove from list
+      var index = Math.floor(Math.random() * this.listItems.length);
+      var item = this.listItems[index];
+      isViewRequiringUpdate = this._removePerson(item.id);
+    }
+
+    // update view state if needed
+    if(isViewRequiringUpdate) {
+      this._updateScanningView();
+    }
+  },
+
+  _updateScanningView: function() {
+    if(this.listItems.length>0) {
+      this._showSelectedPageView("iron-selector"); // iron-list
+    } else {
+      this._showSelectedPageView("aside");
+    }
+  },
+
   _addPerson: function(id, username) {
-    console.log("+ person:"+username +" id:"+id);
+    //console.log("+ person:"+username +" id:"+id);
     var item = {
         username : username,
         id : id
@@ -341,7 +410,7 @@ Polymer({
     for(var i=0; i<this.listItems.length; i++) {
       item = this.listItems[i];
       if(id === item.id) {
-        console.log("- person:"+item.username +" id:"+item.id);
+        //console.log("- person:"+item.username +" id:"+item.id);
         this.splice('listItems',i,1);
         return true;
       }
@@ -349,18 +418,52 @@ Polymer({
     return false;
   },
 
+  /* notifications */
+
+  _mockPairingNotification : function() {
+    if (this.listItems.length > 0) {
+      var peer = this.listItems[0];
+      var code = this.pairingCode; //this._generateCode();
+      var message = "Verify code " + code + " sent from " + peer.username;
+      console.log("raised pairing request");
+      this._showToastNotification(message, 8);
+    }
+    this._stopNotification(); // clean-up
+  },
+
+  _stopNotification : function() {
+    if(this.taskNotification) {
+      console.log("stop notification service");
+      clearTimeout(this.taskNotification);
+      this.taskNotification = null;
+    }
+  },
+
+  _showToastNotification : function(message, secs) {
+    this.set('toastText', message);
+    this._addNotification(message);
+    var toast = document.querySelector('paper-toast');
+    if( toast ){
+      console.log("*** show toast ***\n" + message);
+      toast.text = message;
+      toast.duration = secs*1000;
+      toast.show();
+    }
+  },
+
+  _addNotification : function(message) {
+    this.unshift('listNotifications', {message:message});
+    if(this.listNotifications.length > 0) {
+      this.show( this.querySelector('#notifications') );
+    }
+  },
+
   /* pairing */
 
   _startPairing: function() {
     if(!this.taskPairing) {
-      this.taskPairing = setTimeout(function(){
-        var randomCode = (""+Math.random()).substring(2,8); 
-        console.log("pairing code generated: " + randomCode);
-        this.set('pairingCode',randomCode);
-        //this.hide( this.querySelector("aside") );
-        //this.show( this.querySelector("main") );
-        this._showSelectedPageView("main");
-      }.bind(this), 3000); // simulate wait for an async request
+      // simulate wait for an async callback
+      this.taskPairing = setTimeout(this._mockPairing.bind(this), 3000); 
     }
   },
 
@@ -372,7 +475,51 @@ Polymer({
     }
   },
 
-  // clean-up resources on close
+  _mockPairing: function() {
+    var code = this._generateCode(); 
+    console.log("random pairing code generated: " + code);
+    this.set('pairingCode', code);
+    this._showSelectedPageView("main");
+    this._stopPairing(); // clean-up
+  },
+
+  // returns random 6 digit string
+  _generateCode: function() {
+    return (""+Math.random()).substring(2,8); 
+  },
+
+  /* form */
+
+  _onSubmitForm: function() {
+    var isSuccess = true; // 
+    console.log("TODO: Verify and save contact's unique username to private db...");
+    this.querySelector('form').submit();
+  },
+
+  _checkUsernameAvailable: function() {
+    var suggestedUsername = this.selectedItem.username;
+    console.log("contact username available: " + suggestedUsername);
+    // TODO check if username is unique...
+    this.querySelector('input[name="username"]').value = suggestedUsername;
+  },
+
+  _formInvalid: function(e) {
+    // notify user what went wrong on client
+    console.log('Form invalid');
+  },
+  _formSubmit: function(e) {
+    console.log("Form was submitted");
+  },
+  _formResponse: function(e) {
+    console.log("Server Response:", e.detail);
+    this.close(); // dismiss modal when done
+  },
+  _formError: function(e) {
+    console.log("Form Error:", e.detail);
+  },
+
+  /*  clean-up resources on close */
+
   _stopAll: function() {
     this._stopScanning();
     this._stopPairing();
@@ -380,11 +527,26 @@ Polymer({
 
   /* UI */
 
-  // show only one child of selected page view
+  _onReadNotifications : function(e) {
+    console.log("Read notifications");
+    this.toggleVisibility("#notificationsPanel");
+    //console.log(this.listNotifications);
+    if(this.listNotifications.length > 0) {
+      this.show( this.querySelector("#notificationsPanel iron-list") );
+      this.hide( this.querySelector("#notificationsPanel details") );
+      // needs a draw call after hidden state
+      this.querySelector("#notificationsPanel iron-list").fire('resize');
+    } else {
+      this.hide( this.querySelector("#notificationsPanel iron-list") );
+      this.show( this.querySelector("#notificationsPanel details") );
+    }
+  },
+
+  // manages view state by passing only one child to show within the selected page view element
   _showSelectedPageView : function(elementTag) {
     var container = this.querySelector(".iron-selected");
     if(container) {
-      console.log("show only element tag: "+ elementTag + " children: " + container.children.length);
+      //console.log("show only element tag: "+ elementTag + " children: " + container.children.length);
       for(var i=0; i<container.children.length; i++) {
         this.hide(container.children[i]);
       }
@@ -395,17 +557,16 @@ Polymer({
     }
   },
 
-  _resetSelectedPageView : function() {
-    var container = this.querySelector(".iron-selected");
-    if(container) {
-      this.hideAllTags(["main","iron-selector"], container);
-      this.showAllTags(["aside"], container);
+  _resetPageView : function(element) {
+    if(element && element instanceof Node) {
+      this.hideAllSelectors(["main","iron-selector"], element);
+      this.showAllSelectors(["aside"], element);
     }
   },
 
   _resetPageViews: function() {
-     this.hideAllTags(["main","iron-selector"]);
-     this.showAllTags(["aside"]);
+     this.hideAllSelectors(["main","iron-selector"]);
+     this.showAllSelectors(["aside"]);
   },
 
   _handleTrack: function(e) {
@@ -427,7 +588,7 @@ Polymer({
     }
   },
 
-  /* polymer behavior methods */
+  /* animation behavior methods */
 
   _renderOpened: function() {
     this._setState(); // set state when opened
@@ -435,7 +596,7 @@ Polymer({
     if (this.withBackdrop) {
       this.backdropElement.open();
     }
-    this.cancelAnimation(); // sweet hack to protect animation stack breaks due to double click
+    this.cancelAnimation(); // sweet hack to prevent animation stack breaking due to double click
     this.playAnimation('entry');
 
     this._gotoPage("start");
@@ -447,19 +608,19 @@ Polymer({
     if (this.withBackdrop) {
       this.backdropElement.close();
     }
-    this.cancelAnimation(); // sweet hack to protect animation stack breaks due to double click
+    this.cancelAnimation(); // sweet hack to prevent animation stack breaking due to double click
     this.playAnimation('exit');
   },
 
   _onNeonAnimationFinish: function() {
-    console.log("*** _onNeonAnimationFinish ***");
+    console.log("*** modal closed ***");
     if (this.opened) {
       this._finishRenderOpened();
       this.style.top = '0px';
     } else {
-      this._finishRenderClosed(); // this.style.display = 'none';
+      this._finishRenderClosed();
     }
-  },
+  }
 
 });
 </script>

@@ -56,6 +56,11 @@ body, .noSelect {
 	top: 10px;
 }
 
+#rightToolbarButtons paper-icon-button, 
+#rightToolbarButtons div {
+	float: left;
+}
+
 /* debug log */
 #debugConsoleLog {
 	z-index: 1;
@@ -234,24 +239,59 @@ paper-material.row {
 }
 
 .scratch {
-	background: #ccc;
 	padding: 15px;
-	border-radius: 1px;
-	border: 1px solid #bbb;
+}
+
+.scratch, paper-toast {
+	background: #333;
+	color: white;
 }
 
 paper-toast {
-	background: #3E51B5;
-	color: white;
 	z-index: 13; /* appear in front of modal @12 iron-list @1 */
 	width: calc(100% - 22px); /* minus left: value*2 */
-
 }
 
 paper-toast>span#label {
 	/*font-weight: bold;*/
 }
 
-.demo {
-	background: magenta;
+paper-badge.icon {
+	left: 18px !important; /* have to override applied style */
+	top: -2px !important; /* have to override applied style */
 }
+
+#notificationsPanel {
+	background-color: rgba(132,159,204,0.95);
+	/*background: #849FCC;*/ /* tint #64789A */
+	color: white;
+	position: absolute;
+	top: 0;
+	left: 0;
+	z-index: 1;
+}
+
+#notificationsPanel paper-material>div {
+	background: #3E51B5;
+	color: white;
+	
+}
+
+#notificationsPanel paper-material p {
+	font-size: 16px;
+	padding: 0 20px;
+}
+
+.center-center h1 {
+	text-align: center;
+}
+
+.diminished {
+	color: #ccc;
+}
+
+/*.disabled {
+	opacity: 0.5;
+	filter: grayscale(1);
+	-webkit-filter: grayscale(1);
+}*/

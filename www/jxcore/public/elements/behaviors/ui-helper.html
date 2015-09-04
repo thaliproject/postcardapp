@@ -7,6 +7,8 @@ var PageBehaviors = PageBehaviors || {}; // namespace
 
 PageBehaviors.UIHelper = {
 
+	/* methods for elements */
+
 	hide : function(element) {
 		if (element && element instanceof Node) {
 			element.setAttribute('hidden', true);
@@ -31,19 +33,45 @@ PageBehaviors.UIHelper = {
 		}
 	},
 
-	hideAllTags : function(tagArray, element) {
+	/* methods for selectors */
+
+	hideSelector : function(selector) {
+		this.hide( this.querySelector(selector) );
+	},
+
+	showSelector : function(selector) {
+		this.show( this.querySelector(selector) );
+	},
+
+	/* methods for selectors inside a container element */
+
+	hideAllSelectors : function(selectorArray, element) {
 		if (element === undefined) element = this;
-		for (var i=0; i<tagArray.length; i++) {
-			this.hideAll( element.querySelectorAll(tagArray[i]) );
+		for (var i=0; i<selectorArray.length; i++) {
+			this.hideAll( element.querySelectorAll(selectorArray[i]) );
 		}
 	},
 
-	showAllTags : function(tagArray, element) {
+	showAllSelectors : function(selectorArray, element) {
 		if (element === undefined) element = this;
-		for (var i=0; i<tagArray.length; i++) {
-			this.showAll( element.querySelectorAll(tagArray[i]) );
+		for (var i=0; i<selectorArray.length; i++) {
+			this.showAll( element.querySelectorAll(selectorArray[i]) );
 		}
 	},
+
+	toggleVisibility : function(selector) {
+		var element = this.querySelector(selector);
+		if (!element || !element instanceof Node) {
+			return null; // error, no element found
+		}
+		if ( element.hasAttribute("hidden") ) {
+			this.show(element);
+			return true;
+		} else {
+			this.hide(element);
+			return false;
+		}
+	}
 	
 };
 </script>
