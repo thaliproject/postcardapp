@@ -9,10 +9,14 @@
 <script type="text/javascript" charset="utf-8" src="js/index.js"></script>
 <style>
 html,body{width:100%;height:100%;margin:0px;padding:0px;}
-body.logo{background:url("img/logo.png") center center no-repeat;}
+.logo{background:white url("img/logo.png") center center no-repeat;}
+@media 
+(-webkit-min-device-pixel-ratio:2),(min-resolution:192dpi){ 
+.logo{background-image:url("img/logo@2x.png");background-size:100%;}
+}
 </style>
 </head>
-<body class="logo">
-	<iframe id="appFrame" style="position:absolute;width:100%;height:100%;border:0px;" frameborder="0" />
+<body>
+	<iframe id="appFrame" class="logo" style="position:absolute;width:100%;height:100%;border:0px;" frameborder="0" />
 </body>
 </html>

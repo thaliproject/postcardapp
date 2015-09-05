@@ -18,9 +18,7 @@
       if (config.transformOrigin) {
         this.setPrefixedProperty(node, 'transformOrigin', config.transformOrigin);
       } else {
-        this.setPrefixedProperty(node, 'transformOrigin', '0 0');
-        node.style.position = "absolute";
-        node.style.top = "0";
+        this.setPrefixedProperty(node, 'transformOrigin', '50% 0');
       }
 
       this._effect = new KeyframeEffect(node, [

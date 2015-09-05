@@ -18,14 +18,12 @@
       if (config.transformOrigin) {
         this.setPrefixedProperty(node, 'transformOrigin', config.transformOrigin);
       } else {
-        this.setPrefixedProperty(node, 'transformOrigin', '100% 100%');
-        node.style.position = "absolute";
-        node.style.top = "100%";
+        this.setPrefixedProperty(node, 'transformOrigin', '50% 0');
       }
 
       this._effect = new KeyframeEffect(node, [
-        {'transform': 'none'},
-        {'transform': 'translateY(-100%)'}
+        {'transform': 'translateY(100%)'},
+        {'transform': 'translateY(0)'}
       ], this.timingFromConfig(config));
 
       return this._effect;

@@ -30,6 +30,10 @@ body, .noSelect {
     cursor: default;
 }
 
+body {
+	-webkit-transform: translateZ(0px); /* fixes iOS8 iframe scroll issue? */
+}
+
 /* iOS nav bar style */
 #appName {	
 	display: block;
@@ -58,6 +62,10 @@ body, .noSelect {
 
 #rightToolbarButtons paper-icon-button, 
 #rightToolbarButtons div {
+	float: left;
+}
+#leftToolbarButtons paper-icon-button, 
+#leftToolbarButtons div {
 	float: left;
 }
 
@@ -212,9 +220,17 @@ modal-identity {
         transform: rotate(360deg);
     }
 }
-
+@-webkit-keyframes rotating {
+    from{
+        -webkit-transform: rotate(0deg);
+    }
+    to{
+        -webkit-transform: rotate(360deg);
+    }
+}
 .rotating {
     animation: rotating 2s linear infinite;
+    -webkit-animation: rotating 2s linear infinite;
 }
 
 /* row style */
@@ -236,6 +252,18 @@ paper-material.row {
 .card {
 	background: white;
 	color: #333;
+}
+
+/* modal pop-up view */
+
+modal-identity {
+	/* watch out for iOS max-height:0px display issue */
+	position: absolute;
+	top: 0;
+	left: 0;
+	height: 100%;
+	min-height: 100%;
+	max-height: 100%;
 }
 
 .scratch {

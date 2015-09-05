@@ -8,7 +8,7 @@
 
 <template>
   <iron-ajax url="/api/cards" last-response="{{listData}}" on-response="_onResponseReceived"></iron-ajax>
-  <iron-selector attr-for-selected="index" on-tap="_itemSelected">
+  <iron-selector attr-for-selected="index" on-click="_itemSelected">
     <iron-list id="my-postcards" items="{{listData.rows}}" as="item" class="fit">
       <template>
         <paper-card id="{{index}}" class="row">

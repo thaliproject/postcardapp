@@ -10,15 +10,15 @@
   <paper-header-panel>
     <paper-toolbar>
       <div id="leftToolbarButtons">
-        <paper-icon-button id="backButton" icon="arrow-back" on-tap ="_onBackHandler" hidden></paper-icon-button>
+        <paper-icon-button id="prevButton" icon="arrow-back" on-click ="_onBackHandler" hidden></paper-icon-button>
       </div>
       <div id="appName">[[title]]</div>
       <div id="rightToolbarButtons">
-        <div id="notifications" hidden on-tap="_onReadNotifications">
+        <div id="notifications" hidden on-click="_onReadNotifications">
           <paper-icon-button id="notificationsButton" icon="social:notifications"></paper-icon-button>
           <paper-badge for="notificationsButton" label="[[listNotifications.length]]" class="icon"></paper-badge>
         </div>
-        <paper-icon-button id="closeButton" icon="close" dialog-dismiss></paper-icon-button>
+        <paper-icon-button id="closeButton" icon="close" on-click="_onCloseHandler"></paper-icon-button>
       </div>
     </paper-toolbar>
 
@@ -42,17 +42,17 @@
   	<neon-animated-pages class="fit" selected="{{selectedPage}}" attr-for-selected="id" entry-animation="slide-from-right-animation" exit-animation="slide-left-animation" on-iron-select="_pageChanged" on-neon-animation-finish="_pageDidAnimate">
 
       <!-- slide page: user instructions -->
-      <neon-animatable id="start" data-title="Add Contact" class="fit layout vertical center-center">
+      <neon-animatable id="start" data-title="Add Contact" class="layout vertical center-center">
         <h1>Ready?</h1>
         <p>Ask other party to start scanning now.</p>
-        <paper-button raised class="accent" on-tap="_onStartHandler">Start Scanning</paper-button>
+        <paper-button raised class="accent" on-click="_onStartHandler">Start Scanning</paper-button>
         <div class="gutter"></div>
         <p class="diminished">Your username is &ldquo;<span>[[username]]</span>&rdquo;</p>
       </neon-animatable>
 
       <!-- slide page: start scanning -->
       <neon-animatable id="scan" data-title="People nearby">
-        <iron-selector attr-for-selected="index" on-tap="_onItemSelected" hidden>
+        <iron-selector attr-for-selected="index" on-click="_onItemSelected" hidden>
           <iron-list items="{{listItems}}" as="item" class="fit">
             <template>
               <paper-material id="{{index}}" class="row">
@@ -78,8 +78,8 @@
           <h1 class="scratch">[[pairingCode]]</h1>
           <!-- <p>sent from <span>[[username]]</span></p> -->
           <div class="layout horizontal">
-            <paper-button class="accent-warn" on-tap="_onDeclineHandler"><iron-icon icon="cancel"></iron-icon> Decline</paper-button>
-            <paper-button class="accent-default" on-tap="_onConfirmationHandler"><iron-icon icon="check-circle"></iron-icon> Confirm</paper-button>
+            <paper-button class="accent-warn" on-click="_onDeclineHandler"><iron-icon icon="cancel"></iron-icon> Decline</paper-button>
+            <paper-button class="accent-default" on-click="_onConfirmationHandler"><iron-icon icon="check-circle"></iron-icon> Confirm</paper-button>
           </div>
           <div class="gutter"></div>
         </main>
@@ -116,8 +116,14 @@
 Polymer({
   is: "modal-identity",
 
+  attached: function() {
+    this.noCancelOnOutsideClick = true;
+    this.withBackdrop = true;
+  },
+
   behaviors: [
-      Polymer.PaperDialogBehavior,
+      // Polymer.PaperDialogBehavior,
+      Polymer.IronOverlayBehavior,
       Polymer.NeonAnimationRunnerBehavior,
       PageBehaviors.TreeTraversing,
       PageBehaviors.UIHelper,
@@ -125,7 +131,6 @@ Polymer({
 
   listeners: {
     'neon-animation-finish': '_onNeonAnimationFinish',
-    // 'track': '_handleTrack',
     'iron-form-invalid': '_formInvalid',
     'iron-form-submit': '_formSubmit',
     'iron-form-response': '_formResponse',
@@ -225,7 +230,7 @@ Polymer({
 
     // stop active processes on last page 
     if(this.lastPage==="pair") {
-      //Polymer.dom(this.$.backButton).setAttribute("hidden",true);
+      //Polymer.dom(this.$.prevButton).setAttribute("hidden",true);
       this._stopPairing();
     } else if(this.lastPage==="scan"){
       this._stopScanning();
@@ -237,9 +242,9 @@ Polymer({
 
     // detect if back button is needed?
     if(this.selectedPage && this._getPageIndex(this.selectedPage) > 0) {
-      Polymer.dom(this.$.backButton).removeAttribute("hidden");
+      Polymer.dom(this.$.prevButton).removeAttribute("hidden");
     } else {
-      Polymer.dom(this.$.backButton).setAttribute("hidden",true);
+      Polymer.dom(this.$.prevButton).setAttribute("hidden",true);
     }
     
     // do stuff for the page selected
@@ -253,11 +258,9 @@ Polymer({
         break;
       case "pair":
         console.log("#3 pair");
-        //Polymer.dom(this.$.backButton).removeAttribute("hidden");
+        //Polymer.dom(this.$.prevButton).removeAttribute("hidden");
         if(this.selectedItem){
           this._startPairing();
-        } else {
-          // TODO: show error view to user
         }
         break;
       case "save":
@@ -316,6 +319,7 @@ Polymer({
     }
   },
 
+  // try this.$.pages.selectNext()
   _goNextPage: function() {
     var pageIndex = this._getPageIndex( this.selectedPage );
     var totalPages = this.querySelector('neon-animated-pages').querySelectorAll('neon-animatable').length;
@@ -324,6 +328,10 @@ Polymer({
     } else {
       console.log("Error, can't go to next page. @" + pageIndex);
     }
+  },
+
+  _onCloseHandler: function(e) {
+    this.close();
   },
 
   _onBackHandler: function(e) {
@@ -632,25 +640,6 @@ Polymer({
      this.showAllSelectors(["aside"]);
   },
 
-  _handleTrack: function(e) {
-    switch(e.detail.state) {
-      case 'start':
-        console.log('Tracking started!');
-        break;
-      case 'track':
-        // console.log('Tracking in progress... dy:' + e.detail.dy);
-        // console.log("this.style.top" + this.style.top);
-        // this.style.top = e.detail.dy + 'px';
-        break;
-      case 'end':
-        console.log('Tracking ended! dy:' + e.detail.dy );
-        if(e.detail.dy > 100){
-          this.close();
-        }
-        break;
-    }
-  },
-
   /* animation behavior methods */
 
   _renderOpened: function() {
@@ -675,7 +664,6 @@ Polymer({
     if (this.opened) {
       console.log("*** modal opened ***");
       this._finishRenderOpened();
-      this.style.top = '0px';
     } else {
       this._resetState(); // reset state for next time
       this._finishRenderClosed();

@@ -35,21 +35,21 @@
 </head>
 <body unresolved fullbleed layout vertical>
 <template is="dom-bind" id="my-app">
-  <paper-header-panel>
 
+  <!-- modals -->
+  <modal-identity entry-animation="slide-from-bottom-animation" exit-animation="slide-from-top-animation" modal></modal-identity>
+
+  <paper-header-panel>
     <!-- top bar -->
     <paper-toolbar id="mainToolbar">
-      <!-- Application name -->
-      <div class="middle middle-container center horizontal layout">
-        <div id="leftToolbarButtons">
+      <div id="leftToolbarButtons">
           <paper-icon-button id="backButton" icon="arrow-back" hidden></paper-icon-button>
           <paper-icon-button id="refreshButton" icon="refresh" hidden></paper-icon-button>
           <paper-icon-button id="debugButton" icon="bug-report" hidden></paper-icon-button>
-          <paper-icon-button id="discoverButton" icon="social:group-add"></paper-icon-button>
+          <paper-icon-button id="discoverButton" icon="social:group-add" hidden></paper-icon-button>
         </div>
-        <div id="appName">{{title}}</div>
-      </div>
-      <span class="flex"></span>
+      <!-- Application name -->
+      <div id="appName">{{title}}</div>
       <!-- Toolbar icons -->
       <div id="rightToolbarButtons">
         <paper-icon-button id="deleteButton" icon="delete" class="concealed" hidden></paper-icon-button>
@@ -72,14 +72,10 @@
       <page-editor data-route="editor"></page-editor>
     </iron-pages>
     <!-- end contents -->
-
   </paper-header-panel>
 
-  <!-- modals -->
-  <modal-identity entry-animation="slide-from-bottom-animation" exit-animation="slide-from-top-animation" modal></modal-identity>
-
   <!-- toast alert -->
-  <paper-toast text="wish you where here ;)"></paper-toast>
+  <paper-toast text="Wish you where here! ;)"></paper-toast>
 </template>
 <!-- polymer app js -->
 <script type="text/javascript" src="scripts/app.js"></script>
