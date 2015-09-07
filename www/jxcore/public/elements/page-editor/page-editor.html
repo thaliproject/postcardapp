@@ -5,7 +5,19 @@
 <dom-module id="page-editor">
 
 <template>
-  <textarea id="textbox" class="postcard flex" value="{{editText::input}}" placeholder="Message" on-focus="shouldFocusWithoutScrollUp"></textarea>
+  <div class="layout vertical fit">
+    <section class="selectBox">
+      <p class="label">To</p>
+      <iron-ajax url="/_api/contacts" last-response="{{listData}}" on-response="_onResponseReceived"></iron-ajax>
+      <select class="fill">
+        <option value="0" selected>All</option>
+        <template is="dom-repeat" items="{{listData.rows}}" as="item">
+          <option bind-value="[[item.doc._id]]">[[item.doc.username]]</option>
+        </template>
+      </select>
+    </section>
+    <textarea id="textbox" class="postcard flex" value="{{editText::input}}" placeholder="Message" on-focus="shouldFocusWithoutScrollUp"></textarea>
+  </div>
 </template>
 
 <script>
@@ -23,7 +35,11 @@ Polymer({
     backButton: Object,
     saveButton: Object,
     textBox: Object,
-    editDoc: Object
+    editDoc: Object,
+    listData: {
+      type: Object,
+      notify: true
+    }
   },
   created: function() {
     console.log(this.localName + ' was created');
@@ -52,6 +68,8 @@ Polymer({
       this._getCard(id);
       this.shouldFocus(this.textBox); // UX send autofocus to textarea
     }
+
+    this._reloadData(); // load contacts
   },
   viewWillDisappear: function() {
     console.log(this.localName + ' viewWillDisappear');
@@ -73,7 +91,7 @@ Polymer({
     var toolbarFunctionArray = [this._backButtonHandler, this._saveButtonHandler.bind(this)];
     this.activateButtons(toolbarButtonArray, toolbarFunctionArray);
     
-    this._useFullHeight("textarea"); // NB: only use with standard textarea
+    //this._useFullHeight("textarea"); // NB: only use with standard textarea
   },
   deactivate: function() {
     console.log(this.localName + " deactivate... active status:" + this._isActivated);
@@ -112,19 +130,62 @@ Polymer({
       console.log("Error looking up doc object at index:",index);
     }
   },
-  _useFullHeight: function(selector) {
-    var element = this.querySelector(selector);
-    if(element){
-      console.log('useFullHeight');
-      var h = window.innerHeight;
-      var y = document.getElementById('mainToolbar').offsetHeight + document.getElementById('dropShadow').offsetHeight;
-      var remainingHeight = h - y;
-      console.log("remainingHeight = " + remainingHeight + " --y:"+y);
-      element.style.height = remainingHeight+'px';
-    } else {
-      console.log('useFullHeight did not get an element "' + selector +'"');
+
+  // iron-ajax request
+  _reloadData: function() {
+    var ironAjax = this.querySelector("iron-ajax");
+    if(ironAjax){
+        console.log("load data");
+        ironAjax.generateRequest();
     }
-  }
+  },
+
+  // iron-ajax response
+  _onResponseReceived: function () {
+      console.log("_onResponseReceived");
+      console.log(this.listData);
+
+      if(!this.listData || !this.listData.rows || this.listData.total_rows==0 ) {
+        console.log("Error no records found.");
+        return;
+      }
+
+      console.log("listData offset:" + this.listData.offset + " total_rows:" + this.listData.total_rows );
+
+      // splice out 'me' record
+      if(this.listData.rows.length>0) {
+        var row;
+        for(var i=0; i<this.listData.rows.length; i++) {
+          row = this.listData.rows[i];
+          if(row.id === 'me') {
+            console.log("me:" + row.doc.user);
+            this.splice('listData.rows',i,1);
+            break;
+          }
+        }
+      }
+
+      //sort records by username 
+      this.set('listData.rows', _.sortBy(this.listData.rows, function(o){
+        return o.doc.username;
+      } 
+      ));
+  },
+
+  // _useFullHeight: function(selector) {
+  //   var element = this.querySelector(selector);
+  //   if(element){
+  //     console.log('useFullHeight');
+  //     var h = window.innerHeight;
+  //     var y = document.getElementById('mainToolbar').offsetHeight + document.getElementById('dropShadow').offsetHeight;
+  //     y += 80; // select height
+  //     var remainingHeight = h - y;
+  //     console.log("remainingHeight = " + remainingHeight + " -y:"+y);
+  //     element.style.height = remainingHeight+'px';
+  //   } else {
+  //     console.log('useFullHeight did not get an element "' + selector +'"');
+  //   }
+  // }
 });
 </script>
 </dom-module>
