@@ -5,9 +5,9 @@
 <dom-module id="page-editor">
 
 <template>
-  <div class="layout vertical fit">
-    <section class="selectBox">
-      <p class="label">To</p>
+  <main class="layout vertical fit">
+    <paper-material elevation="1" class="selectBox">
+      <p class="label"><strong>To</strong></p>
       <iron-ajax url="/_api/contacts" last-response="{{listData}}" on-response="_onResponseReceived"></iron-ajax>
       <select class="fill">
         <option value="0" selected>All</option>
@@ -15,12 +15,14 @@
           <option bind-value="[[item.doc._id]]">[[item.doc.username]]</option>
         </template>
       </select>
-    </section>
+    </paper-material>
+    <!-- message -->
     <textarea id="textbox" class="postcard flex" value="{{editText::input}}" placeholder="Message" on-focus="shouldFocusWithoutScrollUp"></textarea>
-  </div>
+  </main>
 </template>
 
 <script>
+'use strict';
 Polymer({
   is: "page-editor",
   behaviors: [

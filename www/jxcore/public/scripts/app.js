@@ -1,3 +1,5 @@
+'use strict';
+
 // Polymer app
 var myApp = document.querySelector('#my-app');
 

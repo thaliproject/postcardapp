@@ -1,4 +1,5 @@
 <script>
+'use strict';
 var PageBehaviors = PageBehaviors || {}; // namespace
 
 /*
@@ -33,7 +34,8 @@ PageBehaviors.ButtonListeners = {
 		if(!this._isActivated && buttonArray.length===buttonFunctionArray.length) {
 			console.log(this.localName + " activate toolbar buttons");
 			var button, func;
-			for(var i=0; i<buttonArray.length; i++) {
+			var i = buttonArray.length;
+			while(i--) {
 				button = buttonArray[i];
 				func = buttonFunctionArray[i];
 				if(button && func) {
@@ -53,7 +55,9 @@ PageBehaviors.ButtonListeners = {
 	deactivateButtons : function(buttonArray) {
 		if(this._isActivated) {
 			console.log(this.localName + " deactivate toolbar buttons");
-			for(var button; buttonArray.length>0;) {
+			var button;
+			var i = buttonArray.length;
+			while (i--) {
 				button = buttonArray.pop();
 				if(button && this._dontHideIds.indexOf(button.id)==-1) {
 					button.setAttribute("hidden", true);
@@ -70,7 +74,9 @@ PageBehaviors.ButtonListeners = {
 	},
 
 	_deattachTempListeners : function() {
-    	for(var tl; this._tempListeners.length>0; ) {
+		var tl;
+		var i = this._tempListeners.length;
+    	while (i--) {
     		tl = this.pop('_tempListeners');
     		tl.element.removeEventListener(tl.event, tl.func);
     		console.log("- removed temp listener: " + tl.event);

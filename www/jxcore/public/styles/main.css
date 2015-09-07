@@ -31,7 +31,7 @@ body, .noSelect {
 }
 
 body {
-	-webkit-transform: translateZ(0px); /* fixes iOS8 iframe scroll issue? */
+	-webkit-transform: translateZ(0px); /* hack for iOS8 iframe scroll issue */
 }
 
 /* iOS nav bar style */
@@ -202,31 +202,34 @@ paper-fab.FAB {
 
 .selectBox {
 	width: 100%;
+	/* box-shadow: 0px 0px 20px #000; */
 }
 
 .selectBox,
 .selectBox p.label,
 .selectBox select.fill {
-	height: 80px;
+	height: 70px;
 	font-size: 18px;
 	display: block;
+	background: white;
 }
 
 p.label {
-	line-height: 80px;
+	line-height: 70px;
 	position: absolute;
 	top: 0; 
 	left: 0;
 	margin: 0;
 	padding: 0 10px;
-	z-index: 1;
+	box-sizing: border-box;
+	width: 50px;
 }
 
 select.fill {
 	position: absolute;
+	left: 50px; /* same as label width */
 	top: 0; 
-	left: 50px;
-	text-indent: 10px;
+	text-indent: 0px;
 	margin: 0;
 	padding: 0;
 	box-sizing: border-box;
@@ -239,7 +242,6 @@ select.fill {
 	-webkit-appearance: none;
 	-moz-appearance: none;
 	color: #3E51B5;
-	background: white;
 }
 
 /* modal page */
@@ -359,3 +361,7 @@ paper-badge.icon {
 	filter: grayscale(1);
 	-webkit-filter: grayscale(1);
 }*/
+
+.hidden {
+	visibility: hidden;
+}

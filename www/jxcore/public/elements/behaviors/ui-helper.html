@@ -1,4 +1,5 @@
 <script>
+'use strict';
 var PageBehaviors = PageBehaviors || {}; // namespace
 
 /*
@@ -22,13 +23,15 @@ PageBehaviors.UIHelper = {
 	},
 
 	hideAll : function(elementArray) {
-		for (var i=0; i<elementArray.length; i++) {
+		var i = elementArray.length;
+		while (i--) {
 			this.hide( elementArray[i] );
 		}
 	},
 
 	showAll : function(elementArray) {
-		for (var i=0; i<elementArray.length; i++) {
+		var i = elementArray.length;
+		while (i--) {
 			this.show( elementArray[i] );
 		}
 	},
@@ -47,14 +50,16 @@ PageBehaviors.UIHelper = {
 
 	hideAllSelectors : function(selectorArray, element) {
 		if (element === undefined) element = this;
-		for (var i=0; i<selectorArray.length; i++) {
+		var i = selectorArray.length;
+		while (i--) {
 			this.hideAll( element.querySelectorAll(selectorArray[i]) );
 		}
 	},
 
 	showAllSelectors : function(selectorArray, element) {
 		if (element === undefined) element = this;
-		for (var i=0; i<selectorArray.length; i++) {
+		var i = selectorArray.length;
+		while (i--) {
 			this.showAll( element.querySelectorAll(selectorArray[i]) );
 		}
 	},

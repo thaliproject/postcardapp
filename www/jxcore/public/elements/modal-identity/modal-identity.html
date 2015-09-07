@@ -3,6 +3,7 @@
 <link rel="import" href="/bower_components/neon-animation/neon-animation-runner-behavior.html">
 <link rel="import" href="/elements/behaviors/tree-traversing.html">
 <link rel="import" href="/elements/behaviors/ui-helper.html">
+<link rel="import" href="/elements/behaviors/multi-platform.html">
 
 <dom-module id="modal-identity">
 
@@ -14,9 +15,9 @@
       </div>
       <div id="appName">[[title]]</div>
       <div id="rightToolbarButtons">
-        <div id="notifications" hidden on-click="_onReadNotifications">
+        <div id="notifications" on-click="_onReadNotifications" class="invisible">
           <paper-icon-button id="notificationsButton" icon="social:notifications"></paper-icon-button>
-          <paper-badge for="notificationsButton" label="[[listNotifications.length]]" class="icon"></paper-badge>
+          <paper-badge for="notificationsButton" label="[[listNotifications.unread]]" class="icon"></paper-badge>
         </div>
         <paper-icon-button id="closeButton" icon="close" on-click="_onCloseHandler"></paper-icon-button>
       </div>
@@ -24,10 +25,10 @@
 
     <!-- notifications panel -->
     <section id="notificationsPanel" class="fit" hidden>
-      <details class="fit vertical layout center-center">
+      <article class="fit vertical layout center-center">
         <h1>Nothing to see here!</h1>
-      </details>
-      <iron-list items="{{listNotifications}}" as="item" class="fit" hidden>
+      </article>
+      <iron-list items="{{listNotifications.rows}}" as="item" class="fit" hidden>
         <template>
           <paper-material id="{{index}}" class="row">
             <div class="fit layout horizontal center">
@@ -38,8 +39,9 @@
       </iron-list>
     </section>
 
-    <!-- slide pages -->
-  	<neon-animated-pages class="fit" selected="{{selectedPage}}" attr-for-selected="id" entry-animation="slide-from-right-animation" exit-animation="slide-left-animation" on-iron-select="_pageChanged" on-neon-animation-finish="_pageDidAnimate">
+    <!-- slide pages: -->
+    <!-- NB: iOS8 memory leak when using animation attributes: entry-animation="slide-from-right-animation" exit-animation="slide-left-animation" -->
+  	<neon-animated-pages class="fit" selected="{{selectedPage}}" attr-for-selected="id"  on-iron-select="_pageChanged" on-neon-animation-finish="_pageDidAnimate">
 
       <!-- slide page: user instructions -->
       <neon-animatable id="start" data-title="Add Contact" class="layout vertical center-center">
@@ -93,7 +95,7 @@
       <!-- slide page: save user contact -->
       <neon-animatable id="save" data-title="Save contact">
         <form is="iron-form" class="inset" hidden>
-          <paper-input name="username" label="Username" bind-value="{{selectedItem.username::input}" prevent-invalid-input allowed-pattern="[A-Za-z0-9_\.]" always-float-label required></paper-input>
+          <paper-input name="username" label="Username" bind-value="{{petName::input}" prevent-invalid-input allowed-pattern="[A-Za-z0-9_\.]" always-float-label required></paper-input>
           <input is="iron-input" name="_id" bind-value="{{selectedItem.id::input}}" type="hidden" />
           <input is="iron-input" name="_username" bind-value="{{selectedItem.username::input}}" type="hidden" />
           <div class="alignCenter">
@@ -113,6 +115,7 @@
 </template>
 
 <script>
+'use strict';
 Polymer({
   is: "modal-identity",
 
@@ -127,6 +130,7 @@ Polymer({
       Polymer.NeonAnimationRunnerBehavior,
       PageBehaviors.TreeTraversing,
       PageBehaviors.UIHelper,
+      PageBehaviors.MultiPlatform
     ],
 
   listeners: {
@@ -179,13 +183,12 @@ Polymer({
       value: ""
     },
     listNotifications : {
-      type: Array,
-      value: []
-    },
-    petName: {
-      type: String,
-      value: "bob",
-      notify: true
+      type: Object,
+      notify: true,
+      value: {
+        rows: [],
+        unread: 0
+      }
     },
     errorUsername: {
       type: String,
@@ -236,6 +239,7 @@ Polymer({
       this._stopScanning();
     }
     //this.lastPage = this.selectedPage;
+    this._pageDidAnimate(); // NB: only call if no animation
 
     // hide notifications panel
     this.hideSelector("#notificationsPanel");
@@ -340,7 +344,7 @@ Polymer({
 
   _onStartHandler: function(e) {
     this.set('listItems', []); // clear list 
-    this._goNextPage(); //this._gotoPage("scan");
+    this._goNextPage();
   },
 
   _onItemSelected: function(e) {
@@ -376,9 +380,10 @@ Polymer({
       this.taskScanning = setInterval(this._mockScanningEvent.bind(this), 2000);
     }
 
-    // simulate pairing request during scanning state
+    //simulate pairing request during scanning state
     if(!this.taskNotification) {
       this.taskNotification = setTimeout(this._mockPairingNotification.bind(this), 7000);
+      //this.taskNotification = this.async(this._mockPairingNotification, null, 7000);
     }
   },
 
@@ -391,6 +396,7 @@ Polymer({
   },
 
   _mockScanningEvent: function() {
+    console.log("* scanning...");
     var isAvailable = (Math.random() > 0.5);
     var isViewRequiringUpdate = false;
 
@@ -447,6 +453,7 @@ Polymer({
   /* notifications */
 
   _mockPairingNotification : function() {
+    console.log("* notifying...");
     if (this.listItems.length > 0) {
       var peer = this.listItems[0];
       var code = this.pairingCode; //this._generateCode();
@@ -478,18 +485,25 @@ Polymer({
   },
 
   _addNotification : function(message) {
-    this.unshift('listNotifications', {message:message});
-    if(this.listNotifications.length > 0) {
-      this.show( this.querySelector('#notifications') );
+    this.unshift('listNotifications.rows', {message:message,isRead:false});
+    if(this.listNotifications.unread) {
+      var unread = this.listNotifications.unread+1;
+      console.log("Add unread notification:" + unread );
+      this.set('listNotifications.unread', unread );
+    } else {
+      this.set('listNotifications.unread', 1);
     }
+
+    this.querySelector('#notifications').classList.remove("invisible"); //this.show( this.querySelector('#notifications') );
   },
 
   /* pairing */
 
   _startPairing: function() {
+    // simulate wait for an async callback
     if(!this.taskPairing) {
-      // simulate wait for an async callback
-      this.taskPairing = setTimeout(this._mockPairing.bind(this), 3000); 
+      this.taskPairing = setTimeout(this._mockPairing.bind(this), 3000);
+      //this.taskPairing = this.async(this._mockPairing, 3000);
     }
   },
 
@@ -498,10 +512,12 @@ Polymer({
       console.log("stop pairing service");
       clearTimeout(this.taskPairing);
       this.taskPairing = null;
+      //this.cancelAsync(this.taskPairing);
     }
   },
 
   _mockPairing: function() {
+    console.log("* pairing...");
     var code = this._generateCode(); 
     console.log("random pairing code generated: " + code);
     this.set('pairingCode', code);
@@ -528,11 +544,14 @@ Polymer({
     var suggestedUsername = 'x' + this.selectedItem.username + 'x';
     console.log("suggested username available: " + suggestedUsername);
 
-    this._showSelectedPageView("form");
-
     //this.set('selectedItem.username', suggestedUsername);
-    this.set('petName', suggestedUsername);
-    this.querySelector('input[name="username"]').value = suggestedUsername; // hack to update paper input
+    var input = this.querySelector('input[name="username"]');
+    if(input) {
+      input.value = suggestedUsername;
+      this.autoFocus(input); // UX send focus to textarea
+    }
+
+    this._showSelectedPageView("form");
   },
 
   _formInvalid: function(e) {
@@ -602,14 +621,14 @@ Polymer({
     console.log("Read notifications");
     this.toggleVisibility("#notificationsPanel");
     //console.log(this.listNotifications);
-    if(this.listNotifications.length > 0) {
+    if(this.listNotifications.rows && this.listNotifications.rows.length > 0) {
       this.show( this.querySelector("#notificationsPanel iron-list") );
-      this.hide( this.querySelector("#notificationsPanel details") );
+      this.hide( this.querySelector("#notificationsPanel article") );
       // needs a draw call after hidden state
       this.querySelector("#notificationsPanel iron-list").fire('resize');
     } else {
       this.hide( this.querySelector("#notificationsPanel iron-list") );
-      this.show( this.querySelector("#notificationsPanel details") );
+      this.show( this.querySelector("#notificationsPanel article") );
     }
   },
 
@@ -665,8 +684,8 @@ Polymer({
       console.log("*** modal opened ***");
       this._finishRenderOpened();
     } else {
-      this._resetState(); // reset state for next time
       this._finishRenderClosed();
+      this._resetState(); // reset state for next time
       console.log("*** modal closed ***");
     }
   }
