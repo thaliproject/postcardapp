@@ -15,9 +15,10 @@
       </div>
       <div id="appName">[[title]]</div>
       <div id="rightToolbarButtons">
-        <div id="notifications" on-click="_onReadNotifications" class="invisible">
+        <div id="notifications" on-click="_onReadNotifications" class="ghost">
           <paper-icon-button id="notificationsButton" icon="social:notifications"></paper-icon-button>
-          <paper-badge for="notificationsButton" label="[[listNotifications.unread]]" class="icon"></paper-badge>
+          <div class="badge">[[listNotifications.unread]]</div>
+          <!-- <paper-badge for="notificationsButton" label="!" class="icon"></paper-badge> -->
         </div>
         <paper-icon-button id="closeButton" icon="close" on-click="_onCloseHandler"></paper-icon-button>
       </div>
@@ -205,8 +206,9 @@ Polymer({
   _setState: function() {
     this.username = myApp.username;
     this.set('title', this._getSelectedPageTitle()); // update page title 
-    //this.set('title', "Add Contact");
-    this._gotoPageAtIndex(0); //this._gotoPage("start");
+    if(this._getSelectedPageIndex()>0) {
+      this._gotoPageAtIndex(0); 
+    }
   },
 
   _resetState: function() {
@@ -287,12 +289,26 @@ Polymer({
   _getPageIndex: function(pageName) {
     var parent = this.querySelector('neon-animated-pages');
     var children = parent.querySelectorAll('neon-animatable');
-    for(var i=0; i<children.length; i++) {
+    var i = children.length;
+    while (i--) {
       if(pageName === children[i].id) {
         return i;
       }
     }
     return -1; // return error not found 
+  },
+
+  _getSelectedPageIndex: function() {
+    var parent = this.querySelector('neon-animated-pages');
+    var children = parent.querySelectorAll('neon-animatable');
+    var i=0, l=children.length;
+    while (i<l) {
+      if( children[i].classList.contains("iron-selected") ) {
+        return i;
+      }
+      i++;
+    }
+    return -1; // return no selection
   },
 
   _gotoPage: function(pageName) {
@@ -494,7 +510,7 @@ Polymer({
       this.set('listNotifications.unread', 1);
     }
 
-    this.querySelector('#notifications').classList.remove("invisible"); //this.show( this.querySelector('#notifications') );
+    this.querySelector('#notifications').classList.remove("ghost"); //this.show( this.querySelector('#notifications') );
   },
 
   /* pairing */
