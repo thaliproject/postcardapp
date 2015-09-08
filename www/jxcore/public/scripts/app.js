@@ -13,8 +13,9 @@ myApp.url = myApp.api + "cards/";
 myApp._api = myApp.host + "_api/";
 myApp._url = myApp._api + "contacts/";
 
-// myApp session vars
+// myApp user session vars
 myApp.username = "";
+myApp.user_id = "";
 
 // default logging function to call
 var log = function(message) {

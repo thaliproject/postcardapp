@@ -48,8 +48,8 @@ Polymer({
     addButton: Object,
     refreshButton: Object,
     deleteButton: Object,
-    _isSaving: false,
-    _isEditMode: false
+    _isEditMode: false,
+    _isLoading: false
   },
   created: function() {
     console.log(this.localName + ' was created');
@@ -68,7 +68,7 @@ Polymer({
     this.activate();
     myApp.title = "Postcards";
     // load data
-    if (!this._isSaving) {
+    if(!this._isLoading) {
       this._reloadData();
     }
   },
@@ -103,10 +103,6 @@ Polymer({
   _addCard: function(e) {
     console.log("add card: " + e);
     getURL("editor");
-  },
-  _reloadData: function(e) {
-    console.log("Reload Data...");
-    this._generateRequest();
   },
 
   // enable editting for selected postcard 
@@ -151,53 +147,10 @@ Polymer({
     });
   },
 
-  // create item 
-  createItem: function(content) {
-    var cardId = generateUUID();
-    console.log("+ Create item:" + content + " id:"+ cardId);
-    this._saveCard(cardId, myApp.username, content, true);
-  },
-  // update item
-  updateItem: function(content, cardId) {
-    console.log("+ Edit item:" + content + " id:"+ cardId);
-    this._saveCard(cardId, myApp.username, content, true);
-  },
-  _saveCard: function(cardId, author, content, needsReload) {
-    var self = this;
-    this._isSaving = true;
-    console.log("=> Save item:" + content + " id:"+ cardId + " by:"+ author);
-    $.ajax({
-        url: myApp.url + cardId,
-        type: 'PUT',
-        contentType: 'application/json',
-        data: JSON.stringify({ 
-          author: author, 
-          content: content
-        }),
-        dataType: 'json',
-        error: function(jqXHR, textStatus, errorThrown) {
-          console.log('@ error in save Card ' + JSON.stringify(jqXHR) + ' ' + textStatus + ' ' + errorThrown);
-          alert("Error saving card");
-        },
-        success: function(data, textStatus, jqXHR) {
-          console.log("@ saved Card - " + textStatus);
-          console.log(data);
-          // if 'ok' update client UI else alert user with error
-          if(data.ok && data.ok===true) {
-            console.log("OK",textStatus);
-            self._isSaving = false;
-            if (needsReload) {
-              self._reloadData(); // new item created - reload list data
-            }
-          } else {
-            alert("Save card error");
-          }
-        }
-    });
-  },
-
   // iron-ajax request
-  _generateRequest: function() {
+  _reloadData: function() {
+    this._isLoading = true;
+    console.log("load card data");
     var ironAjax = this.querySelector("iron-ajax");
     console.log(ironAjax);
     if(ironAjax){
@@ -208,6 +161,7 @@ Polymer({
 
   // iron-ajax response
   _onResponseReceived: function () {
+      this._isLoading = false;
       console.log("_onResponseReceived");
       console.log(this.listData);
 

@@ -100,8 +100,9 @@ Polymer({
     console.log(e);
     // check server response
     if(e.detail && e.detail.user) {
-      console.log("save username: " + e.detail.user);
-      myApp.username = e.detail.user; //this.username;
+      console.log("save username: " + e.detail.user + " _id:" + e.detail._id);
+      myApp.username = e.detail.user;
+      myApp.user_id = e.detail._id;
       getURL("home");
     } else {
       alert("Error, unable to save user session. Please try again.");

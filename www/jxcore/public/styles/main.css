@@ -343,8 +343,8 @@ paper-badge.icon {
 }
 
 #notificationsPanel {
-	background-color: rgba(132,159,204,0.95);
-	/*background: #849FCC;*/ /* tint #64789A */
+	/*background-color: rgba(132,159,204,0.95);*/
+	background: #849FCC;
 	color: white;
 	position: absolute;
 	top: 0;
