@@ -74,7 +74,7 @@ $ jx install -g cordova
 
 You will need two (it's a peer to peer system) Android devices running at least KitKat. And no, the emulator won't work. We depend on specific radios to work and they aren't in the emulator.
 
-# Building the postcard app on Android
+# Building the postcard app
 
 ```shell
 curl https://codeload.github.com/thaliproject/postcardapp/zip/story_0 > thali.zip
