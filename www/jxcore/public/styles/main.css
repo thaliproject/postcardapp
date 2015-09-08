@@ -11,6 +11,7 @@ html,body{
 	width: 100%;
 	background-color: white;
 	min-width: 320px; /* smallest screen width supported */
+	min-height: 320px; /* smallest screen height supported */
 }
 
 /* disable webkit bounce effect in the browser */
@@ -208,14 +209,14 @@ paper-fab.FAB {
 .selectBox,
 .selectBox p.label,
 .selectBox select.fill {
-	height: 70px;
+	height: 80px;
 	font-size: 18px;
 	display: block;
 	background: white;
 }
 
 p.label {
-	line-height: 70px;
+	line-height: 80px;
 	position: absolute;
 	top: 0; 
 	left: 0;
@@ -233,7 +234,7 @@ select.fill {
 	margin: 0;
 	padding: 0;
 	box-sizing: border-box;
-	width: 100%;
+	width: calc(100% - 50px);
 	height: 100%;
 	border: 0;
 	border-radius: 0;

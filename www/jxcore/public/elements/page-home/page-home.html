@@ -14,7 +14,7 @@
         <paper-card id="{{index}}" class="row">
           <div class="card-content postcard">
             <span>[[_humanizeDate(item.doc.dateCreated)]]</span>
-            <pre>{{item.doc.content}}</pre>
+            <pre>{{item.doc.text}}</pre>
             <p>[[item.doc.author]]</p>
             <paper-fab id="{{item.doc._id}}" icon="delete" class="FAB" hidden></paper-fab>
           </div>
@@ -67,6 +67,9 @@ Polymer({
     console.log(this.localName + ' viewWillAppear');
     this.activate();
     myApp.title = "Postcards";
+    if(myApp.discoverButton) {
+      myApp.discoverButton.removeAttribute("hidden");
+    }
     // load data
     if(!this._isLoading) {
       this._reloadData();
@@ -91,7 +94,7 @@ Polymer({
 
     var toolbarButtonArray = [this.addButton, this.refreshButton, this.deleteButton];
     var toolbarFunctionArray = [this._addCard, this._reloadData.bind(this), this._toggleEditMode.bind(this)];
-    this.activateButtons(toolbarButtonArray, toolbarFunctionArray);    
+    this.activateButtons(toolbarButtonArray, toolbarFunctionArray);
   },
   deactivate: function() {
     console.log(this.localName + " deactivate... active status:" + this._isActivated);

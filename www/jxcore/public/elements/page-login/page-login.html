@@ -5,7 +5,7 @@
 
 <template>
   <form is="iron-form" id="form-login" method="post" action="/api/login" class="inset" hidden>
-    <paper-input name="username" label="Username" bind-value="{{username::input}}" error-message="{{error_username}}" required></paper-input>
+    <paper-input name="username" label="Username" bind-value="{{username::input}}" error-message="{{errorUsername}}" required></paper-input>
     <div class="alignCenter">
       <paper-button class="accent" raised on-click="submitForm">Save</paper-button>
     </div>
@@ -27,7 +27,7 @@ Polymer({
       type: String,
       value: ""
     },
-    error_username: {
+    errorUsername: {
       type: String,
       value: "Please enter a username."
     }

@@ -91,7 +91,7 @@ function routes (db) {
                     db.put({
                             _id: req.params.cardId, 
                             author: req.body.author, 
-                            content: req.body.content,
+                            text: req.body.text,
                             dateCreated: Math.floor((new Date()).getTime() / 1000)
                         })
                         .then(function (response) {
@@ -103,7 +103,7 @@ function routes (db) {
                 } else if (err) {
                     res.status(err.status || 500).send(err.message || err);
                 } else {
-                    doc.content = req.body.content;
+                    doc.text = req.body.text;
                     db.put(doc)
                         .then(function (response) {
                             res.status(200).json(response);

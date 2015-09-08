@@ -42,7 +42,7 @@
 
     <!-- slide pages: -->
     <!-- NB: iOS8 memory leak when using animation attributes: entry-animation="slide-from-right-animation" exit-animation="slide-left-animation" -->
-  	<neon-animated-pages class="fit" selected="{{selectedPage}}" attr-for-selected="id"  on-iron-select="_pageChanged" on-neon-animation-finish="_pageDidAnimate">
+  	<neon-animated-pages class="fit" selected="{{selectedPage}}" attr-for-selected="id"  on-iron-select="_pageChanged" on-neon-animation-finish="_pageDidAnimate" entry-animation="slide-from-right-animation" exit-animation="slide-left-animation">
 
       <!-- slide page: user instructions -->
       <neon-animatable id="start" data-title="Add Contact" class="layout vertical center-center">
@@ -96,7 +96,7 @@
       <!-- slide page: save user contact -->
       <neon-animatable id="save" data-title="Save contact">
         <form is="iron-form" class="inset" hidden>
-          <paper-input name="username" label="Username" bind-value="{{petName::input}" prevent-invalid-input allowed-pattern="[A-Za-z0-9_\.]" always-float-label required></paper-input>
+          <paper-input name="username" label="Username" bind-value="{{petName::input}" prevent-invalid-input allowed-pattern="[A-Za-z0-9_\.]" always-float-label error-message="{{errorUsername}}" required></paper-input>
           <input is="iron-input" name="_id" bind-value="{{selectedItem.id::input}}" type="hidden" />
           <input is="iron-input" name="_username" bind-value="{{selectedItem.username::input}}" type="hidden" />
           <div class="alignCenter">
@@ -240,8 +240,6 @@ Polymer({
     } else if(this.lastPage==="scan"){
       this._stopScanning();
     }
-    //this.lastPage = this.selectedPage;
-    this._pageDidAnimate(); // NB: only call if no animation
 
     // hide notifications panel
     this.hideSelector("#notificationsPanel");
@@ -252,8 +250,19 @@ Polymer({
     } else {
       Polymer.dom(this.$.prevButton).setAttribute("hidden",true);
     }
-    
-    // do stuff for the page selected
+
+    //this._pageDidAnimate(); // NB: only call if no animation start/finish attributes set
+  },
+
+  _pageDidAnimate: function() {
+    // reset last page view state
+    if(this.lastPage) {
+      console.log('#'+this.lastPage + " page did disappear");
+      this._resetPageView( this.querySelector('#'+this.lastPage) );
+    }
+    this.lastPage = this.selectedPage;
+
+     // do stuff for the page selected
     switch (this.selectedPage) {
       case "start":
         console.log("#1 start");
@@ -264,7 +273,6 @@ Polymer({
         break;
       case "pair":
         console.log("#3 pair");
-        //Polymer.dom(this.$.prevButton).removeAttribute("hidden");
         if(this.selectedItem){
           this._startPairing();
         }
@@ -275,15 +283,6 @@ Polymer({
         break;
       default:
     }
-  },
-
-  _pageDidAnimate: function() {
-    // reset last page view state
-    if(this.lastPage) {
-      console.log('#'+this.lastPage + " page did disappear");
-      this._resetPageView( this.querySelector('#'+this.lastPage) );
-    }
-    this.lastPage = this.selectedPage;
   },
 
   _getPageIndex: function(pageName) {

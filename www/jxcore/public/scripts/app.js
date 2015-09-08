@@ -44,7 +44,7 @@ myApp.addEventListener('dom-change', function() {
 	myApp.modalDialog = document.querySelector("modal-identity");
 	if(myApp.discoverButton) {
 		myApp.discoverButton.addEventListener("click", openModalDialog);
-		myApp.discoverButton.removeAttribute("hidden");
+		//myApp.discoverButton.removeAttribute("hidden");
 	}
 });
 

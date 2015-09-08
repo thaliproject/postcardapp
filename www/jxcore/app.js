@@ -26,7 +26,7 @@ var dbPathPrefix = path.join(os.tmpdir(),'db_'), dbName = 'private';
 var PrivatePouchDB = process.platform === 'android' || process.platform === 'ios' ?
     PouchDB.defaults({db: require('leveldown-mobile'), prefix: dbPathPrefix}) :
     PouchDB.defaults({db: require('leveldown'), prefix: dbPathPrefix});
-    
+
 app.use('/dblocal/', require('express-pouchdb')(PrivatePouchDB, {
     mode: 'minimumForPouchDB',
     // overrideMode: {

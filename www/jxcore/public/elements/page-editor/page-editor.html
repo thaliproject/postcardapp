@@ -9,7 +9,7 @@
     <paper-material elevation="1" class="selectBox">
       <p class="label"><strong>To</strong></p>
       <iron-ajax url="/_api/contacts" last-response="{{listData}}" on-response="_onResponseReceived"></iron-ajax>
-      <select class="fill">
+      <select class="fill" multiple>
         <option value="0" selected>All</option>
         <template is="dom-repeat" items="{{listData.rows}}" as="item">
           <option bind-value="[[item.doc._id]]">[[item.doc.username]]</option>
@@ -58,6 +58,9 @@ Polymer({
   viewWillAppear: function(id) {
     console.log(this.localName + ' viewWillAppear: ' + id);
     this.activate();
+    if(myApp.discoverButton) {
+      myApp.discoverButton.removeAttribute("hidden");
+    }
     
     if(id === "new"){
       // new message 
@@ -127,35 +130,44 @@ Polymer({
 
   _getCard: function(index) {
     var doc = document.querySelector("page-home").get('listData.rows.'+index+'.doc');
-    if(doc && doc._id && doc.content) {
-      this.editText = doc.content;
+    if(doc && doc._id && doc.text) {
+      this.editText = doc.text;
       this.editDoc = doc;
     } else {
       console.log("Error looking up doc object at index:",index);
     }
   },
 
+  _card: function(id, text) {
+    var from = { _id: myApp.user_id, name: myApp._username };
+    var to = []; //all
+    return { _id: id, text: text, from: from, to: to };
+  },
+
   // create item 
-  createItem: function(content) {
+  createItem: function(text) {
     var cardId = generateUUID();
-    console.log("+ Create item:" + content + " id:"+ cardId);
-    this._saveCard(cardId, myApp.username, content);
+
+    console.log( this._card(cardId, text) );
+
+    console.log("+ Create item:" + text + " id:"+ cardId);
+    this._saveCard(cardId, myApp.username, text);
   },
   // update item
-  updateItem: function(content, cardId) {
-    console.log("+ Edit item:" + content + " id:"+ cardId);
-    this._saveCard(cardId, myApp.username, content);
+  updateItem: function(text, cardId) {
+    console.log("+ Edit item:" + text + " id:"+ cardId);
+    this._saveCard(cardId, myApp.username, text);
   },
-  _saveCard: function(cardId, author, content) {
+  _saveCard: function(cardId, author, text) {
     var self = this;
-    console.log("=> Save item:" + content + " id:"+ cardId + " by:"+ author);
+    console.log("=> Save item:" + text + " id:"+ cardId + " by:"+ author);
     $.ajax({
         url: myApp.url + cardId,
         type: 'PUT',
         contentType: 'application/json',
         data: JSON.stringify({ 
           author: author, 
-          content: content
+          text: text
         }),
         dataType: 'json',
         error: function(jqXHR, textStatus, errorThrown) {
