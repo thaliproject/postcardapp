@@ -46,3 +46,6 @@ thaliDontCheckIn/
 
 # Mac
 .DS_Store
+
+# mergetool
+*.orig
