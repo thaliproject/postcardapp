@@ -90,8 +90,12 @@ On Windows one needs to use [Git Bash](https://git-scm.com/download/win) or equi
 
 # Fun issues you are probably going to run into
 
-## Getting Discovery Working
-First and foremost, service discovery over Wi-Fi Direct is not terribly reliable. It can take anywhere from seconds to minutes to discover another device. Yes, we are working on this (including looking at moving completely over to BLE). In the meantime something you can do to improve things is reboot your devices. But otherwise the way to know if discovery actually occured is by looking at your logcat output. See below for instructions on using logcat. In the log you are looking for something like:
+## Getting Discovery Working on Android
+First and foremost, service discovery over Wi-Fi Direct is not terribly reliable. It can take anywhere from seconds to 
+minutes to discover another device. Yes, we are working on this (including looking at moving completely over to BLE). 
+In the meantime something you can do to improve things is reboot your devices. But otherwise the way to know if 
+discovery actually occurred is by looking at your logcat output. See below for instructions on using logcat. In the log 
+you are looking for something like:
 
 ```
 08-07 11:18:47.444    6037-6037/org.thaliproject.postcardapp I/Service searcher﹕ Added service request
@@ -99,7 +103,10 @@ First and foremost, service discovery over Wi-Fi Direct is not terribly reliable
 08-07 11:19:47.444    6037-6037/org.thaliproject.postcardapp I/Service searcher﹕ Cleared service requests
 ```
 
-You will see this repeat a lot because it turns out that service discovery just kinda stops working after a minute or two so we have to constantly turn it on and off to get it to work. This is one of the reasons why service discovery performance is so awful, it takes time to turn the service on and off and while that is happening we can't be discovered or discover others.
+You will see this repeat a lot because it turns out that service discovery just kinda stops working after a minute or 
+two so we have to constantly turn it on and off to get it to work. This is one of the reasons why service discovery
+performance is so awful, it takes time to turn the service on and off and while that is happening we can't be 
+discovered or discover others.
 
 When the other device is found you will see something in the log like:
 
@@ -108,12 +115,17 @@ When the other device is found you will see something in the log like:
 08
 ```
 
-And yes, we are going to make this easier. See [here](https://github.com/thaliproject/Thali_CordovaPlugin/issues/63) and [here](https://github.com/thaliproject/postcardapp/issues/19).
+And yes, we are going to make this easier. See [here](https://github.com/thaliproject/Thali_CordovaPlugin/issues/63) 
+and [here](https://github.com/thaliproject/postcardapp/issues/19).
 
 ### Using logcat
 
-The easiest way in my opinion to use logcat, especially given that there are two devices involved, is to use Android Studio and its logcat viewer. But for masochists out there you can also use logcat via adb. But you have to specify which device you want to get your logcat output from. So first run `adb devices` to get a list of your attached devices. Then issue `adb -s [id] logcat` where [id] is the device ID you got from `adb devices`.
+The easiest way in my opinion to use logcat, especially given that there are two devices involved, is to use Android 
+Studio and its logcat viewer. But for masochists out there you can also use logcat via adb. But you have to specify 
+which device you want to get your logcat output from. So first run `adb devices` to get a list of your attached devices. 
+Then issue `adb -s [id] logcat` where [id] is the device ID you got from `adb devices`.
 
 ## Using the UX
 
-Even when there is synching the data will only actually show up if you hit the refresh button in the upper right part of the screen. And yes, this will eventually be fixed when we switch to the new UX.
+Even when there is synching the data will only actually show up if you hit the refresh button in the upper right part 
+of the screen. And yes, this will eventually be fixed when we switch to the new UX.
