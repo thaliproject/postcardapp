@@ -9,10 +9,10 @@
     <paper-material elevation="1" class="selectBox">
       <p class="label"><strong>To</strong></p>
       <iron-ajax url="/_api/contacts" last-response="{{listData}}" on-response="_onResponseReceived"></iron-ajax>
-      <select class="fill" multiple>
-        <option value="0" selected>All</option>
+      <select class="fill" multiple on-change="_onChanged">
+        <option value="all">All</option>
         <template is="dom-repeat" items="{{listData.rows}}" as="item">
-          <option bind-value="[[item.doc._id]]">[[item.doc.username]]</option>
+          <option value="[[item.doc._id]]">[[item.doc.username]]</option>
         </template>
       </select>
     </paper-material>
@@ -32,7 +32,7 @@ Polymer({
   properties: {
     editText: {
       type: String,
-      value: "",
+      value: ""
     },
     backButton: Object,
     saveButton: Object,
@@ -41,7 +41,8 @@ Polymer({
     listData: {
       type: Object,
       notify: true
-    }
+    },
+    isEdit: false
   },
   created: function() {
     console.log(this.localName + ' was created');
@@ -65,11 +66,14 @@ Polymer({
     if(id === "new"){
       // new message 
       myApp.title = "New Postcard";
+      this.isEdit = false;
       this.editText = "";
       this.autoFocus(this.textBox); // UX send autofocus to textarea
+      this._selectAll(); // select all contacts by default
     } else {
       // edit message 
       myApp.title = "Edit Postcard";
+      this.isEdit = true;
       this._getCard(id);
       this.shouldFocus(this.textBox); // UX send autofocus to textarea
     }
@@ -80,6 +84,7 @@ Polymer({
     console.log(this.localName + ' viewWillDisappear');
     this.deactivate();
     this.editDoc = null; // reset edit doc
+    this._clearSelection(); // clear selection
     document.activeElement.blur(); // reset text input cursor
   },
   activate: function() {
@@ -138,18 +143,15 @@ Polymer({
     }
   },
 
-  _card: function(id, text) {
-    var from = { _id: myApp.user_id, name: myApp._username };
-    var to = []; //all
-    return { _id: id, text: text, from: from, to: to };
-  },
+  // _card: function(id, text) {
+  //   var from = { _id: myApp.user_id, name: myApp._username };
+  //   var to = []; //all
+  //   return { _id: id, text: text, from: from, to: to };
+  // },
 
   // create item 
   createItem: function(text) {
     var cardId = generateUUID();
-
-    console.log( this._card(cardId, text) );
-
     console.log("+ Create item:" + text + " id:"+ cardId);
     this._saveCard(cardId, myApp.username, text);
   },
@@ -233,6 +235,47 @@ Polymer({
         return o.doc.username;
       } 
       ));
+
+      this._updateSelection();
+  },
+
+  _selectAll : function() {
+    this.querySelector('option[value="all"]').setAttribute('selected', true);
+    this._changed('all');
+  },
+
+  _onChanged : function(e) {
+    var value = e.target.value;
+    console.log("user selected option value:" + value );
+    this._changed(value);
+  },
+
+  _changed : function(value) {
+    var options = this.querySelectorAll("option"), i = options.length;
+    var optionAll = options[0];
+    if (value === 'all') {
+      console.log("Select all");
+      while (i--) {
+        var option = options[i];
+        //option.setAttribute('selected', true);
+        option.selected = true;
+      }
+    }
+  },
+
+  // TODO: if editing we need to match postcard's 'to' list of pks against private address book pks 
+  _updateSelection : function() {
+    if( this.isEdit ) {
+      this._clearSelection(); // (select none for now)
+    }
+  },
+
+  _clearSelection : function() {
+    var options = this.querySelectorAll('option'), i = options.length;
+    while (i--) {
+      var option = options[i];
+      option.selected = false; 
+    }
   }
 
 });

@@ -18,7 +18,6 @@
         <div id="notifications" on-click="_onReadNotifications" class="ghost">
           <paper-icon-button id="notificationsButton" icon="social:notifications"></paper-icon-button>
           <div class="badge">[[listNotifications.unread]]</div>
-          <!-- <paper-badge for="notificationsButton" label="!" class="icon"></paper-badge> -->
         </div>
         <paper-icon-button id="closeButton" icon="close" on-click="_onCloseHandler"></paper-icon-button>
       </div>
@@ -33,15 +32,14 @@
         <template>
           <paper-material id="{{index}}" class="row">
             <div class="fit layout horizontal center">
-              <p class="truncate flex">[[item.message]]</p>
+              <p>[[item.message]]</p>
             </div>
           </paper-material>
         </template>
       </iron-list>
     </section>
 
-    <!-- slide pages: -->
-    <!-- NB: iOS8 memory leak when using animation attributes: entry-animation="slide-from-right-animation" exit-animation="slide-left-animation" -->
+    <!-- slide pages: each of the neon-animatable pages could be separated into their own custom elements -->
   	<neon-animated-pages class="fit" selected="{{selectedPage}}" attr-for-selected="id"  on-iron-select="_pageChanged" on-neon-animation-finish="_pageDidAnimate" entry-animation="slide-from-right-animation" exit-animation="slide-left-animation">
 
       <!-- slide page: user instructions -->
@@ -79,7 +77,6 @@
           <h1>Ask <span>[[selectedItem.username]]</span></h1>
           <p>Does your code match?</p>
           <h1 class="scratch">[[pairingCode]]</h1>
-          <!-- <p>sent from <span>[[username]]</span></p> -->
           <div class="layout horizontal">
             <paper-button class="accent-warn" on-click="_onDeclineHandler"><iron-icon icon="cancel"></iron-icon> Decline</paper-button>
             <paper-button class="accent-default" on-click="_onConfirmationHandler"><iron-icon icon="check-circle"></iron-icon> Confirm</paper-button>
@@ -126,7 +123,6 @@ Polymer({
   },
 
   behaviors: [
-      // Polymer.PaperDialogBehavior,
       Polymer.IronOverlayBehavior,
       Polymer.NeonAnimationRunnerBehavior,
       PageBehaviors.TreeTraversing,
@@ -223,19 +219,17 @@ Polymer({
   _getSelectedPageTitle: function() {
     var titleAttribute = 'data-title';
     if (this.selectedPage) {
-      return this.querySelector('neon-animatable[id="'+this.selectedPage+'"]').getAttribute(titleAttribute);
+      return this.querySelector('#'+this.selectedPage).getAttribute(titleAttribute);
     }
     return "Add Contact"; // default title
   },
 
   _pageChanged: function(e) {
-    //var id = e.detail.item.id;
     console.log("#" + this.lastPage + " -> selectedPage: #" + this.selectedPage);
     this.set('title', this._getSelectedPageTitle()); // update page title
 
     // stop active processes on last page 
     if(this.lastPage==="pair") {
-      //Polymer.dom(this.$.prevButton).setAttribute("hidden",true);
       this._stopPairing();
     } else if(this.lastPage==="scan"){
       this._stopScanning();
@@ -244,7 +238,7 @@ Polymer({
     // hide notifications panel
     this.hideSelector("#notificationsPanel");
 
-    // detect if back button is needed?
+    // detect if back button is needed
     if(this.selectedPage && this._getPageIndex(this.selectedPage) > 0) {
       Polymer.dom(this.$.prevButton).removeAttribute("hidden");
     } else {
@@ -257,7 +251,6 @@ Polymer({
   _pageDidAnimate: function() {
     // reset last page view state
     if(this.lastPage) {
-      console.log('#'+this.lastPage + " page did disappear");
       this._resetPageView( this.querySelector('#'+this.lastPage) );
     }
     this.lastPage = this.selectedPage;
@@ -265,20 +258,16 @@ Polymer({
      // do stuff for the page selected
     switch (this.selectedPage) {
       case "start":
-        console.log("#1 start");
         break;
       case "scan":
-        console.log("#2 scan");
         this._startScanning();
         break;
       case "pair":
-        console.log("#3 pair");
-        if(this.selectedItem){
+        if (this.selectedItem) {
           this._startPairing();
         }
         break;
       case "save":
-        console.log("#4 save");
         this._checkUsernameAvailable();
         break;
       default:
@@ -287,7 +276,7 @@ Polymer({
 
   _getPageIndex: function(pageName) {
     var parent = this.querySelector('neon-animated-pages');
-    var children = parent.querySelectorAll('neon-animatable');
+    var children = parent.items; // neon-animatable
     var i = children.length;
     while (i--) {
       if(pageName === children[i].id) {
@@ -299,7 +288,7 @@ Polymer({
 
   _getSelectedPageIndex: function() {
     var parent = this.querySelector('neon-animated-pages');
-    var children = parent.querySelectorAll('neon-animatable');
+    var children = parent.items; // neon-animatable
     var i=0, l=children.length;
     while (i<l) {
       if( children[i].classList.contains("iron-selected") ) {
@@ -313,7 +302,7 @@ Polymer({
   _gotoPage: function(pageName) {
     if ( this._getPageIndex(pageName)>=0 ) {
       console.log("gotoPage: "+ pageName);
-      this.set('selectedPage', pageName); //this.selectedPage = pageName;
+      this.set('selectedPage', pageName);
     } else {
       console.log("Error, no page name:" + pageName);
     }
@@ -321,7 +310,7 @@ Polymer({
 
   _gotoPageAtIndex: function(index) {
     var parent = this.querySelector('neon-animated-pages');
-    var children = parent.querySelectorAll('neon-animatable');
+    var children = parent.items; // neon-animatable
     if (index <= children.length-1) {
       this._gotoPage( children[index].id );
     } else {
@@ -329,24 +318,12 @@ Polymer({
     }
   },
 
-  _goPrevPage: function() {
-    var pageIndex = this._getPageIndex( this.selectedPage );
-    if(pageIndex > 0) {
-      this._gotoPageAtIndex(pageIndex-1);
-    } else {
-      console.log("Error, can't go to previous page. @" + pageIndex);
-    }
+  _goPrev: function() {
+    this.querySelector('neon-animated-pages').selectPrevious();
   },
 
-  // try this.$.pages.selectNext()
-  _goNextPage: function() {
-    var pageIndex = this._getPageIndex( this.selectedPage );
-    var totalPages = this.querySelector('neon-animated-pages').querySelectorAll('neon-animatable').length;
-    if(pageIndex+1 < totalPages) {
-      this._gotoPageAtIndex(pageIndex+1);
-    } else {
-      console.log("Error, can't go to next page. @" + pageIndex);
-    }
+  _goNext: function() {
+    this.querySelector('neon-animated-pages').selectNext();
   },
 
   _onCloseHandler: function(e) {
@@ -354,12 +331,12 @@ Polymer({
   },
 
   _onBackHandler: function(e) {
-    this._goPrevPage();
+    this._goPrev();
   },
 
   _onStartHandler: function(e) {
     this.set('listItems', []); // clear list 
-    this._goNextPage();
+    this._goNext();
   },
 
   _onItemSelected: function(e) {
@@ -369,25 +346,23 @@ Polymer({
       console.log("selected #"+selectedIndex + " name:" + this.selectedItem.username + " id:" + this.selectedItem.id);
       this._stopScanning();
 
-      // select person to pair with
-      this._goNextPage(); // this._gotoPage("pair");
+      // person selected to pair with
+      this._goNext();
     }
   },
 
   _onConfirmationHandler: function(e) {
-    console.log("TODO: add contact to private db");
-    this._goNextPage(); // this._gotoPage("save");
+    this._goNext();
   },
 
   _onDeclineHandler: function(e) {
-    console.log("user declined positive match");
     this._onBackHandler();
   },
 
   /* scanning */
 
   _startScanning: function() {
-    console.log("start discovery service...");
+    console.log("Start discovery service...");
     this._updateScanningView();
 
     // runs indefinately until view changed
@@ -398,20 +373,18 @@ Polymer({
     //simulate pairing request during scanning state
     if(!this.taskNotification) {
       this.taskNotification = setTimeout(this._mockPairingNotification.bind(this), 7000);
-      //this.taskNotification = this.async(this._mockPairingNotification, null, 7000);
     }
   },
 
   _stopScanning: function() {
     if(this.taskScanning) {
-      console.log("stop discovery service");
+      console.log("Stop discovery service");
       clearInterval(this.taskScanning);
       this.taskScanning = null;
     }
   },
 
   _mockScanningEvent: function() {
-    console.log("* scanning...");
     var isAvailable = (Math.random() > 0.5);
     var isViewRequiringUpdate = false;
 
@@ -435,14 +408,13 @@ Polymer({
 
   _updateScanningView: function() {
     if(this.listItems.length>0) {
-      this._showSelectedPageView("iron-selector"); // iron-list
+      this._showSelectedPageView("iron-selector"); // show list
     } else {
-      this._showSelectedPageView("aside");
+      this._showSelectedPageView("aside"); // show spinner
     }
   },
 
   _addPerson: function(id, username) {
-    //console.log("+ person:"+username +" id:"+id);
     var item = {
         username : username,
         id : id
@@ -457,7 +429,6 @@ Polymer({
     for(var i=0; i<this.listItems.length; i++) {
       item = this.listItems[i];
       if(id === item.id) {
-        //console.log("- person:"+item.username +" id:"+item.id);
         this.splice('listItems',i,1);
         return true;
       }
@@ -468,12 +439,11 @@ Polymer({
   /* notifications */
 
   _mockPairingNotification : function() {
-    console.log("* notifying...");
     if (this.listItems.length > 0) {
       var peer = this.listItems[0];
-      var code = this.pairingCode; //this._generateCode();
+      var code = this.pairingCode; // random 6 digit code
       var message = "Verify code " + code + " sent from " + peer.username;
-      console.log("raised pairing request");
+      console.log("Pairing request received");
       this._showToastNotification(message, 8);
     }
     this._stopNotification(); // clean-up
@@ -503,13 +473,12 @@ Polymer({
     this.unshift('listNotifications.rows', {message:message,isRead:false});
     if(this.listNotifications.unread) {
       var unread = this.listNotifications.unread+1;
-      console.log("Add unread notification:" + unread );
       this.set('listNotifications.unread', unread );
     } else {
       this.set('listNotifications.unread', 1);
     }
 
-    this.querySelector('#notifications').classList.remove("ghost"); //this.show( this.querySelector('#notifications') );
+    this.querySelector('#notifications').classList.remove("ghost"); // reveal notifications button
   },
 
   /* pairing */
@@ -517,22 +486,20 @@ Polymer({
   _startPairing: function() {
     // simulate wait for an async callback
     if(!this.taskPairing) {
+      console.log("Start pairing");
       this.taskPairing = setTimeout(this._mockPairing.bind(this), 3000);
-      //this.taskPairing = this.async(this._mockPairing, 3000);
     }
   },
 
   _stopPairing: function() {
     if(this.taskPairing) {
-      console.log("stop pairing service");
+      console.log("Stop pairing service");
       clearTimeout(this.taskPairing);
       this.taskPairing = null;
-      //this.cancelAsync(this.taskPairing);
     }
   },
 
   _mockPairing: function() {
-    console.log("* pairing...");
     var code = this._generateCode(); 
     console.log("random pairing code generated: " + code);
     this.set('pairingCode', code);
@@ -549,17 +516,13 @@ Polymer({
 
   _onSubmitForm: function() {
     var isSuccess = true;  
-    console.log("TODO: Verify and save contact's unique username to private db...");
-    // TODO: hide form and show spinner
     this.querySelector('form').submit();
   },
 
   _checkUsernameAvailable: function() {
     // TODO check if username is unique...
-    var suggestedUsername = 'x' + this.selectedItem.username + 'x';
-    console.log("suggested username available: " + suggestedUsername);
+    var suggestedUsername = this.selectedItem.username;
 
-    //this.set('selectedItem.username', suggestedUsername);
     var input = this.querySelector('input[name="username"]');
     if(input) {
       input.value = suggestedUsername;
@@ -575,11 +538,10 @@ Polymer({
   },
   _formSubmit: function(e) {
     console.log("Form was submitted");
-    console.log(e.detail);
+    //console.log(e.detail);
     var contactId = e.detail._id;
     var username = e.detail.username;
-    console.log("=> _id:"+contactId + " username:"+username);
-    this._saveContact(contactId, username); // <-- save
+    this._saveContact(contactId, username);
   },
   _formResponse: function(e) {
     console.log("Server Response:", e.detail);
@@ -609,13 +571,13 @@ Polymer({
         },
         success: function(data, textStatus, jqXHR) {
           console.log("@ saved Contact - " + textStatus);
-          console.log(data);
+          //console.log(data);
           // if 'ok' update client UI else alert user with error
           if(data.ok && data.ok===true) {
             console.log("OK", textStatus);
             self._isSaving = false;
             // TODO: toast alert with saved contact 
-            self.close(); // dismiss modal when done (unless we want to add another?)
+            self.close(); // dismiss modal when done
           } else {
             alert("Save Contact error");
           }
@@ -630,16 +592,14 @@ Polymer({
     this._stopPairing();
   },
 
-  /* UI */
+  /* UI state */
 
   _onReadNotifications : function(e) {
-    console.log("Read notifications");
     this.toggleVisibility("#notificationsPanel");
-    //console.log(this.listNotifications);
     if(this.listNotifications.rows && this.listNotifications.rows.length > 0) {
       this.show( this.querySelector("#notificationsPanel iron-list") );
       this.hide( this.querySelector("#notificationsPanel article") );
-      // needs a draw call after hidden state
+      // list needs a draw call after hidden state
       this.querySelector("#notificationsPanel iron-list").fire('resize');
     } else {
       this.hide( this.querySelector("#notificationsPanel iron-list") );
