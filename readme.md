@@ -77,9 +77,9 @@ You will need two (it's a peer to peer system) Android devices running at least 
 # Building the postcard app
 
 ```shell
-curl https://codeload.github.com/thaliproject/postcardapp/zip/story_0 > thali.zip
+curl https://codeload.github.com/thaliproject/postcardapp/zip/master > thali.zip
 unzip thali.zip
-cd postcardapp-story_0
+cd postcardapp-master
 cordova platform add android
 cordova platform add ios
 cd www/jxcore
