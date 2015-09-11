@@ -5,7 +5,9 @@
 <dom-module id="page-editor">
 
 <template>
-  <textarea id="textbox" class="postcard flex" value="{{editText::input}}" placeholder="Message" on-focus="shouldFocusWithoutScrollUp"></textarea>
+  <main class="layout vertical fit">
+    <textarea id="textbox" class="postcard flex" value="{{editText::input}}" placeholder="Message" on-focus="shouldFocusWithoutScrollUp"></textarea>
+  </main>
 </template>
 
 <script>
@@ -72,8 +74,6 @@ Polymer({
     var toolbarButtonArray = [this.backButton, this.saveButton];
     var toolbarFunctionArray = [this._backButtonHandler, this._saveButtonHandler.bind(this)];
     this.activateButtons(toolbarButtonArray, toolbarFunctionArray);
-    
-    this._useFullHeight("textarea"); // NB: only use with standard textarea
   },
   deactivate: function() {
     console.log(this.localName + " deactivate... active status:" + this._isActivated);
@@ -112,19 +112,6 @@ Polymer({
       console.log("Error looking up doc object at index:",index);
     }
   },
-  _useFullHeight: function(selector) {
-    var element = this.querySelector(selector);
-    if(element){
-      console.log('useFullHeight');
-      var h = window.innerHeight;
-      var y = document.getElementById('mainToolbar').offsetHeight + document.getElementById('dropShadow').offsetHeight;
-      var remainingHeight = h - y;
-      console.log("remainingHeight = " + remainingHeight + " --y:"+y);
-      element.style.height = remainingHeight+'px';
-    } else {
-      console.log('useFullHeight did not get an element "' + selector +'"');
-    }
-  }
 });
 </script>
 </dom-module>
