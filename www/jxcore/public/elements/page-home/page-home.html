@@ -153,12 +153,7 @@ Polymer({
 
   // iron-ajax request
   _generateRequest: function() {
-    var ironAjax = this.querySelector("iron-ajax");
-    console.log(ironAjax);
-    if(ironAjax){
-        console.log("generateRequest");
-        ironAjax.generateRequest();
-    }
+    this.querySelector("iron-ajax").generateRequest();
   },
 
   // iron-ajax response

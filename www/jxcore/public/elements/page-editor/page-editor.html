@@ -115,14 +115,14 @@ Polymer({
   createItem: function(content) {
     var cardId = generateUUID();
     console.log("+ Create item:" + content + " id:"+ cardId);
-    this._saveCard(cardId, myApp.username, content, true);
+    this._saveCard(cardId, myApp.username, content);
   },
   // update item
   updateItem: function(content, cardId) {
     console.log("+ Edit item:" + content + " id:"+ cardId);
-    this._saveCard(cardId, myApp.username, content, true);
+    this._saveCard(cardId, myApp.username, content);
   },
-  _saveCard: function(cardId, author, content, needsReload) {
+  _saveCard: function(cardId, author, content) {
     var self = this;
     console.log("=> Save item:" + content + " id:"+ cardId + " by:"+ author);
     $.ajax({
