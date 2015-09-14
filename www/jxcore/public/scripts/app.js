@@ -32,6 +32,14 @@ myApp.addEventListener('dom-change', function() {
 			log("Welcome to Postcard");
 		}
 	}
+	// auto-refresh content when card changed 
+	socket.on("cardChanged", function (data) {
+    	console.log("client received card changes");
+    	console.log(data);
+    	var event = new CustomEvent('card-changed', { 'detail': data });
+    	document.querySelector('page-home').dispatchEvent(event);
+	});
+
 });
 
 function toggleDebugConsole(e) {
@@ -60,12 +68,12 @@ function getURL(route, paramArray){
 	var path = '/'+route;
 	if(paramArray && paramArray.length>0) {
 		for(var i=0; i<paramArray.length; i++) {
-			path = path + '/' + paramArray[i];
+			path = path + '/' + paramArray[i]; // eg. '/editor/1'
 		}
 	}
 
 	console.log("=> getURL route: " + route);
-	page(path); //page('/editor/1');
+	page(path);
 }
 
 // generate unique id for postcard

@@ -47,19 +47,19 @@ Polymer({
     $.ajax({
       url: myApp.api + 'me',
       type: 'GET',
+      dataType: 'json',
       error: function(jqXHR, textStatus, errorThrown) {
-        console.log('@ no record of me ' + JSON.stringify(jqXHR) + ' ' + textStatus + ' ' + errorThrown);
+        console.log('@ me error:' + errorThrown + "\n" + JSON.stringify(jqXHR));
         self._login();
       },
       success: function(data, textStatus, jqXHR) {
-        console.log("@ found me: " + textStatus);
-        console.log(data);
         if(data.user && data.user.length>0) {
+          // found 'me' and user record
           console.log("Hello, " + data.user);
           myApp.username = data.user; // create session
           getURL("home"); // found 'me' record - no need to login
         } else {
-          console.log("Error, no user property");
+          console.log("Error, no me record or user property");
           self._login();
         }
       }

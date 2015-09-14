@@ -48,7 +48,7 @@ app.use(function allowCrossDomain(req, res, next) {
 
 app.get('/', function (req, res) {
     //res.sendFile(path.join(__dirname + '/index.html'));
-    res.render('ejs/index', { isDebug:true, isDevelopment:('development'===env) });
+    res.render('ejs/index', { isDebug:false, isDevelopment:('development'===env) });
 });
 
 var server = app.listen(5000, function () {
@@ -57,3 +57,15 @@ var server = app.listen(5000, function () {
     var manager = new ThaliReplicationManager(db);
     manager.start(String(Math.floor(Math.random() * 100)), 5000, 'thali');
 });
+
+
+// Sync changes
+db.changes({
+    since: 'now',
+    live: true
+}).on('change', cardChanged);
+var io = require('socket.io')(server);
+function cardChanged(e){
+    console.log('card #' + e.id + ' changed');
+    io.emit('cardChanged', e );
+}

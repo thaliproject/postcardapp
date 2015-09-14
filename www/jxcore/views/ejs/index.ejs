@@ -40,7 +40,6 @@
       <div class="middle middle-container center horizontal layout">
         <div id="leftToolbarButtons">
           <paper-icon-button id="backButton" icon="arrow-back" hidden></paper-icon-button>
-          <paper-icon-button id="refreshButton" icon="refresh" hidden></paper-icon-button>
           <paper-icon-button id="debugButton" icon="bug-report" hidden></paper-icon-button>
         </div>
         <div id="appName">{{title}}</div>
@@ -73,6 +72,10 @@
 
   </paper-header-panel>
 </template>
+<script src="/socket.io/socket.io.js"></script>
+<script>
+  var socket = io.connect("http://localhost:5000");
+</script>
 <!-- polymer app js -->
 <script type="text/javascript" src="scripts/app.js"></script>
 </body>

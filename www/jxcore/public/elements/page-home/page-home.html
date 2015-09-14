@@ -47,8 +47,11 @@ Polymer({
     addButton: Object,
     refreshButton: Object,
     deleteButton: Object,
-    _isSaving: false,
-    _isEditMode: false
+    _isEditMode: false,
+    _isLoaded: false
+  },
+  listeners: {
+    'card-changed': 'cardChangedHandler'
   },
   created: function() {
     console.log(this.localName + ' was created');
@@ -66,17 +69,14 @@ Polymer({
     console.log(this.localName + ' viewWillAppear');
     this.activate();
     myApp.title = "Postcards";
-    // load data
-    if (!this._isSaving) {
+    // load data on first run then content should auto-refresh
+    if (!this._isLoaded) {
       this._reloadData();
     }
   },
   viewWillDisappear: function() {
     console.log(this.localName + ' viewWillDisappear');
     this.deactivate();
-    // prevent FOC on go back
-    this.querySelector("aside").setAttribute("hidden", true);
-    this.querySelector("iron-list").setAttribute("hidden", true);
     // reset state
     this._isEditMode = false;
     this._updateListMode();
@@ -85,26 +85,25 @@ Polymer({
     console.log(this.localName + " activate... active status:" + this._isActivated);
 
     this.addButton = document.querySelector("#addButton");
-    this.refreshButton = document.querySelector("#refreshButton");
     this.deleteButton = document.querySelector("#deleteButton");
 
-    var toolbarButtonArray = [this.addButton, this.refreshButton, this.deleteButton];
-    var toolbarFunctionArray = [this._addCard, this._reloadData.bind(this), this._toggleEditMode.bind(this)];
+    var toolbarButtonArray = [this.addButton, this.deleteButton];
+    var toolbarFunctionArray = [this._addCard, this._toggleEditMode.bind(this)];
     this.activateButtons(toolbarButtonArray, toolbarFunctionArray);    
   },
   deactivate: function() {
     console.log(this.localName + " deactivate... active status:" + this._isActivated);
-    this.deactivateButtons([this.addButton, this.refreshButton, this.deleteButton]);
+    this.deactivateButtons([this.addButton, this.deleteButton]);
   },
   _humanizeDate: function(date) {
-    return moment.utc(date,'X').fromNow();
+    return moment.utc(date,'x').fromNow();
   },
   _addCard: function(e) {
     console.log("add card: " + e);
     getURL("editor");
   },
   _reloadData: function(e) {
-    console.log("Reload Data...");
+    console.log("*** RELOAD DATA... ***");
     this._generateRequest();
   },
 
@@ -145,51 +144,6 @@ Polymer({
             self._updateUserView(); // update user view after delete
           } else {
             alert("Delete card error");
-          }
-        }
-    });
-  },
-
-  // create item 
-  createItem: function(content) {
-    var cardId = generateUUID();
-    console.log("+ Create item:" + content + " id:"+ cardId);
-    this._saveCard(cardId, myApp.username, content, true);
-  },
-  // update item
-  updateItem: function(content, cardId) {
-    console.log("+ Edit item:" + content + " id:"+ cardId);
-    this._saveCard(cardId, myApp.username, content, true);
-  },
-  _saveCard: function(cardId, author, content, needsReload) {
-    var self = this;
-    this._isSaving = true;
-    console.log("=> Save item:" + content + " id:"+ cardId + " by:"+ author);
-    $.ajax({
-        url: myApp.url + cardId,
-        type: 'PUT',
-        contentType: 'application/json',
-        data: JSON.stringify({ 
-          author: author, 
-          content: content
-        }),
-        dataType: 'json',
-        error: function(jqXHR, textStatus, errorThrown) {
-          console.log('@ error in save Card ' + JSON.stringify(jqXHR) + ' ' + textStatus + ' ' + errorThrown);
-          alert("Error saving card");
-        },
-        success: function(data, textStatus, jqXHR) {
-          console.log("@ saved Card - " + textStatus);
-          console.log(data);
-          // if 'ok' update client UI else alert user with error
-          if(data.ok && data.ok===true) {
-            console.log("OK",textStatus);
-            self._isSaving = false;
-            if (needsReload) {
-              self._reloadData(); // new item created - reload list data
-            }
-          } else {
-            alert("Save card error");
           }
         }
     });
@@ -236,6 +190,7 @@ Polymer({
       } 
       ));
 
+      this._isLoaded = true;
       this._updateUserView();
   },
   
@@ -276,6 +231,12 @@ Polymer({
       this.querySelector('iron-list').setAttribute("hidden", true);
       this.deleteButton.setAttribute("hidden", true);
     }   
+  },
+
+  cardChangedHandler: function(e) {
+    console.log("cardChangedHandler");
+    console.log(e);
+    this._reloadData();
   }
 
 });
