@@ -72,6 +72,8 @@ Polymer({
     // load data on first run then content should auto-refresh
     if (!this._isLoaded) {
       this._reloadData();
+    } else {
+      this._updateUserView(); // shows delete button (if needed) when back pressed
     }
   },
   viewWillDisappear: function() {
