@@ -8,14 +8,21 @@ var PouchDB = require('pouchdb');
 var ThaliReplicationManager = require('thali/thalireplicationmanager');
 
 console.log('starting app.js');
+var app = express();
+app.disable('x-powered-by');
+
+var env = process.env.NODE_ENV || 'production'; // default to production
+if ('development' === env) {
+    console.log('localhost "' + app.get('env') + '" environment');
+    var Mobile = require('thali/mockmobile.js');
+}
 
 var dbPath = path.join(os.tmpdir(), 'dbPath');
 var LevelDownPouchDB = process.platform === 'android' || process.platform === 'ios' ?
     PouchDB.defaults({db: require('leveldown-mobile'), prefix: dbPath}) :
     PouchDB.defaults({db: require('leveldown'), prefix: dbPath});
 
-var app = express();
-app.disable('x-powered-by');
+
 
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
@@ -28,7 +35,9 @@ app.use('/api', cardRouter);
 
 app.engine('ejs',ejsEngine);
 app.set('view engine','ejs');
-app.use( express.static( 'public' ) );
+
+app.use( express.static(path.join(__dirname, 'public') ) );
+app.use( '/bower_components', express.static( path.join(__dirname, 'bower_components') ) );
 
 app.use(function allowCrossDomain(req, res, next) {
     res.header('Access-Control-Allow-Origin', 'http://127.0.0.1:5000');
@@ -38,7 +47,8 @@ app.use(function allowCrossDomain(req, res, next) {
 });
 
 app.get('/', function (req, res) {
-    res.render('ejs/index',  { user: 'user' + Math.floor(Math.random() * 100) });
+    //res.sendFile(path.join(__dirname + '/index.html'));
+    res.render('ejs/index', { isDebug:false, isDevelopment:('development'===env) });
 });
 
 var server = app.listen(5000, function () {
@@ -47,3 +57,15 @@ var server = app.listen(5000, function () {
     var manager = new ThaliReplicationManager(db);
     manager.start(String(Math.floor(Math.random() * 100)), 5000, 'thali');
 });
+
+
+// Sync changes
+db.changes({
+    since: 'now',
+    live: true
+}).on('change', cardChanged);
+var io = require('socket.io')(server);
+function cardChanged(e){
+    console.log('card #' + e.id + ' changed');
+    io.emit('cardChanged', e );
+}

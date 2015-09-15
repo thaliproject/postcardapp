@@ -1,0 +1,192 @@
+/* basic reset */
+* {
+	font-family: "HelveticaNeue-Light", "Helvetica-Light", "Helvetica", "Arial", "Roboto", sans-serif;
+	font-weight: normal;
+}
+
+html,body{
+	margin: 0;
+	padding: 0;
+	height: 100%;
+	width: 100%;
+	background-color: white;
+	min-width: 320px; /* smallest screen width supported */
+}
+
+/* disable webkit bounce effect in the browser */
+html,body {
+    overflow: hidden; 
+    -webkit-overflow-scrolling: touch;
+}
+
+/* disable iOS text selection */
+body, .noSelect {
+	-webkit-touch-callout: none;
+    -webkit-user-select: none;
+    -khtml-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+    cursor: default;
+}
+
+/* iOS nav bar style */
+#appName {	
+	display: block;
+	width: 120px;
+	margin-left: -60px;
+	position: absolute;
+	left: 50%;
+	top: 20px;
+	text-align: center;
+	overflow: hidden;
+	white-space: nowrap;
+	text-overflow: ellipsis;
+	background: transparent;
+	font-size: 18px;
+}
+#rightToolbarButtons {
+	position: absolute;
+	right: 10px;
+	top: 10px;
+}
+#leftToolbarButtons {
+	position: absolute;
+	left: 10px;
+	top: 10px;
+}
+
+/* debug log */
+#debugConsoleLog {
+	z-index: 1;
+	position: absolute;
+	left: 0;
+	top: 0;
+	width: 100%;
+	height: 100%;
+	background: black;
+	color: white;
+	margin: 0;
+	padding: 0;
+	border: 0;
+	border-radius: 0; /* remove rounded corners on iOS */
+	resize: none; /* hide resize box in firefox */
+	font-family: monospace;
+}
+
+/* minimal margin for input text and labels */
+.inset {
+	width: 100%;
+	box-sizing: border-box;
+	padding: 0 10px; /* if box-sizing is supported then add padding to give space around editable text */
+}
+
+/* wrapper to force contents to align center */
+.alignCenter {
+	display: table;
+	width: 100%;
+	text-align: center;
+}
+
+/* solid color for paper-button */
+.accent {
+	background-color: #3E51B5;
+	color: #fff;
+}
+
+/* iron-list row */
+.row {
+	padding-bottom: 20px;
+}
+
+/* iron-list row divider */
+.divider {
+	width: 100%;
+	height: 1px;
+	background-color: #eeeedd;
+	position: absolute;
+	left: 0;
+	bottom: 0;
+}
+
+/* clickable area for row */
+.cell {
+	position: absolute;
+	left: 0;
+	top: 0;
+	width: 100%;
+	height: 100%;
+}
+
+/* row inline editing with paper-input */
+.inlineInput {
+	width: 100%;
+	box-sizing: border-box;
+	padding: 0 25px; /* if box-sizing is supported then add padding to give space around editable text */
+
+	position: absolute;
+	top:0;
+	left:0;
+	/*z-index: 1;*/
+}
+
+/* temp class to make inline editing not cause height rendering issues in iron-list */
+.truncate {
+	overflow: hidden;
+	white-space: nowrap;
+	text-overflow: ellipsis;
+}
+
+/* row theme */
+.postcard {
+	background-color: #ffffcc;
+	color: #333;
+}
+
+/* iOS 8.4 drop-shadow */
+.postcard {
+	box-shadow: 0px 10px 10px #AAA;
+}
+
+/* row text format */
+.postcard h6, .postcard p, .postcard pre, textarea.postcard {
+	font-size: 24px;
+	padding: 0 10px;
+	word-wrap: break-word; /* prevent horizontal scroll here - break long single line strings */
+	white-space: pre-wrap; /* make pre text wrap */
+}
+
+/* row date */
+.postcard span {
+	display: block;
+	float: right;
+	font-size: 12px;
+	color: #ccbbaa;
+}
+
+/* edit text style */
+textarea.postcard {
+	width: 100%;
+	/* height: 100%; */
+	min-height: 200px;
+	border: 0;
+	resize: none; /* hide resize box in chrome */
+	margin: 0;
+	box-sizing: border-box;
+	padding: 10px; /* if box-sizing is supported then add padding to give space around editable text */
+	padding-top: 20px; /* give some extra space for iOS device status bar */
+	border-radius: 0; /* remove rounded corners on iOS */
+}
+
+paper-fab.FAB {
+	display: block;
+	position: fixed; /* Beware: use only in non-scrolling views as fixed position doesn't play well within a iOS scroll view */
+	bottom: 40px;
+	right: 20px;
+	z-index: 1; /* should appear above everything else? */
+}
+
+.gutter {
+	width: 100%;
+	height: 100px;
+}
