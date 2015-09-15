@@ -45,7 +45,6 @@ Polymer({
       notify: true
     },
     addButton: Object,
-    refreshButton: Object,
     deleteButton: Object,
     _isEditMode: false,
     _isLoaded: false
@@ -142,8 +141,9 @@ Polymer({
           console.log(data);
           // if 'ok' update client UI else alert user with error
           if(data.ok && data.ok===true) {
-            self.splice('listData.rows', index, 1);
-            self._updateUserView(); // update user view after delete
+            console.log("Card deleted");
+            //self.splice('listData.rows', index, 1);
+            //self._updateUserView(); // update user view after delete
           } else {
             alert("Delete card error");
           }
@@ -230,11 +230,116 @@ Polymer({
     }   
   },
 
+  // update client with card changes event detail rather than reloading all records
   cardChangedHandler: function(e) {
-    console.log("cardChangedHandler");
-    console.log(e);
-    this._reloadData();
-  }
+    var id, seq, rev, revNo;
+    var index = -1;
+    var isDeleted = false;
+
+    // parse event detail data
+    if( e.detail && e.detail.id && e.detail.seq && e.detail.changes && e.detail.changes.length>=1 && e.detail.changes[0].rev) {
+      id = e.detail.id;
+      seq = e.detail.seq;
+      rev = e.detail.changes[0].rev;
+      revNo = parseInt( rev.substring(0,rev.indexOf('-')) );
+      isDeleted = (e.detail.deleted && e.detail.deleted===true) ? true : false;
+    } else {
+      console.log("Error with changed event detail format. Reload data...");
+      this._reloadData();
+      return;
+    }
+
+    // find row index with id to be updated / deleted 
+    if( isDeleted || revNo>1 ) {
+        index = this._getDataArrayIndex('listData.rows', id); 
+        console.log("card found #" + index + " revNo:" + revNo + " id:" + id );
+    }
+
+    // perform deleted/updated changes at row index or else create a new row
+    if (isDeleted && index >= 0) {
+      console.log("[-] deleted:" + index);
+      var result = this.splice('listData.rows', index, 1);
+      if(result && result.length>0) {
+        this._updateUserView();
+      } else {
+        console.log("Error, client failed to delete record. Reload data...");
+        this._reloadData();
+      }
+    } else if (index >= 0) {
+      console.log("[=] updated:" + index);
+      this._loadCard(id, index);
+    } else if (revNo === 1) {
+      console.log("[+] created:" + index);
+      this._loadCard(id);
+    } else {
+      console.log("Error, failed to determine a change action to perform. Reload data...");
+      this._reloadData();
+    }
+  },
+
+  _getDataArrayIndex: function(dataArrayPath, id) {
+    var rows = this.get(dataArrayPath);
+    var i = rows.length;
+    while (i--) {
+      if(rows[i].doc._id === id) {
+        return i;
+      }
+    }
+    return -1;
+  },
+
+  _loadCard: function(cardId, index) {
+    var self = this;
+    $.ajax({
+        url: myApp.url + cardId,
+        type: 'GET'
+      }).fail( function(jqXHR, textStatus, errorThrown) {
+        console.log("Error loading card. Reload data...");
+        this._reloadData();
+      }).done( function(data, textStatus, jqXHR) {
+        console.log("@ loaded Card - " + textStatus);
+        console.log(data);
+        // if data valid then perform an update/create with the loaded card
+        if(data._id) {
+          console.log("Card data loaded");
+          if(index > -1) {
+            // Postcard to be updated
+            var path = 'listData.rows.'+index+'.doc';
+            if ( self.get(path) ) {
+              self.set(path, data); // update doc
+              self.querySelector('iron-list')._update(); // redraw list view for dynamic row height size changes
+            } else {
+              console.log("Error, client failed to update doc. Reload data...");
+              self._reloadData();
+            }
+          } else {
+            // Postcard record to be inserted
+            var record = {
+              doc: data, 
+              id: data._id, 
+              key: data._id, 
+              value: { 
+                rev: data._rev 
+              }
+            };
+            if ( !self.get('listData.rows') ) {
+              console.log("Add first row - init rows");
+              self.set('listData.rows', []);
+            }
+            var result = self.unshift('listData.rows', record);
+            if (result===1) {
+              self._updateUserView(); // when first item created - update view status
+            } else if (!result>0) {
+              console.log("Error, client failed to create. Reload data...");
+              self._reloadData();
+            }
+          }
+        } else {
+          console.log("Error with loaded card data format. Reload data...");
+          self._reloadData();
+        }
+      });
+  },
 
 });
 </script>
