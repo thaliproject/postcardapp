@@ -43,25 +43,23 @@ Polymer({
   ready: function() {
     console.log(this.localName + ' ready');
     // find me
-    var self = this;
     $.ajax({
+      context: this,
       url: myApp.api + 'me',
       type: 'GET',
       dataType: 'json',
-      error: function(jqXHR, textStatus, errorThrown) {
-        console.log('@ me error:' + errorThrown + "\n" + JSON.stringify(jqXHR));
-        self._login();
-      },
-      success: function(data, textStatus, jqXHR) {
-        if(data.user && data.user.length>0) {
-          // found 'me' and user record
-          console.log("Hello, " + data.user);
-          myApp.username = data.user; // create session
-          getURL("home"); // found 'me' record - no need to login
-        } else {
-          console.log("Error, no me record or user property");
-          self._login();
-        }
+    }).fail( function(jqXHR, textStatus, errorThrown) {
+      console.log('@ me error:' + errorThrown + "\n" + JSON.stringify(jqXHR));
+      this._login();
+    }).done( function(data, textStatus, jqXHR) {
+      if(data.user && data.user.length>0) {
+        // found 'me' and user record
+        console.log("Hello, " + data.user);
+        myApp.username = data.user; // create session
+        getURL("home"); // no need to login as 'me' record is found - redirect 
+      } else {
+        console.log("Error, no me record or user property");
+        this._login();
       }
     });
   },
@@ -95,8 +93,7 @@ Polymer({
     console.log("Form was submitted");
   },
   _formResponse: function(e) {
-    console.log("Server Response: ",e.detail);
-    console.log(e);
+    console.log("Server Response: ", e.detail);
     // check server response
     if(e.detail && e.detail.user) {
       console.log("save username: " + e.detail.user);

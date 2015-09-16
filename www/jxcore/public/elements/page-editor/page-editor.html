@@ -123,31 +123,25 @@ Polymer({
     this._saveCard(cardId, myApp.username, content);
   },
   _saveCard: function(cardId, author, content) {
-    var self = this;
     console.log("=> Save item:" + content + " id:"+ cardId + " by:"+ author);
     $.ajax({
-        url: myApp.url + cardId,
-        type: 'PUT',
-        contentType: 'application/json',
-        data: JSON.stringify({ 
-          author: author, 
-          content: content
-        }),
-        dataType: 'json',
-        error: function(jqXHR, textStatus, errorThrown) {
-          console.log('@ error in save Card ' + JSON.stringify(jqXHR) + ' ' + textStatus + ' ' + errorThrown);
-          alert("Error saving card");
-        },
-        success: function(data, textStatus, jqXHR) {
-          console.log("@ saved Card - " + textStatus);
-          console.log(data);
-          // if 'ok' update client UI else alert user with error
-          if(data.ok && data.ok===true) {
-            console.log("OK",textStatus);
-          } else {
-            alert("Save card error");
-          }
-        }
+      context: this,
+      url: myApp.url + cardId,
+      type: 'PUT',
+      contentType: 'application/json',
+      data: JSON.stringify({ 
+        author: author, 
+        content: content
+      }),
+      dataType: 'json'
+    }).fail( function(jqXHR, textStatus, errorThrown) {
+      alert("Error saving card");
+    }).done( function(data, textStatus, jqXHR) {
+      if(data.ok && data.ok===true) {
+        console.log("Card saved");
+      } else {
+        alert("Save card data error");
+      }
     });
   }
 
