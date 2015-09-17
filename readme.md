@@ -74,16 +74,18 @@ $ jx install -g cordova
 
 You will need two (it's a peer to peer system) Android devices running at least KitKat. And no, the emulator won't work. We depend on specific radios to work and they aren't in the emulator.
 
-# Building the postcard app on Android
+# Building the postcard app
 
 ```shell
-curl https://codeload.github.com/thaliproject/postcardapp/zip/story_0 > thali.zip
+curl https://codeload.github.com/thaliproject/postcardapp/zip/master > thali.zip
 unzip thali.zip
-cd postcardapp-story_0
+cd postcardapp-master
 cordova platform add android
+cordova platform add ios
 cd www/jxcore
 jx npm install --production --autoremove "*.gz"
-cordova build
+cordova build android
+cordova build ios
 ```
 
 On Windows one needs to use [Git Bash](https://git-scm.com/download/win) or equivalent to run the above commands.

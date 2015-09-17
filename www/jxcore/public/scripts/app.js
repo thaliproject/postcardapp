@@ -46,6 +46,14 @@ myApp.addEventListener('dom-change', function() {
 		myApp.discoverButton.addEventListener("click", openModalDialog);
 		//myApp.discoverButton.removeAttribute("hidden");
 	}
+	// auto-refresh content when card changed 
+	socket.on("cardChanged", function (data) {
+    	console.log("client received card changes");
+    	console.log(data);
+    	var event = new CustomEvent('card-changed', { 'detail': data });
+    	document.querySelector('page-home').dispatchEvent(event);
+	});
+
 });
 
 function openModalDialog(e) {
@@ -81,23 +89,17 @@ function getURL(route, paramArray){
 	var path = '/'+route;
 	if(paramArray && paramArray.length>0) {
 		for(var i=0; i<paramArray.length; i++) {
-			path = path + '/' + paramArray[i];
+			path = path + '/' + paramArray[i]; // eg. '/editor/1'
 		}
 	}
 
 	console.log("=> getURL route: " + route);
-	page(path); //page('/editor/1');
+	page(path);
 }
 
 // generate unique id for postcard
 function generateUUID() {
-    var d = new Date().getTime();
-    var uuid = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
-        var r = (d + Math.random()*16)%16 | 0;
-        d = Math.floor(d/16);
-        return (c=='x' ? r : (r&0x3|0x8)).toString(16);
-    });
-    return uuid;
+    return uuid.v4(); // using node-uuid
 }
 
 function isFunction(functionToCheck) {

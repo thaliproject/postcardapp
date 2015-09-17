@@ -49,7 +49,10 @@ Polymer({
     refreshButton: Object,
     deleteButton: Object,
     _isEditMode: false,
-    _isLoading: false
+    _isLoaded: false
+  },
+  listeners: {
+    'card-changed': 'cardChangedHandler'
   },
   created: function() {
     console.log(this.localName + ' was created');
@@ -70,17 +73,16 @@ Polymer({
     if(myApp.discoverButton) {
       myApp.discoverButton.removeAttribute("hidden");
     }
-    // load data
-    if(!this._isLoading) {
+    // load data on first run then content should auto-refresh
+    if (!this._isLoaded) {
       this._reloadData();
+    } else {
+      this._updateUserView(); // shows delete button (if needed) when back pressed
     }
   },
   viewWillDisappear: function() {
     console.log(this.localName + ' viewWillDisappear');
     this.deactivate();
-    // prevent FOC on go back
-    this.querySelector("aside").setAttribute("hidden", true);
-    this.querySelector("iron-list").setAttribute("hidden", true);
     // reset state
     this._isEditMode = false;
     this._updateListMode();
@@ -89,23 +91,26 @@ Polymer({
     console.log(this.localName + " activate... active status:" + this._isActivated);
 
     this.addButton = document.querySelector("#addButton");
-    this.refreshButton = document.querySelector("#refreshButton");
     this.deleteButton = document.querySelector("#deleteButton");
 
-    var toolbarButtonArray = [this.addButton, this.refreshButton, this.deleteButton];
-    var toolbarFunctionArray = [this._addCard, this._reloadData.bind(this), this._toggleEditMode.bind(this)];
+    var toolbarButtonArray = [this.addButton, this.deleteButton];
+    var toolbarFunctionArray = [this._addCard, this._toggleEditMode.bind(this)];
     this.activateButtons(toolbarButtonArray, toolbarFunctionArray);
   },
   deactivate: function() {
     console.log(this.localName + " deactivate... active status:" + this._isActivated);
-    this.deactivateButtons([this.addButton, this.refreshButton, this.deleteButton]);
+    this.deactivateButtons([this.addButton, this.deleteButton]);
   },
   _humanizeDate: function(date) {
-    return moment.utc(date,'X').fromNow();
+    return moment.utc(date,'x').fromNow();
   },
   _addCard: function(e) {
     console.log("add card: " + e);
     getURL("editor");
+  },
+  _reloadData: function(e) {
+    console.log("*** RELOAD DATA... ***");
+    this._generateRequest();
   },
 
   // enable editting for selected postcard 
@@ -151,20 +156,12 @@ Polymer({
   },
 
   // iron-ajax request
-  _reloadData: function() {
-    this._isLoading = true;
-    console.log("load card data");
-    var ironAjax = this.querySelector("iron-ajax");
-    console.log(ironAjax);
-    if(ironAjax){
-        console.log("generateRequest");
-        ironAjax.generateRequest();
-    }
+  _generateRequest: function() {
+    this.querySelector("iron-ajax").generateRequest();
   },
 
   // iron-ajax response
   _onResponseReceived: function () {
-      this._isLoading = false;
       console.log("_onResponseReceived");
       console.log(this.listData);
 
@@ -194,6 +191,7 @@ Polymer({
       } 
       ));
 
+      this._isLoaded = true;
       this._updateUserView();
   },
   
@@ -234,6 +232,12 @@ Polymer({
       this.querySelector('iron-list').setAttribute("hidden", true);
       this.deleteButton.setAttribute("hidden", true);
     }   
+  },
+
+  cardChangedHandler: function(e) {
+    console.log("cardChangedHandler");
+    console.log(e);
+    this._reloadData();
   }
 
 });

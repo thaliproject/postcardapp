@@ -119,13 +119,9 @@ Polymer({
 
     if(!this.editDoc) {
       console.log("Save new message:" + this.editText);
-      // get reference to page and call the createItem method
-      //document.querySelector("page-home").createItem(this.editText);
       this.createItem(this.editText);
     } else {
       console.log("Save edited message:" + this.editText);
-      // get reference to page and call the updateItem method
-      //document.querySelector("page-home").updateItem(this.editText, this.editDoc._id);
       this.updateItem(this.editText, this.editDoc._id);
     }
     
@@ -142,12 +138,6 @@ Polymer({
       console.log("Error looking up doc object at index:",index);
     }
   },
-
-  // _card: function(id, text) {
-  //   var from = { _id: myApp.user_id, name: myApp._username };
-  //   var to = []; //all
-  //   return { _id: id, text: text, from: from, to: to };
-  // },
 
   // create item 
   createItem: function(text) {
@@ -182,11 +172,6 @@ Polymer({
           // if 'ok' update client UI else alert user with error
           if(data.ok && data.ok===true) {
             console.log("OK",textStatus);
-
-            var cardsContext = document.querySelector("page-home");
-            if(cardsContext) {
-              cardsContext._reloadData(); // fire reload list data
-            }
           } else {
             alert("Save card error");
           }

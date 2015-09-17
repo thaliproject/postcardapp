@@ -13,6 +13,7 @@
     "paper-elements": "PolymerElements/paper-elements#~1.0.5",
     "iron-elements": "PolymerElements/iron-elements#~1.0.3",
     "neon-animation": "PolymerElements/neon-animation#~1.0.6",
+    "node-uuid": "~1.4.3",
     "page.js": "~1.6.3",
     "moment": "~2.10.6",
     "underscore": "~1.8.3",
