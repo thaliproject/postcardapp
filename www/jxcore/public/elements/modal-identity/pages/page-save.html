@@ -1,0 +1,141 @@
+<link rel="import" href="/bower_components/polymer/polymer.html">
+<link rel="import" href="/bower_components/neon-animation/neon-animatable-behavior.html">
+<link rel="import" href="/elements/behaviors/modal-pages.html">
+<link rel="import" href="/elements/behaviors/ui-helper.html">
+<link rel="import" href="/elements/behaviors/multi-platform.html">
+
+<dom-module id="page-save">
+
+<template>
+  <form is="iron-form" class="inset" hidden>
+    <paper-input name="username" label="Username" bind-value="{{petName::input}" prevent-invalid-input allowed-pattern="[A-Za-z0-9_\.]" always-float-label error-message="{{errorUsername}}" required></paper-input>
+    <input is="iron-input" name="_id" bind-value="{{selectedItem.id::input}}" type="hidden" />
+    <input is="iron-input" name="_username" bind-value="{{selectedItem.username::input}}" type="hidden" />
+    <div class="alignCenter">
+      <paper-button class="accent" raised on-click="_onSubmitForm">Save</paper-button>
+    </div>
+  </form>
+  <!-- spinner -->
+  <aside class="fit vertical layout center-center">
+    <iron-icon icon="autorenew" class="rotating"></iron-icon>
+    <p>One moment please</p>
+    <div class="gutter"></div>
+  </aside>
+</template>
+
+<script>
+'use strict';
+Polymer({
+  is: "page-save",
+  behaviors: [
+      Polymer.NeonAnimatableBehavior,
+      PageBehaviors.ModalPages,
+      PageBehaviors.UIHelper,
+      PageBehaviors.MultiPlatform
+    ],
+  properties: {
+    selectedItem : {
+      type: Object,
+      notify: true
+    },
+    errorUsername: {
+      type: String,
+      value: "Please enter unique username."
+    },
+    _isSaving: false,
+  },
+  listeners: {
+    'iron-form-invalid': '_formInvalid',
+    'iron-form-submit': '_formSubmit',
+    'iron-form-response': '_formResponse',
+    'iron-form-error': '_formError',
+  },
+  setup : function(bindingObject) {
+    console.log(this.localName + ' setup');
+    if(bindingObject) {
+      console.log(bindingObject);
+      this.set('selectedItem', bindingObject); //this.selectedItem = bindingObject;
+    }
+  },
+  start : function() {
+  	console.log(this.localName + ' start');
+    this._checkUsernameAvailable();
+  },
+  stop : function() {
+    console.log(this.localName + ' stop');
+  },
+
+  /* form */
+
+  _onSubmitForm: function() {
+    var isSuccess = true;  
+    this.querySelector('form').submit();
+  },
+
+  _checkUsernameAvailable: function() {
+    // TODO check if username is unique...
+    var suggestedUsername = this.selectedItem.username;
+
+    var input = this.querySelector('input[name="username"]');
+    if(input) {
+      input.value = suggestedUsername;
+      this.autoFocus(input); // UX send focus to textarea
+    }
+
+    this.showOnlySelector('form'); //this._showSelectedPageView("form");
+  },
+
+  _formInvalid: function(e) {
+    // notify user what went wrong on client
+    console.log('Form invalid');
+  },
+  _formSubmit: function(e) {
+    console.log("Form was submitted");
+    //console.log(e.detail);
+    var contactId = e.detail._id;
+    var username = e.detail.username;
+    this._saveContact(contactId, username);
+  },
+  _formResponse: function(e) {
+    console.log("Server Response:", e.detail);
+  },
+  _formError: function(e) {
+    console.log("Form Error:", e.detail);
+  },
+
+  /* ajax */
+
+  _saveContact: function(contactId, username) {
+    this._isSaving = true;
+    console.log("=> Save contact:" + username + " id:"+ contactId);
+    $.ajax({
+        context: this,
+        url: myApp._url + contactId,
+        type: 'PUT',
+        contentType: 'application/json',
+        data: JSON.stringify({ 
+          username: username
+        }),
+        dataType: 'json',
+        error: function(jqXHR, textStatus, errorThrown) {
+          console.log('@ error in save Contact ' + JSON.stringify(jqXHR) + ' ' + textStatus + ' ' + errorThrown);
+          alert("Error saving Contact");
+        },
+        success: function(data, textStatus, jqXHR) {
+          console.log("@ saved Contact - " + textStatus);
+          //console.log(data);
+          // if 'ok' update client UI else alert user with error
+          if(data.ok && data.ok===true) {
+            console.log("OK", textStatus);
+            this._isSaving = false;
+            this.modalClose(); // dismiss modal when done
+          } else {
+            alert("Save Contact error");
+          }
+        }
+    });
+  },
+
+});
+</script>
+</dom-module>

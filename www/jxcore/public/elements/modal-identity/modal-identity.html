@@ -5,6 +5,12 @@
 <link rel="import" href="/elements/behaviors/ui-helper.html">
 <link rel="import" href="/elements/behaviors/multi-platform.html">
 
+<!-- slide pages -->
+<link rel="import" href="/elements/modal-identity/pages/page-start.html">
+<link rel="import" href="/elements/modal-identity/pages/page-scan.html">
+<link rel="import" href="/elements/modal-identity/pages/page-pair.html">
+<link rel="import" href="/elements/modal-identity/pages/page-save.html">
+
 <dom-module id="modal-identity">
 
 <template>
@@ -39,73 +45,20 @@
       </iron-list>
     </section>
 
-    <!-- slide pages: each of the neon-animatable pages could be separated into their own custom elements -->
+    <!-- sliding 'neon-animatable' pages -->
   	<neon-animated-pages class="fit" selected="{{selectedPage}}" attr-for-selected="id"  on-iron-select="_pageChanged" on-neon-animation-finish="_pageDidAnimate" entry-animation="slide-from-right-animation" exit-animation="slide-left-animation">
 
       <!-- slide page: user instructions -->
-      <neon-animatable id="start" data-title="Add Contact" class="layout vertical center-center">
-        <h1>Ready?</h1>
-        <p>Ask other party to start scanning now.</p>
-        <paper-button raised class="accent" on-click="_onStartHandler">Start Scanning</paper-button>
-        <div class="gutter"></div>
-        <p class="diminished">Your username is &ldquo;<span>[[username]]</span>&rdquo;</p>
-      </neon-animatable>
+      <page-start id="start" data-title="Add Contact"></page-start>
 
       <!-- slide page: start scanning -->
-      <neon-animatable id="scan" data-title="People nearby">
-        <iron-selector attr-for-selected="index" on-click="_onItemSelected" hidden>
-          <iron-list items="{{listItems}}" as="item" class="fit">
-            <template>
-              <paper-material id="{{index}}" class="row">
-                <div class="fit layout horizontal center">
-                  <p class="truncate flex">[[item.username]]</p>
-                  <iron-icon icon="chevron-right"></iron-icon>
-                </div>
-              </paper-material>
-            </template>
-          </iron-list>
-        </iron-selector>
-        <aside class="fit vertical layout center-center">
-          <iron-icon icon="autorenew" class="rotating"></iron-icon>
-          <p>Finding</p>
-        </aside>
-      </neon-animatable>
+      <page-scan id="scan" data-title="People nearby"></page-scan>
 
       <!-- slide page: select contact -->
-      <neon-animatable id="pair" data-title="Verification">
-        <main class="fit vertical layout center-center" hidden>
-          <h1>Ask <span>[[selectedItem.username]]</span></h1>
-          <p>Does your code match?</p>
-          <h1 class="scratch">[[pairingCode]]</h1>
-          <div class="layout horizontal">
-            <paper-button class="accent-warn" on-click="_onDeclineHandler"><iron-icon icon="cancel"></iron-icon> Decline</paper-button>
-            <paper-button class="accent-default" on-click="_onConfirmationHandler"><iron-icon icon="check-circle"></iron-icon> Confirm</paper-button>
-          </div>
-          <div class="gutter"></div>
-        </main>
-        <aside class="fit vertical layout center-center">
-          <iron-icon icon="autorenew" class="rotating"></iron-icon>
-          <p>Attempting to pair with <span>[[selectedItem.username]]</span></p>
-          <div class="gutter"></div>
-        </aside>
-      </neon-animatable>
+      <page-pair id="pair" data-title="Verification"></page-pair>
 
       <!-- slide page: save user contact -->
-      <neon-animatable id="save" data-title="Save contact">
-        <form is="iron-form" class="inset" hidden>
-          <paper-input name="username" label="Username" bind-value="{{petName::input}" prevent-invalid-input allowed-pattern="[A-Za-z0-9_\.]" always-float-label error-message="{{errorUsername}}" required></paper-input>
-          <input is="iron-input" name="_id" bind-value="{{selectedItem.id::input}}" type="hidden" />
-          <input is="iron-input" name="_username" bind-value="{{selectedItem.username::input}}" type="hidden" />
-          <div class="alignCenter">
-            <paper-button class="accent" raised on-click="_onSubmitForm">Save</paper-button>
-          </div>
-        </form>
-        <aside class="fit vertical layout center-center">
-          <iron-icon icon="autorenew" class="rotating"></iron-icon>
-          <p>One moment please</p>
-          <div class="gutter"></div>
-        </aside>
-      </neon-animatable>
+      <page-save id="save" data-title="Save contact"></page-save>
 
     </neon-animated-pages>
 
@@ -132,17 +85,13 @@ Polymer({
 
   listeners: {
     'neon-animation-finish': '_onNeonAnimationFinish',
-    'iron-form-invalid': '_formInvalid',
-    'iron-form-submit': '_formSubmit',
-    'iron-form-response': '_formResponse',
-    'iron-form-error': '_formError'
+    'next': '_onNextHandler',
+    'prev': '_onBackHandler',
+    'close': '_onCloseHandler',
+    'notification': '_onNotificationHandler'
   },
 
   properties: {
-    username: {
-      type: String,
-      value: ""
-    },
     title: {
       type: String,
       value: ""
@@ -154,27 +103,11 @@ Polymer({
     lastPage: {
       type: String,
     },
-    listItems: {
-      type: Array,
-      value: []
-    },
-    selectedItem : {
-      type: Object,
-      notify: true
-    },
-    taskScanning: {
+
+    bindingObject: {
       type: Object
     },
-    taskPairing: {
-      type: Object
-    },
-    taskNotification: {
-      type: Object
-    },
-    pairingCode : {
-      type: String,
-      value: "123456"
-    },
+
     toastText : {
       type: String,
       value: ""
@@ -187,11 +120,6 @@ Polymer({
         unread: 0
       }
     },
-    errorUsername: {
-      type: String,
-      value: "Please enter unique username."
-    },
-    _isSaving: false,
   },
 
   ready: function() {
@@ -200,7 +128,7 @@ Polymer({
   },
 
   _setState: function() {
-    this.username = myApp.username;
+    this.querySelector('page-start').setup(); // setup for first run
     this.set('title', this._getSelectedPageTitle()); // update page title 
     if(this._getSelectedPageIndex()>0) {
       this._gotoPageAtIndex(0); 
@@ -208,13 +136,32 @@ Polymer({
   },
 
   _resetState: function() {
-    this._stopAll();
-    this.set('listItems', []);
-    this._resetPageViews();
+    this._abort();
     this.hideSelector("#notificationsPanel");
     this.set('lastPage', null);
     this.set('selectedItem', null);
   },
+
+  /* button handlers */
+
+  _onCloseHandler: function(e) {
+    this.close();
+  },
+
+  _onBackHandler: function(e) {
+    this._prev();
+  },
+
+  _onNextHandler: function(e) {
+    if (e && e.detail) {
+      this.bindingObject = e.detail;
+    } else {
+      this.bindingObject = null;
+    }
+    this._next();
+  },
+
+  /* page methods */
 
   _getSelectedPageTitle: function() {
     var titleAttribute = 'data-title';
@@ -224,15 +171,21 @@ Polymer({
     return "Add Contact"; // default title
   },
 
+  _prev: function() {
+    this.querySelector('neon-animated-pages').selectPrevious();
+  },
+
+  _next: function(e) {
+    this.querySelector('neon-animated-pages').selectNext();
+  },
+
   _pageChanged: function(e) {
     console.log("#" + this.lastPage + " -> selectedPage: #" + this.selectedPage);
     this.set('title', this._getSelectedPageTitle()); // update page title
 
     // stop active processes on last page 
-    if(this.lastPage==="pair") {
-      this._stopPairing();
-    } else if(this.lastPage==="scan"){
-      this._stopScanning();
+    if(this.lastPage) {
+      this.querySelector('page-'+this.lastPage).stop(); // stop biz logic!
     }
 
     // hide notifications panel
@@ -245,33 +198,19 @@ Polymer({
       Polymer.dom(this.$.prevButton).setAttribute("hidden",true);
     }
 
+    if(this.selectedPage) {
+      this.querySelector('page-'+this.selectedPage).setup(this.bindingObject); // setup bindings!
+    }
     //this._pageDidAnimate(); // NB: only call if no animation start/finish attributes set
   },
 
   _pageDidAnimate: function() {
-    // reset last page view state
     if(this.lastPage) {
-      this._resetPageView( this.querySelector('#'+this.lastPage) );
+      // reset last page view state? 
     }
     this.lastPage = this.selectedPage;
 
-     // do stuff for the page selected
-    switch (this.selectedPage) {
-      case "start":
-        break;
-      case "scan":
-        this._startScanning();
-        break;
-      case "pair":
-        if (this.selectedItem) {
-          this._startPairing();
-        }
-        break;
-      case "save":
-        this._checkUsernameAvailable();
-        break;
-      default:
-    }
+    this.querySelector('page-'+this.selectedPage).start(); // start biz logic!
   },
 
   _getPageIndex: function(pageName) {
@@ -318,142 +257,15 @@ Polymer({
     }
   },
 
-  _goPrev: function() {
-    this.querySelector('neon-animated-pages').selectPrevious();
-  },
-
-  _goNext: function() {
-    this.querySelector('neon-animated-pages').selectNext();
-  },
-
-  _onCloseHandler: function(e) {
-    this.close();
-  },
-
-  _onBackHandler: function(e) {
-    this._goPrev();
-  },
-
-  _onStartHandler: function(e) {
-    this.set('listItems', []); // clear list 
-    this._goNext();
-  },
-
-  _onItemSelected: function(e) {
-    var selectedIndex = this.getParentAttribute(e.target, 'paper-material', 'id');
-    if(selectedIndex!==false && selectedIndex>=0){
-      this.set('selectedItem', this.listItems[selectedIndex]);
-      console.log("selected #"+selectedIndex + " name:" + this.selectedItem.username + " id:" + this.selectedItem.id);
-      this._stopScanning();
-
-      // person selected to pair with
-      this._goNext();
-    }
-  },
-
-  _onConfirmationHandler: function(e) {
-    this._goNext();
-  },
-
-  _onDeclineHandler: function(e) {
-    this._onBackHandler();
-  },
-
-  /* scanning */
-
-  _startScanning: function() {
-    console.log("Start discovery service...");
-    this._updateScanningView();
-
-    // runs indefinately until view changed
-    if(!this.taskScanning) {
-      this.taskScanning = setInterval(this._mockScanningEvent.bind(this), 2000);
-    }
-
-    //simulate pairing request during scanning state
-    if(!this.taskNotification) {
-      this.taskNotification = setTimeout(this._mockPairingNotification.bind(this), 7000);
-    }
-  },
-
-  _stopScanning: function() {
-    if(this.taskScanning) {
-      console.log("Stop discovery service");
-      clearInterval(this.taskScanning);
-      this.taskScanning = null;
-    }
-  },
-
-  _mockScanningEvent: function() {
-    var isAvailable = (Math.random() > 0.5);
-    var isViewRequiringUpdate = false;
-
-    if(isAvailable || this.listItems.length==0){
-      // simulate peer available - add to list
-      var username = faker.internet.userName();
-      var id = faker.random.uuid();
-      isViewRequiringUpdate = this._addPerson(id, username);
-    } else if (this.listItems.length > 0) {
-      // simulate peer unavailable - remove from list
-      var index = Math.floor(Math.random() * this.listItems.length);
-      var item = this.listItems[index];
-      isViewRequiringUpdate = this._removePerson(item.id);
-    }
-
-    // update view state if needed
-    if(isViewRequiringUpdate) {
-      this._updateScanningView();
-    }
-  },
-
-  _updateScanningView: function() {
-    if(this.listItems.length>0) {
-      this._showSelectedPageView("iron-selector"); // show list
-    } else {
-      this._showSelectedPageView("aside"); // show spinner
-    }
-  },
-
-  _addPerson: function(id, username) {
-    var item = {
-        username : username,
-        id : id
-      };
-
-    this.push('listItems', item);
-    return true;
-  },
-
-  _removePerson: function(id) {
-    var item;
-    for(var i=0; i<this.listItems.length; i++) {
-      item = this.listItems[i];
-      if(id === item.id) {
-        this.splice('listItems',i,1);
-        return true;
-      }
-    }
-    return false;
-  },
-
   /* notifications */
 
-  _mockPairingNotification : function() {
-    if (this.listItems.length > 0) {
-      var peer = this.listItems[0];
-      var code = this.pairingCode; // random 6 digit code
-      var message = "Verify code " + code + " sent from " + peer.username;
+  _onNotificationHandler : function(e) {
+    console.log("_onNotificationHandler");
+    var request = e.detail;
+    if (request && request.username && request.code) {
+      var message = "Verify code " + request.code + " sent from " + request.username;
       console.log("Pairing request received");
-      this._showToastNotification(message, 8);
-    }
-    this._stopNotification(); // clean-up
-  },
-
-  _stopNotification : function() {
-    if(this.taskNotification) {
-      console.log("stop notification service");
-      clearTimeout(this.taskNotification);
-      this.taskNotification = null;
+      this._showToastNotification(message, 5); // seconds
     }
   },
 
@@ -481,118 +293,7 @@ Polymer({
     this.querySelector('#notifications').classList.remove("ghost"); // reveal notifications button
   },
 
-  /* pairing */
-
-  _startPairing: function() {
-    // simulate wait for an async callback
-    if(!this.taskPairing) {
-      console.log("Start pairing");
-      this.taskPairing = setTimeout(this._mockPairing.bind(this), 3000);
-    }
-  },
-
-  _stopPairing: function() {
-    if(this.taskPairing) {
-      console.log("Stop pairing service");
-      clearTimeout(this.taskPairing);
-      this.taskPairing = null;
-    }
-  },
-
-  _mockPairing: function() {
-    var code = this._generateCode(); 
-    console.log("random pairing code generated: " + code);
-    this.set('pairingCode', code);
-    this._showSelectedPageView("main");
-    this._stopPairing(); // clean-up
-  },
-
-  // returns random 6 digit string
-  _generateCode: function() {
-    return (""+Math.random()).substring(2,8); 
-  },
-
-  /* form */
-
-  _onSubmitForm: function() {
-    var isSuccess = true;  
-    this.querySelector('form').submit();
-  },
-
-  _checkUsernameAvailable: function() {
-    // TODO check if username is unique...
-    var suggestedUsername = this.selectedItem.username;
-
-    var input = this.querySelector('input[name="username"]');
-    if(input) {
-      input.value = suggestedUsername;
-      this.autoFocus(input); // UX send focus to textarea
-    }
-
-    this._showSelectedPageView("form");
-  },
-
-  _formInvalid: function(e) {
-    // notify user what went wrong on client
-    console.log('Form invalid');
-  },
-  _formSubmit: function(e) {
-    console.log("Form was submitted");
-    //console.log(e.detail);
-    var contactId = e.detail._id;
-    var username = e.detail.username;
-    this._saveContact(contactId, username);
-  },
-  _formResponse: function(e) {
-    console.log("Server Response:", e.detail);
-    //this.close(); // dismiss modal when done
-  },
-  _formError: function(e) {
-    console.log("Form Error:", e.detail);
-  },
-
-  /* ajax */
-
-  _saveContact: function(contactId, username) {
-    var self = this;
-    this._isSaving = true;
-    console.log("=> Save contact:" + username + " id:"+ contactId);
-    $.ajax({
-        url: myApp._url + contactId,
-        type: 'PUT',
-        contentType: 'application/json',
-        data: JSON.stringify({ 
-          username: username
-        }),
-        dataType: 'json',
-        error: function(jqXHR, textStatus, errorThrown) {
-          console.log('@ error in save Contact ' + JSON.stringify(jqXHR) + ' ' + textStatus + ' ' + errorThrown);
-          alert("Error saving Contact");
-        },
-        success: function(data, textStatus, jqXHR) {
-          console.log("@ saved Contact - " + textStatus);
-          //console.log(data);
-          // if 'ok' update client UI else alert user with error
-          if(data.ok && data.ok===true) {
-            console.log("OK", textStatus);
-            self._isSaving = false;
-            // TODO: toast alert with saved contact 
-            self.close(); // dismiss modal when done
-          } else {
-            alert("Save Contact error");
-          }
-        }
-    });
-  },
-
-  /*  clean-up resources on close */
-
-  _stopAll: function() {
-    this._stopScanning();
-    this._stopPairing();
-  },
-
-  /* UI state */
+  /* open notifications panel */
 
   _onReadNotifications : function(e) {
     this.toggleVisibility("#notificationsPanel");
@@ -607,34 +308,16 @@ Polymer({
     }
   },
 
-  // manages view state by passing only one child to show within the selected page view element
-  _showSelectedPageView : function(elementTag) {
-    var container = this.querySelector(".iron-selected");
-    if(container) {
-      //console.log("show only element tag: "+ elementTag + " children: " + container.children.length);
-      for(var i=0; i<container.children.length; i++) {
-        this.hide(container.children[i]);
-      }
-      var element = container.querySelector(elementTag);
-      if(element){
-        this.show(element);
-      }
+  /*  clean-up current page resources on close */
+
+  _abort: function() {
+    if( this.selectedPage ) {
+      console.log("Aborting modal page process...");
+      this.querySelector('page-'+this.selectedPage).stop(); // stop biz logic!
     }
   },
 
-  _resetPageView : function(element) {
-    if(element && element instanceof Node) {
-      this.hideAllSelectors(["main","iron-selector"], element);
-      this.showAllSelectors(["aside"], element);
-    }
-  },
-
-  _resetPageViews: function() {
-     this.hideAllSelectors(["main","iron-selector"]);
-     this.showAllSelectors(["aside"]);
-  },
-
-  /* animation behavior methods */
+  /* Polymer animation behavior methods */
 
   _renderOpened: function() {
     this._setState(); // set state when opened before playing entry animation

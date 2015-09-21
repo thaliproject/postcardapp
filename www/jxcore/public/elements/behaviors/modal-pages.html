@@ -1,0 +1,37 @@
+<script>
+'use strict';
+var PageBehaviors = PageBehaviors || {}; // namespace
+
+/*
+ * Common methods for modal pages
+ */
+
+PageBehaviors.ModalPages = {
+
+	/* fires event to `neon-animated-pages` container's listeners */
+
+	modalNextFire: function(object) {
+    	this.fire('next', object);
+  	},
+
+	modalNext: function() {
+    	this.fire('next');
+  	},
+
+  	modalPrev: function() {
+    	this.fire('prev');
+  	},
+
+  	modalClose: function() {
+  		this.fire('close');
+  	},
+
+  	/* shared helper methods */
+
+  	// returns random 6 digit string
+  	generateCode: function() {
+    	return (""+Math.random()).substring(2,8); 
+  	},
+
+};
+</script>

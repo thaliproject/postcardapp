@@ -1,0 +1,149 @@
+<link rel="import" href="/bower_components/polymer/polymer.html">
+<link rel="import" href="/bower_components/neon-animation/neon-animatable-behavior.html">
+<link rel="import" href="/elements/behaviors/modal-pages.html">
+<link rel="import" href="/elements/behaviors/ui-helper.html">
+<link rel="import" href="/elements/behaviors/tree-traversing.html">
+
+<dom-module id="page-scan">
+
+<template>
+	<iron-selector attr-for-selected="index" on-click="_onItemSelected" hidden>
+    <iron-list items="{{listItems}}" as="item" class="fit">
+      <template>
+        <paper-material id="{{index}}" class="row">
+          <div class="fit layout horizontal center">
+            <p class="truncate flex">[[item.username]]</p>
+            <iron-icon icon="chevron-right"></iron-icon>
+          </div>
+        </paper-material>
+      </template>
+    </iron-list>
+  </iron-selector>
+  <!-- spinner -->
+  <aside class="fit vertical layout center-center">
+    <iron-icon icon="autorenew" class="rotating"></iron-icon>
+    <p>Finding</p>
+  </aside>
+</template>
+
+<script>
+'use strict';
+Polymer({
+  is: "page-scan",
+  behaviors: [
+      Polymer.NeonAnimatableBehavior,
+      PageBehaviors.ModalPages,
+      PageBehaviors.UIHelper,
+      PageBehaviors.TreeTraversing,
+    ],
+  properties: {
+    listItems: {
+      type: Array,
+      value: []
+    },
+    taskScanning: {
+      type: Object
+    },
+  },
+  setup : function() {
+    console.log(this.localName + ' setup');
+    this.listItems = [];
+  },
+  start : function() {
+    console.log(this.localName + ' start');
+    this._startScanning();
+  },
+  stop : function() {
+    console.log(this.localName + ' stop');
+    this._stopScanning();
+  },
+
+  _onItemSelected: function(e) {
+    var selectedIndex = this.getParentAttribute(e.target, 'paper-material', 'id');
+    if (selectedIndex!==false && selectedIndex>=0) {
+      var selectedItem = this.listItems[selectedIndex];
+      // stop scanning once selected
+      this._stopScanning();
+      // person selected to pair with
+      this.modalNextFire(selectedItem);
+    }
+  },
+
+  /* scanning */
+
+  _startScanning: function() {
+    console.log("Start discovery service...");
+    this._updateScanningView();
+
+    // runs indefinately until view changed
+    if(!this.taskScanning) {
+      this.taskScanning = setInterval(this._mockScanningEvent.bind(this), 2000);
+    }
+  },
+
+  _stopScanning: function() {
+    if(this.taskScanning) {
+      console.log("Stop discovery service");
+      clearInterval(this.taskScanning);
+      this.taskScanning = null;
+    }
+  },
+
+  _mockScanningEvent: function() {
+    var isAvailable = (Math.random() > 0.5);
+    var isViewRequiringUpdate = false;
+
+    if(isAvailable || this.listItems.length==0){
+      // simulate peer available - add to list
+      var username = faker.internet.userName();
+      var id = faker.random.uuid();
+      var code = this.generateCode();
+      this.fire('notification', {username:username,code:code}); // simulate pairing request during scanning state
+      isViewRequiringUpdate = this._addPerson(id, username);
+    } else if (this.listItems.length > 0) {
+      // simulate peer unavailable - remove from list
+      var index = Math.floor(Math.random() * this.listItems.length);
+      var item = this.listItems[index];
+      isViewRequiringUpdate = this._removePerson(item.id);
+    }
+
+    // update view state if needed
+    if(isViewRequiringUpdate) {
+      this._updateScanningView();
+    }
+  },
+
+  _updateScanningView: function() {
+    if(this.listItems.length>0) {
+      //this._showSelectedPageView("iron-selector"); // show list
+      this.showOnlySelector("iron-selector");
+    } else {
+      //this._showSelectedPageView("aside"); // show spinner
+      this.showOnlySelector("aside");
+    }
+  },
+
+  _addPerson: function(id, username) {
+    var item = {
+        username : username,
+        id : id
+      };
+
+    this.push('listItems', item);
+    return true;
+  },
+
+  _removePerson: function(id) {
+    var item;
+    for(var i=0; i<this.listItems.length; i++) {
+      item = this.listItems[i];
+      if(id === item.id) {
+        this.splice('listItems',i,1);
+        return true;
+      }
+    }
+    return false;
+  },
+});
+</script>
+</dom-module>

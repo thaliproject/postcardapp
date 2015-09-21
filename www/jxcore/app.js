@@ -36,9 +36,7 @@ app.use('/dblocal/', require('express-pouchdb')(PrivatePouchDB, {
 var dbPrivate = new PrivatePouchDB( dbName );
 console.log('privateDBPath: '+dbPathPrefix+dbName);
 // private api router for storing contacts
-var privateRouter = require('./privateroutes')(dbPrivate);
-app.use('/_api', privateRouter); // private api
-
+app.use('/_api', require('./privateroutes')(dbPrivate)); // private api
 
 // shared db
 var dbPath = path.join(os.tmpdir(), 'dbPath');
@@ -49,8 +47,9 @@ var LevelDownPouchDB = process.platform === 'android' || process.platform === 'i
 app.use('/db', require('express-pouchdb')(LevelDownPouchDB, { mode: 'minimumForPouchDB' }));
 var db = new LevelDownPouchDB('thali');
 
-var cardRouter = require('./cardroutes')(db);
-app.use('/api', cardRouter);
+app.use('/api', require('./cardroutes')(db));
+
+app.use('/webview', require('./routes/webview')());
 
 app.engine('ejs',ejsEngine);
 app.set('view engine','ejs');

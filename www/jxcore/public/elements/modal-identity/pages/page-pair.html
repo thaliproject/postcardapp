@@ -1,0 +1,102 @@
+<link rel="import" href="/bower_components/polymer/polymer.html">
+<link rel="import" href="/bower_components/neon-animation/neon-animatable-behavior.html">
+<link rel="import" href="/elements/behaviors/modal-pages.html">
+<link rel="import" href="/elements/behaviors/ui-helper.html">
+
+<dom-module id="page-pair">
+
+<template>
+  <main class="fit vertical layout center-center" hidden>
+    <h1>Ask <span>[[selectedItem.username]]</span></h1>
+    <p>Does your code match?</p>
+    <h1 class="scratch">[[pairingCode]]</h1>
+    <div class="layout horizontal">
+      <paper-button class="accent-warn" on-click="_onDeclineHandler"><iron-icon icon="cancel"></iron-icon> Decline</paper-button>
+      <paper-button class="accent-default" on-click="_onConfirmationHandler"><iron-icon icon="check-circle"></iron-icon> Confirm</paper-button>
+    </div>
+    <div class="gutter"></div>
+  </main>
+  <!-- spinner -->
+  <aside class="fit vertical layout center-center">
+    <iron-icon icon="autorenew" class="rotating"></iron-icon>
+    <p>Attempting to pair with <span>[[selectedItem.username]]</span></p>
+    <div class="gutter"></div>
+  </aside>
+</template>
+
+<script>
+'use strict';
+Polymer({
+  is: "page-pair",
+  behaviors: [
+      Polymer.NeonAnimatableBehavior,
+      PageBehaviors.ModalPages,
+      PageBehaviors.UIHelper,
+    ],
+  properties: {
+    selectedItem : {
+      type: Object,
+      notify: true
+    },
+    taskPairing: {
+      type: Object
+    },
+    pairingCode : {
+      type: String,
+      value: "123456"
+    },
+  },
+  setup : function(bindingObject) {
+    console.log(this.localName + ' setup');
+    if(bindingObject) {
+      console.log(bindingObject);
+      this.set('selectedItem', bindingObject); //this.selectedItem = bindingObject;
+    }
+  },
+  start : function() {
+    console.log(this.localName + ' start');
+    this._startPairing();
+  },
+  stop : function() {
+    console.log(this.localName + ' stop');
+    this._stopPairing();
+    this.showOnlySelector('aside'); // reset view
+  },
+
+  _onConfirmationHandler: function(e) {
+    this.modalNextFire(this.selectedItem); 
+  },
+
+  _onDeclineHandler: function(e) {
+    this.modalPrev(); 
+  },
+
+  /* pairing */
+
+  _startPairing: function() {
+    // simulate wait for an async callback
+    if(!this.taskPairing) {
+      console.log("Start pairing");
+      this.taskPairing = setTimeout(this._mockPairing.bind(this), 3000);
+    }
+  },
+
+  _stopPairing: function() {
+    if(this.taskPairing) {
+      console.log("Stop pairing service");
+      clearTimeout(this.taskPairing);
+      this.taskPairing = null;
+    }
+  },
+
+  _mockPairing: function() {
+    var code = this.generateCode(); //this._generateCode(); 
+    console.log("random pairing code generated: " + code);
+    this.set('pairingCode', code);
+    this.showOnlySelector('main');
+    this._stopPairing(); // clean-up
+  },
+ 
+});
+</script>
+</dom-module>
