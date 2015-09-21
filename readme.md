@@ -95,7 +95,7 @@ cordova build android
 cordova build ios
 ```
 
-On Windows one needs to use [Git Bash](https://git-scm.com/download/win) or equivalent to run the above commands.cd 
+On Windows one needs to use [Git Bash](https://git-scm.com/download/win) or equivalent to run the above commands.
 
 # Fun issues you are probably going to run into
 
