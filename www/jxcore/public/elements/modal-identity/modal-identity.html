@@ -98,7 +98,7 @@ Polymer({
     },
     selectedPage: {
       type: String,
-      value: "start"
+      // value: "start"
     },
     lastPage: {
       type: String,
@@ -128,18 +128,14 @@ Polymer({
   },
 
   _setState: function() {
-    this.querySelector('page-start').setup(); // setup for first run
-    this.set('title', this._getSelectedPageTitle()); // update page title 
-    if(this._getSelectedPageIndex()>0) {
-      this._gotoPageAtIndex(0); 
-    }
+    this._gotoPageAtIndex(0); // reset page
   },
 
   _resetState: function() {
-    this._abort();
+    this._stop();
     this.hideSelector("#notificationsPanel");
     this.set('lastPage', null);
-    this.set('selectedItem', null);
+    this.set('bindingObject', null);
   },
 
   /* button handlers */
@@ -308,9 +304,9 @@ Polymer({
     }
   },
 
-  /*  clean-up current page resources on close */
+  /*  clean-up page resources on close */
 
-  _abort: function() {
+  _stop: function() {
     if( this.selectedPage ) {
       console.log("Aborting modal page process...");
       this.querySelector('page-'+this.selectedPage).stop(); // stop biz logic!

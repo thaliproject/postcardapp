@@ -8,11 +8,11 @@
 
 <template>
 	<iron-selector attr-for-selected="index" on-click="_onItemSelected" hidden>
-    <iron-list items="{{listItems}}" as="item" class="fit">
+    <iron-list items="{{listItems.peers}}" as="item" class="fit">
       <template>
         <paper-material id="{{index}}" class="row">
           <div class="fit layout horizontal center">
-            <p class="truncate flex">[[item.username]]</p>
+            <p class="truncate flex">[[item.peerFriendlyName]]</p>
             <iron-icon icon="chevron-right"></iron-icon>
           </div>
         </paper-material>
@@ -38,112 +38,119 @@ Polymer({
     ],
   properties: {
     listItems: {
-      type: Array,
-      value: []
+      type: Object,
+      notify: true
     },
-    taskScanning: {
+    isStarted: {
+      type: Boolean,
+      value: false
+    },
+    task: {
       type: Object
-    },
+    }
   },
   setup : function() {
     console.log(this.localName + ' setup');
-    this.listItems = [];
+    this.set('listItems', {});
   },
   start : function() {
     console.log(this.localName + ' start');
-    this._startScanning();
+    this._updateView();
+    this._putIdentityExchange();
   },
   stop : function() {
     console.log(this.localName + ' stop');
-    this._stopScanning();
+    if(this.isStarted) {
+      console.log("Stop the identity exchange process...");
+      this._deleteIdentityExchange();
+    }
+    if(this.task) {
+      console.log("Stop identity exchange task");
+      clearInterval(this.task);
+      this.task = null;
+    }
   },
+
+  /* scan */
 
   _onItemSelected: function(e) {
     var selectedIndex = this.getParentAttribute(e.target, 'paper-material', 'id');
     if (selectedIndex!==false && selectedIndex>=0) {
-      var selectedItem = this.listItems[selectedIndex];
+      var selectedItem = this.listItems.peers[selectedIndex];
       // stop scanning once selected
-      this._stopScanning();
+      this.stop();
       // person selected to pair with
       this.modalNextFire(selectedItem);
     }
   },
 
-  /* scanning */
+  /* rest api */
 
-  _startScanning: function() {
-    console.log("Start discovery service...");
-    this._updateScanningView();
-
-    // runs indefinately until view changed
-    if(!this.taskScanning) {
-      this.taskScanning = setInterval(this._mockScanningEvent.bind(this), 2000);
-    }
-  },
-
-  _stopScanning: function() {
-    if(this.taskScanning) {
-      console.log("Stop discovery service");
-      clearInterval(this.taskScanning);
-      this.taskScanning = null;
-    }
-  },
-
-  _mockScanningEvent: function() {
-    var isAvailable = (Math.random() > 0.5);
-    var isViewRequiringUpdate = false;
-
-    if(isAvailable || this.listItems.length==0){
-      // simulate peer available - add to list
-      var username = faker.internet.userName();
-      var id = faker.random.uuid();
-      var code = this.generateCode();
-      this.fire('notification', {username:username,code:code}); // simulate pairing request during scanning state
-      isViewRequiringUpdate = this._addPerson(id, username);
-    } else if (this.listItems.length > 0) {
-      // simulate peer unavailable - remove from list
-      var index = Math.floor(Math.random() * this.listItems.length);
-      var item = this.listItems[index];
-      isViewRequiringUpdate = this._removePerson(item.id);
-    }
-
-    // update view state if needed
-    if(isViewRequiringUpdate) {
-      this._updateScanningView();
-    }
-  },
-
-  _updateScanningView: function() {
-    if(this.listItems.length>0) {
-      //this._showSelectedPageView("iron-selector"); // show list
-      this.showOnlySelector("iron-selector");
-    } else {
-      //this._showSelectedPageView("aside"); // show spinner
-      this.showOnlySelector("aside");
-    }
-  },
-
-  _addPerson: function(id, username) {
-    var item = {
-        username : username,
-        id : id
-      };
-
-    this.push('listItems', item);
-    return true;
-  },
-
-  _removePerson: function(id) {
-    var item;
-    for(var i=0; i<this.listItems.length; i++) {
-      item = this.listItems[i];
-      if(id === item.id) {
-        this.splice('listItems',i,1);
-        return true;
+  _putIdentityExchange : function() {
+    $.ajax({
+      context : this,
+      method : 'PUT',
+      url : myApp.webview + 'IdentityExchange',
+      contentType: 'application/json',
+      data: JSON.stringify({ 
+        peerFriendlyName: myApp.username
+      }),
+      timeout : 4000
+    }).fail( function( jqXHR, textStatus, errorThrown ){
+      alert("Error, could not get device identity. " + textStatus);
+      // TODO: go back and try again
+    }).done( function(data, textStatus, jqXHR){
+      console.log("putIdentityExchange:" + textStatus);
+      this.isStarted = true;
+      if(!this.task && this.isSelected()) {
+        console.log("Start discovery service...");
+        this.task = setInterval(this._getIdentityExchange.bind(this), 2000);
       }
-    }
-    return false;
+    });
   },
+
+  _deleteIdentityExchange : function() {
+    $.ajax({
+      context : this,
+      method : 'DELETE',
+      url : myApp.webview + 'IdentityExchange',
+      timeout : 4000
+    }).fail( function( jqXHR, textStatus, errorThrown ){
+      alert("Error, could not delete device identity. " + textStatus);
+    }).done( function(data, textStatus, jqXHR){
+      console.log("deleteIdentityExchange:" + textStatus);
+      this.isStarted = false;
+    });
+  },
+
+  _getIdentityExchange : function() {
+    this.request = $.ajax({
+      context : this,
+      method : 'GET',
+      url : myApp.webview + 'IdentityExchange',
+      data : 'json',
+      timeout : 4000
+    }).fail( function( jqXHR, textStatus, errorThrown ){
+      alert("Error, could not get device identity. " + textStatus);
+      // go back and try again
+    }).done( function(data, textStatus, jqXHR){
+      console.log("getIdentityExchange:" + textStatus);
+      console.log(data);
+      if (data) {
+        this.set('listItems', data);
+        this._updateView();
+      }
+    });
+  },
+
+  _updateView: function() {
+    if(this.listItems.peers && this.listItems.peers.length>0) {
+      this.showOnlySelector("iron-selector"); // show list
+    } else {
+      this.showOnlySelector("aside"); // show spinner
+    }
+  },
+
 });
 </script>
 </dom-module>

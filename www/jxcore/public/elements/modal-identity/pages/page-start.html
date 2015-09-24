@@ -26,7 +26,7 @@ Polymer({
   	username: {
       type: String,
       value: ""
-    },
+    }
   },
   setup : function() {
   	console.log(this.localName + ' setup');
@@ -34,10 +34,28 @@ Polymer({
   },
   start : function() {
   	console.log(this.localName + ' start');
+    //this._getDeviceIdentity();
   },
   stop : function() {
   	console.log(this.localName + ' stop');
   },
+
+  /* rest api */
+
+  _getDeviceIdentity : function() {
+    this.request = $.ajax({
+      context : this,
+      method : 'GET',
+      url : myApp.webview + 'DeviceIdentity',
+      dataType : 'json',
+      timeout : 4000
+    }).fail( function( jqXHR, textStatus, errorThrown ){
+      alert("Error, could not get device identity.");
+    }).done( function(data, textStatus, jqXHR){
+      console.log(data);
+    });
+  },
+
 });
 </script>
 </dom-module>

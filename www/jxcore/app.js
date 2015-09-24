@@ -49,7 +49,7 @@ var db = new LevelDownPouchDB('thali');
 
 app.use('/api', require('./cardroutes')(db));
 
-app.use('/webview', require('./routes/webview')());
+
 
 app.engine('ejs',ejsEngine);
 app.set('view engine','ejs');
@@ -69,12 +69,14 @@ app.get('/', function (req, res) {
     res.render('ejs/index', { isDebug:false, isDevelopment:('development'===env) });
 });
 
+var manager = new ThaliReplicationManager(db);
 var server = app.listen(5000, function () {
     console.log('Express server started. (port: 5000)');
-
-    var manager = new ThaliReplicationManager(db);
+    
     manager.start(String(Math.floor(Math.random() * 100)), 5000, 'thali');
 });
+
+app.use('/webview', require('./routes/webview')(manager));
 
 
 // Sync changes

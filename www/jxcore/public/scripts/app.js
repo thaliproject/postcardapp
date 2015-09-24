@@ -12,6 +12,8 @@ myApp.url = myApp.api + "cards/";
 // private api routes
 myApp._api = myApp.host + "_api/";
 myApp._url = myApp._api + "contacts/";
+// identity exchange api
+myApp.webview = myApp.host + "webview/";
 
 // myApp user session vars
 myApp.username = "";

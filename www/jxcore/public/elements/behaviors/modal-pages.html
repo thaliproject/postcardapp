@@ -11,27 +11,24 @@ PageBehaviors.ModalPages = {
 	/* fires event to `neon-animated-pages` container's listeners */
 
 	modalNextFire: function(object) {
-    	this.fire('next', object);
-  	},
+  	this.fire('next', object);
+  },
 
 	modalNext: function() {
-    	this.fire('next');
-  	},
+  	this.fire('next');
+  },
 
-  	modalPrev: function() {
-    	this.fire('prev');
-  	},
+  modalPrev: function() {
+  	this.fire('prev');
+  },
 
-  	modalClose: function() {
-  		this.fire('close');
-  	},
+  modalClose: function() {
+  	this.fire('close');
+  },
 
-  	/* shared helper methods */
-
-  	// returns random 6 digit string
-  	generateCode: function() {
-    	return (""+Math.random()).substring(2,8); 
-  	},
+  isSelected: function() {
+    return this.classList.contains("iron-selected");
+  }
 
 };
 </script>

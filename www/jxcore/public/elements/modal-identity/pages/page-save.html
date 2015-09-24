@@ -8,9 +8,11 @@
 
 <template>
   <form is="iron-form" class="inset" hidden>
-    <paper-input name="username" label="Username" bind-value="{{petName::input}" prevent-invalid-input allowed-pattern="[A-Za-z0-9_\.]" always-float-label error-message="{{errorUsername}}" required></paper-input>
-    <input is="iron-input" name="_id" bind-value="{{selectedItem.id::input}}" type="hidden" />
-    <input is="iron-input" name="_username" bind-value="{{selectedItem.username::input}}" type="hidden" />
+    <paper-input name="username" label="Username" bind-value="{{verifiedItem.petName::input}" prevent-invalid-input allowed-pattern="[A-Za-z0-9_\.]" always-float-label error-message="{{errorUsername}}" required></paper-input>
+    <!-- hidden fields -->
+    <input is="iron-input" name="_peerPublicKeyHash" bind-value="{{verifiedItem.publicKeyHash::input}}" type="hidden" />
+    <input is="iron-input" name="_peerDeviceId" bind-value="{{verifiedItem.peerDeviceId::input}}" type="hidden" />
+    <input is="iron-input" name="_peerFriendlyName" bind-value="{{verifiedItem.peerFriendlyName::input}}" type="hidden" />
     <div class="alignCenter">
       <paper-button class="accent" raised on-click="_onSubmitForm">Save</paper-button>
     </div>
@@ -34,7 +36,7 @@ Polymer({
       PageBehaviors.MultiPlatform
     ],
   properties: {
-    selectedItem : {
+    verifiedItem : {
       type: Object,
       notify: true
     },
@@ -54,7 +56,8 @@ Polymer({
     console.log(this.localName + ' setup');
     if(bindingObject) {
       console.log(bindingObject);
-      this.set('selectedItem', bindingObject); //this.selectedItem = bindingObject;
+      bindingObject.petName = bindingObject.peerFriendlyName; // copy
+      this.set('verifiedItem', bindingObject);
     }
   },
   start : function() {
@@ -74,15 +77,15 @@ Polymer({
 
   _checkUsernameAvailable: function() {
     // TODO check if username is unique...
-    var suggestedUsername = this.selectedItem.username;
+    var suggestedPetName = this.verifiedItem.petName;
 
     var input = this.querySelector('input[name="username"]');
     if(input) {
-      input.value = suggestedUsername;
+      input.value = suggestedPetName;
       this.autoFocus(input); // UX send focus to textarea
     }
 
-    this.showOnlySelector('form'); //this._showSelectedPageView("form");
+    this.showOnlySelector('form');
   },
 
   _formInvalid: function(e) {
@@ -92,9 +95,10 @@ Polymer({
   _formSubmit: function(e) {
     console.log("Form was submitted");
     //console.log(e.detail);
-    var contactId = e.detail._id;
+    var contactId = e.detail._peerPublicKeyHash;
     var username = e.detail.username;
-    this._saveContact(contactId, username);
+    var deviceId = e.detail._peerDeviceId;
+    this._saveContact(contactId, username, deviceId);
   },
   _formResponse: function(e) {
     console.log("Server Response:", e.detail);
@@ -105,34 +109,33 @@ Polymer({
 
   /* ajax */
 
-  _saveContact: function(contactId, username) {
+  _saveContact: function(contactId, username, deviceId) {
     this._isSaving = true;
-    console.log("=> Save contact:" + username + " id:"+ contactId);
+    console.log("=> Save contact:" + username + " id:"+ contactId + " device id:" + deviceId);
     $.ajax({
-        context: this,
-        url: myApp._url + contactId,
-        type: 'PUT',
-        contentType: 'application/json',
-        data: JSON.stringify({ 
-          username: username
-        }),
-        dataType: 'json',
-        error: function(jqXHR, textStatus, errorThrown) {
-          console.log('@ error in save Contact ' + JSON.stringify(jqXHR) + ' ' + textStatus + ' ' + errorThrown);
-          alert("Error saving Contact");
-        },
-        success: function(data, textStatus, jqXHR) {
-          console.log("@ saved Contact - " + textStatus);
-          //console.log(data);
-          // if 'ok' update client UI else alert user with error
-          if(data.ok && data.ok===true) {
-            console.log("OK", textStatus);
-            this._isSaving = false;
-            this.modalClose(); // dismiss modal when done
-          } else {
-            alert("Save Contact error");
-          }
-        }
+      context: this,
+      url: myApp._url + contactId,
+      type: 'PUT',
+      contentType: 'application/json',
+      data: JSON.stringify({ 
+        username: username,
+        deviceId : deviceId
+      }),
+      dataType: 'json'
+    }).fail( function( jqXHR, textStatus, errorThrown ){
+      console.log('@ error in save Contact ' + JSON.stringify(jqXHR) + ' ' + textStatus + ' ' + errorThrown);
+      alert("Error saving Contact");
+    }).done( function(data, textStatus, jqXHR){
+      console.log("@ saved Contact - " + textStatus);
+      //console.log(data);
+      // if 'ok' update client UI else alert user with error
+      if(data.ok && data.ok===true) {
+        console.log("OK", textStatus);
+        this._isSaving = false;
+        this.modalClose(); // dismiss modal when done
+      } else {
+        alert("Save Contact error");
+      }
     });
   },
 
