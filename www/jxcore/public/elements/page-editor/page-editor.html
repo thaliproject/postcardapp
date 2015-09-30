@@ -1,0 +1,268 @@
+<link rel="import" href="/bower_components/polymer/polymer.html">
+<link rel="import" href="/elements/behaviors/button-listeners.html">
+<link rel="import" href="/elements/behaviors/multi-platform.html">
+
+<dom-module id="page-editor">
+
+<template>
+  <main class="layout vertical fit">
+    <paper-material elevation="1" class="selectBox">
+      <p class="label"><strong>To</strong></p>
+      <iron-ajax url="/_api/contacts" last-response="{{listData}}" on-response="_onResponseReceived"></iron-ajax>
+      <select class="fill" multiple on-change="_onChanged">
+        <option value="all">All</option>
+        <template is="dom-repeat" items="{{listData.rows}}" as="item">
+          <option value="[[item.doc._id]]">[[item.doc.username]]</option>
+        </template>
+      </select>
+    </paper-material>
+    <!-- message -->
+    <textarea id="textbox" class="postcard flex" value="{{editText::input}}" placeholder="Message" on-focus="shouldFocusWithoutScrollUp"></textarea>
+  </main>
+</template>
+
+<script>
+'use strict';
+Polymer({
+  is: "page-editor",
+  behaviors: [
+      PageBehaviors.ButtonListeners,
+      PageBehaviors.MultiPlatform
+    ],
+  properties: {
+    editText: {
+      type: String,
+      value: ""
+    },
+    backButton: Object,
+    saveButton: Object,
+    textBox: Object,
+    editDoc: Object,
+    listData: {
+      type: Object,
+      notify: true
+    },
+    isEdit: false
+  },
+  created: function() {
+    console.log(this.localName + ' was created');
+  },
+  ready : function() {
+    console.log(this.localName + ' ready');
+  },
+  attached: function() {
+    console.log(this.localName + ' was attached');
+  },
+  detached: function() {
+    console.log(this.localName + ' was detached');
+  },
+  viewWillAppear: function(id) {
+    console.log(this.localName + ' viewWillAppear: ' + id);
+    this.activate();
+    if(myApp.discoverButton) {
+      myApp.discoverButton.removeAttribute("hidden");
+    }
+    
+    if(id === "new"){
+      // new message 
+      myApp.title = "New Postcard";
+      this.isEdit = false;
+      this.editText = "";
+      this.autoFocus(this.textBox); // UX send autofocus to textarea
+      this._selectAll(); // select all contacts by default
+    } else {
+      // edit message 
+      myApp.title = "Edit Postcard";
+      this.isEdit = true;
+      this._getCard(id);
+      this.shouldFocus(this.textBox); // UX send autofocus to textarea
+    }
+
+    this._reloadData(); // load contacts
+  },
+  viewWillDisappear: function() {
+    console.log(this.localName + ' viewWillDisappear');
+    this.deactivate();
+    this.editDoc = null; // reset edit doc
+    this._clearSelection(); // clear selection
+    document.activeElement.blur(); // reset text input cursor
+  },
+  activate: function() {
+    console.log(this.localName + " activate... active status:" + this._isActivated);
+    
+    // local scope
+    this.textBox = this.querySelector("textarea");
+
+    // document scope
+    this.backButton = document.querySelector("#backButton");
+    this.saveButton = document.querySelector("#saveButton");
+
+    var toolbarButtonArray = [this.backButton, this.saveButton];
+    var toolbarFunctionArray = [this._backButtonHandler, this._saveButtonHandler.bind(this)];
+    this.activateButtons(toolbarButtonArray, toolbarFunctionArray);
+  },
+  deactivate: function() {
+    console.log(this.localName + " deactivate... active status:" + this._isActivated);
+    this.deactivateButtons([this.backButton, this.saveButton]);
+  },
+  _backButtonHandler: function(routeDestination) {
+    console.log("<- don't save and go back to:" + routeDestination);
+    getURL("home");
+  },
+  _saveButtonHandler: function(e) {
+    if(this.editText.length == 0) {
+      console.log("Please enter a message");
+      alert("Please enter a message"); // notify user
+      this.shouldFocus(this.textBox); // UX send focus to textarea
+      return;
+    }
+
+    if(!this.editDoc) {
+      console.log("Save new message:" + this.editText);
+      this.createItem(this.editText);
+    } else {
+      console.log("Save edited message:" + this.editText);
+      this.updateItem(this.editText, this.editDoc._id);
+    }
+    
+    // go back (while saving)
+    getURL("home");
+  },
+
+  _getCard: function(index) {
+    var doc = document.querySelector("page-home").get('listData.rows.'+index+'.doc');
+    if(doc && doc._id && doc.text) {
+      this.editText = doc.text;
+      this.editDoc = doc;
+    } else {
+      console.log("Error looking up doc object at index:",index);
+    }
+  },
+
+  // create item 
+  createItem: function(text) {
+    var cardId = generateUUID();
+    console.log("+ Create item:" + text + " id:"+ cardId);
+    this._saveCard(cardId, myApp.username, text);
+  },
+  // update item
+  updateItem: function(text, cardId) {
+    console.log("+ Edit item:" + text + " id:"+ cardId);
+    this._saveCard(cardId, myApp.username, text);
+  },
+  _saveCard: function(cardId, author, text) {
+    var self = this;
+    console.log("=> Save item:" + text + " id:"+ cardId + " by:"+ author);
+    $.ajax({
+        url: myApp.url + cardId,
+        type: 'PUT',
+        contentType: 'application/json',
+        data: JSON.stringify({ 
+          author: author, 
+          text: text
+        }),
+        dataType: 'json',
+        error: function(jqXHR, textStatus, errorThrown) {
+          console.log('@ error in save Card ' + JSON.stringify(jqXHR) + ' ' + textStatus + ' ' + errorThrown);
+          alert("Error saving card");
+        },
+        success: function(data, textStatus, jqXHR) {
+          console.log("@ saved Card - " + textStatus);
+          console.log(data);
+          // if 'ok' update client UI else alert user with error
+          if(data.ok && data.ok===true) {
+            console.log("OK",textStatus);
+          } else {
+            alert("Save card error");
+          }
+        }
+    });
+  },
+
+  // iron-ajax request
+  _reloadData: function() {
+    var ironAjax = this.querySelector("iron-ajax");
+    if(ironAjax){
+        console.log("load data");
+        ironAjax.generateRequest();
+    }
+  },
+
+  // iron-ajax response
+  _onResponseReceived: function () {
+      console.log("_onResponseReceived");
+      console.log(this.listData);
+
+      if(!this.listData || !this.listData.rows || this.listData.total_rows==0 ) {
+        console.log("Error no records found.");
+        return;
+      }
+
+      console.log("listData offset:" + this.listData.offset + " total_rows:" + this.listData.total_rows );
+
+      // splice out 'me' record (doesn't exist here yet)
+      /*
+      if(this.listData.rows.length>0) {
+        var row;
+        for(var i=0; i<this.listData.rows.length; i++) {
+          row = this.listData.rows[i];
+          if(row.id === 'me') {
+            console.log("me:" + row.doc.user);
+            this.splice('listData.rows',i,1);
+            break;
+          }
+        }
+      }
+      //*/
+
+      //sort records by username 
+      this.set('listData.rows', _.sortBy(this.listData.rows, function(o){
+        return o.doc.username;
+      } 
+      ));
+
+      this._updateSelection();
+  },
+
+  _selectAll : function() {
+    this.querySelector('option[value="all"]').setAttribute('selected', true);
+    this._changed('all');
+  },
+
+  _onChanged : function(e) {
+    var value = e.target.value;
+    console.log("user selected option value:" + value );
+    this._changed(value);
+  },
+
+  _changed : function(value) {
+    var options = this.querySelectorAll("option"), i = options.length;
+    var optionAll = options[0];
+    if (value === 'all') {
+      console.log("Select all");
+      while (i--) {
+        var option = options[i];
+        //option.setAttribute('selected', true);
+        option.selected = true;
+      }
+    }
+  },
+
+  // TODO: if editing we need to match postcard's 'to' list of pks against private address book pks 
+  _updateSelection : function() {
+    if( this.isEdit ) {
+      this._clearSelection(); // (select none for now)
+    }
+  },
+
+  _clearSelection : function() {
+    var options = this.querySelectorAll('option'), i = options.length;
+    while (i--) {
+      var option = options[i];
+      option.selected = false; 
+    }
+  }
+
+});
+</script>
+</dom-module>

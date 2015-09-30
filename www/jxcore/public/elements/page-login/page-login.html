@@ -1,0 +1,117 @@
+<link rel="import" href="/bower_components/polymer/polymer.html">
+<link rel="import" href="/elements/behaviors/multi-platform.html">
+
+<dom-module id="page-login">
+
+<template>
+  <form is="iron-form" id="form-login" method="post" action="/api/login" class="inset" hidden>
+    <paper-input name="username" label="Username" bind-value="{{username::input}}" error-message="{{errorUsername}}" required></paper-input>
+    <div class="alignCenter">
+      <paper-button class="accent" raised on-click="submitForm">Save</paper-button>
+    </div>
+  </form>
+  <aside id="placeholder" class="fit layout vertical center-center">
+    <h1>loading&hellip;</h1>
+  </aside>
+</template>
+
+<script>
+'use strict';
+Polymer({
+  is: "page-login",
+  behaviors: [
+      PageBehaviors.MultiPlatform
+    ],
+  properties: {
+    username: {
+      type: String,
+      value: ""
+    },
+    errorUsername: {
+      type: String,
+      value: "Please enter a username."
+    }
+  },
+  listeners: {
+    'iron-form-invalid': '_formInvalid',
+    'iron-form-submit': '_formSubmit',
+    'iron-form-response': '_formResponse',
+    'iron-form-error': '_formError'
+  },
+  created: function() {
+    console.log(this.localName + ' was created');
+  },
+  ready: function() {
+    console.log(this.localName + ' ready');
+    // find me
+    var self = this;
+    $.ajax({
+      url: myApp.api + 'me',
+      type: 'GET',
+      dataType: 'json',
+      error: function(jqXHR, textStatus, errorThrown) {
+        console.log('@ me error:' + errorThrown + "\n" + JSON.stringify(jqXHR));
+        self._login();
+      },
+      success: function(data, textStatus, jqXHR) {
+        if(data.user && data.user.length>0) {
+          // found 'me' and user record
+          console.log("Hello, " + data.user);
+          myApp.username = data.user; // create session
+          getURL("home"); // found 'me' record - no need to login
+        } else {
+          console.log("Error, no me record or user property");
+          self._login();
+        }
+      }
+    });
+  },
+  attached: function() {
+    console.log(this.localName + ' was attached');
+  },
+  detached: function() {
+    console.log(this.localName + ' was detached');
+  },
+  viewWillAppear: function() {
+    console.log(this.localName + " viewWillAppear");
+  },
+  viewWillDisappear: function() {
+    console.log(this.localName + " viewWillDisappear");
+  },
+  _login: function() {
+    console.log("show login form");
+    this.querySelector("aside").setAttribute("hidden", true);
+    this.querySelector("form").removeAttribute("hidden");
+    this.shouldFocus( this.querySelector("input") );
+  },
+  submitForm: function(event) {
+    console.log('submit form');
+    document.getElementById('form-login').submit();
+  },
+  _formInvalid: function(e) {
+    // notify user what went wrong on client
+    console.log('Form invalid');
+  },
+  _formSubmit: function(e) {
+    console.log("Form was submitted");
+  },
+  _formResponse: function(e) {
+    console.log("Server Response: ",e.detail);
+    console.log(e);
+    // check server response
+    if(e.detail && e.detail.user) {
+      console.log("save username: " + e.detail.user + " _id:" + e.detail._id);
+      myApp.username = e.detail.user;
+      myApp.user_id = e.detail._id;
+      getURL("home");
+    } else {
+      alert("Error, unable to save user session. Please try again.");
+    }
+  },
+  _formError: function(e) {
+    // handle what went wrong on server
+    console.log("Form Error:", e.detail);
+  }
+});
+</script>
+</dom-module>

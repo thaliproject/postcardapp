@@ -1,0 +1,60 @@
+<script>
+'use strict';
+var PageBehaviors = PageBehaviors || {}; // namespace
+
+/*
+ * This behaviour helps to traverse dom tree. 
+ */
+
+PageBehaviors.TreeTraversing = {
+
+	getParentAttribute : function(element, parentSelector, attributeName) {
+		element = this.getParentElement(element, parentSelector);
+		if (element && element.hasAttribute(attributeName)) {
+			return element.getAttribute(attributeName);
+		}
+		return false;
+	},
+
+	getParentElement : function(element, parentSelector) {
+		var matchTest;
+		switch (parentSelector.charAt(0)) {
+			case '#':
+				parentSelector = parentSelector.substr(1);
+				matchTest = this._hasId;
+				break;
+			case '.':
+				parentSelector = parentSelector.substr(1);
+        		matchTest = this._hasClass;
+        		break;
+        	case '[':
+        		parentSelector = parentSelector.slice(1,-1);
+        		matchTest = this._hasAttribute;
+        		break;
+        	default:
+        		parentSelector = parentSelector.toLowerCase();
+        		matchTest = this._hasTag;
+        }
+		for (; element && element !== document ; element = element.parentElement) {
+        	if( matchTest(element, parentSelector) ) {
+        		return element;
+        	}
+    	}
+    	return false;
+	},
+
+	_hasId : function (element, selector) {
+		return element.id === selector;
+	},
+	_hasClass : function (element, selector) {
+		return element.classList.contains(selector);
+	},
+	_hasAttribute : function (element, selector) {
+		return element.hasAttribute(selector);
+	},
+	_hasTag : function (element, selector) {
+		return element.tagName.toLowerCase() === selector;
+	},
+
+};
+</script>

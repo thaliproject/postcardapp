@@ -1,0 +1,92 @@
+<script>
+'use strict';
+var PageBehaviors = PageBehaviors || {}; // namespace
+
+/*
+ * Helper methods for common UI functions
+ */
+
+PageBehaviors.UIHelper = {
+
+	/* methods for elements */
+
+	hide : function(element) {
+		if (element && element instanceof Node) {
+			element.setAttribute('hidden', true);
+		}
+	},
+
+	show : function(element) {
+		if (element && element instanceof Node) {
+			element.removeAttribute('hidden');
+		}
+	},
+
+	hideAll : function(elementArray) {
+		var i = elementArray.length;
+		while (i--) {
+			this.hide( elementArray[i] );
+		}
+	},
+
+	showAll : function(elementArray) {
+		var i = elementArray.length;
+		while (i--) {
+			this.show( elementArray[i] );
+		}
+	},
+
+	/* methods for selectors */
+
+	hideSelector : function(selector) {
+		this.hide( this.querySelector(selector) );
+	},
+
+	showSelector : function(selector) {
+		this.show( this.querySelector(selector) );
+	},
+
+	/* methods for selectors inside a container element */
+
+	hideAllSelectors : function(selectorArray, element) {
+		if (element === undefined) element = this;
+		var i = selectorArray.length;
+		while (i--) {
+			this.hideAll( element.querySelectorAll(selectorArray[i]) );
+		}
+	},
+
+	showAllSelectors : function(selectorArray, element) {
+		if (element === undefined) element = this;
+		var i = selectorArray.length;
+		while (i--) {
+			this.showAll( element.querySelectorAll(selectorArray[i]) );
+		}
+	},
+
+	toggleVisibility : function(selector) {
+		var element = this.querySelector(selector);
+		if (!element || !element instanceof Node) {
+			return null; // error, no element found
+		}
+		if ( element.hasAttribute("hidden") ) {
+			this.show(element);
+			return true;
+		} else {
+			this.hide(element);
+			return false;
+		}
+	},
+
+	/* view state methods for pages */
+	
+	showOnlySelector : function(selector) {
+		var i = this.children.length;
+		while (i--) {
+			this.hide(this.children[i]);
+		}
+		this.showSelector(selector);
+	}
+	
+};
+</script>

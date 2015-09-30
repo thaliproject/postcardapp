@@ -1,0 +1,383 @@
+/* basic reset */
+* {
+	font-family: "HelveticaNeue-Light", "Helvetica-Light", "Helvetica", "Arial", "Roboto", sans-serif;
+	font-weight: normal;
+}
+
+html,body{
+	margin: 0;
+	padding: 0;
+	height: 100%;
+	width: 100%;
+	background-color: white;
+	min-width: 320px; /* smallest screen width supported */
+	min-height: 320px; /* smallest screen height supported */
+}
+
+/* disable webkit bounce effect in the browser */
+html,body {
+    overflow: hidden; 
+    -webkit-overflow-scrolling: touch;
+}
+
+/* disable iOS text selection */
+body, .noSelect {
+	-webkit-touch-callout: none;
+    -webkit-user-select: none;
+    -khtml-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+    cursor: default;
+}
+
+body {
+	-webkit-transform: translateZ(0px); /* hack for iOS8 iframe scroll issue */
+}
+
+/* iOS nav bar style */
+#appName {	
+	display: block;
+	width: 120px;
+	margin-left: -60px;
+	position: absolute;
+	left: 50%;
+	top: 20px;
+	text-align: center;
+	overflow: hidden;
+	white-space: nowrap;
+	text-overflow: ellipsis;
+	background: transparent;
+	font-size: 18px;
+}
+#rightToolbarButtons {
+	position: absolute;
+	right: 10px;
+	top: 10px;
+}
+#leftToolbarButtons {
+	position: absolute;
+	left: 10px;
+	top: 10px;
+}
+
+#rightToolbarButtons paper-icon-button, 
+#rightToolbarButtons>div {
+	float: left;
+}
+#leftToolbarButtons paper-icon-button, 
+#leftToolbarButtons>div {
+	float: left;
+}
+
+/* debug log */
+#debugConsoleLog {
+	z-index: 1;
+	position: absolute;
+	left: 0;
+	top: 0;
+	width: 100%;
+	height: 100%;
+	background: black;
+	color: white;
+	margin: 0;
+	padding: 0;
+	border: 0;
+	border-radius: 0; /* remove rounded corners on iOS */
+	resize: none; /* hide resize box in firefox */
+	font-family: monospace;
+}
+
+/* minimal margin for input text and labels */
+.inset {
+	width: 100%;
+	box-sizing: border-box;
+	padding: 0 10px; /* if box-sizing is supported then add padding to give space around editable text */
+}
+
+/* wrapper to force contents to align center */
+.alignCenter {
+	display: table;
+	width: 100%;
+	text-align: center;
+}
+
+/* solid color for paper-button */
+.accent {
+	background-color: #3E51B5;
+	color: #fff;
+}
+
+.accent-warn {
+	background-color: #F34383;
+	color: #fff;
+}
+
+.accent-default {
+	background-color: #2BD52D;
+	color: #fff;
+}
+
+
+/* iron-list row */
+paper-card.row {
+	width: 100%;
+	padding-bottom: 20px;
+}
+
+/* row inline editing with paper-input */
+.inlineInput {
+	width: 100%;
+	box-sizing: border-box;
+	padding: 0 25px; /* if box-sizing is supported then add padding to give space around editable text */
+
+	position: absolute;
+	top:0;
+	left:0;
+	/*z-index: 1;*/
+}
+
+/* temp class to make inline editing not cause height rendering issues in iron-list */
+.truncate {
+	overflow: hidden;
+	white-space: nowrap;
+	text-overflow: ellipsis;
+}
+
+/* row theme */
+.postcard {
+	background-color: #ffffcc;
+	color: #333;
+}
+
+/* iOS 8.4 drop-shadow */
+.postcard {
+	box-shadow: 0px 10px 10px #AAA;
+}
+
+/* row text format */
+.postcard h6, .postcard p, .postcard pre, textarea.postcard,  
+.row p {
+	font-size: 24px;
+	padding: 0 10px;
+	word-wrap: break-word; /* prevent horizontal scroll here - break long single line strings */
+	white-space: pre-wrap; /* make pre text wrap */
+}
+
+/* row date */
+.postcard span {
+	display: block;
+	float: right;
+	font-size: 12px;
+	color: #ccbbaa;
+}
+
+/* edit text style */
+textarea.postcard {
+	width: 100%;
+	/* height: 100%; */
+	min-height: 200px;
+	border: 0;
+	resize: none; /* hide resize box in chrome */
+	margin: 0;
+	box-sizing: border-box;
+	padding: 10px; /* if box-sizing is supported then add padding to give space around editable text */
+	padding-top: 20px; /* give some extra space for iOS device status bar */
+	border-radius: 0; /* remove rounded corners on iOS */
+}
+
+paper-fab.FAB {
+	display: block;
+	position: fixed; /* Beware: use only in non-scrolling views as fixed position doesn't play well within a iOS scroll view */
+	bottom: 40px;
+	right: 20px;
+	z-index: 1; /* should appear above everything else? */
+}
+
+.gutter {
+	width: 100%;
+	height: 100px;
+}
+
+/* editor */
+
+.selectBox {
+	width: 100%;
+	/* box-shadow: 0px 0px 20px #000; */
+}
+
+.selectBox,
+.selectBox p.label,
+.selectBox select.fill {
+	height: 80px;
+	font-size: 18px;
+	display: block;
+	background: white;
+}
+
+p.label {
+	line-height: 80px;
+	position: absolute;
+	top: 0; 
+	left: 0;
+	margin: 0;
+	padding: 0 10px;
+	box-sizing: border-box;
+	width: 50px;
+}
+
+select.fill {
+	position: absolute;
+	left: 50px; /* same as label width */
+	top: 0; 
+	text-indent: 0px;
+	margin: 0;
+	padding: 0;
+	box-sizing: border-box;
+	width: calc(100% - 50px);
+	height: 100%;
+	border: 0;
+	border-radius: 0;
+	outline: none;
+	appearance: none;
+	-webkit-appearance: none;
+	-moz-appearance: none;
+	color: #3E51B5;
+}
+
+/* modal page */
+
+modal-identity {
+	z-index: 1;
+	position: absolute;
+	left: 0;
+	top: 0;
+	margin: 0;
+	padding: 0;
+	width: 100%;
+	height: 100%;
+	background: white;
+	/* watch out for iOS max-height:0px display issue */
+	min-height: 100%;
+	max-height: 100%;
+}
+
+/* spinner */
+@keyframes rotating {
+    from{
+        transform: rotate(0deg);
+    }
+    to{
+        transform: rotate(360deg);
+    }
+}
+@-webkit-keyframes rotating {
+    from{
+        -webkit-transform: rotate(0deg);
+    }
+    to{
+        -webkit-transform: rotate(360deg);
+    }
+}
+.rotating {
+    animation: rotating 2s linear infinite;
+    -webkit-animation: rotating 2s linear infinite;
+}
+
+/* row style */
+paper-material.row {
+	width: 100%;
+	height: 80px;
+}
+
+/* iron-list row divider */
+.divider {
+	width: 100%;
+	height: 1px;
+	background-color: #ddd;
+	position: absolute;
+	left: 0;
+	bottom: 0;
+}
+
+.card {
+	background: white;
+	color: #333;
+}
+
+.scratch {
+	padding: 15px;
+}
+
+.scratch, paper-toast {
+	background: #333;
+	color: white;
+}
+
+paper-toast {
+	z-index: 13; /* appear in front of modal @12 iron-list @1 */
+	width: calc(100% - 22px); /* minus left: value*2 */
+}
+
+paper-toast>span#label {
+	/*font-weight: bold;*/
+}
+
+/*
+paper-badge.icon {
+	left: 18px !important;
+	top: -2px !important;
+}
+*/
+
+.badge {
+	background-color: #F34383;
+    width: 18px;
+    height: 18px;
+    border-radius: 9px;
+    line-height: 18px;
+    text-align: center;
+    font-size: 12px;
+    left: 21px;
+    top: 4px;
+    position: absolute;
+}
+
+#notificationsPanel {
+	/*background-color: rgba(132,159,204,0.95);*/
+	background: #849FCC;
+	color: white;
+	position: absolute;
+	top: 0;
+	left: 0;
+	z-index: 1;
+}
+
+#notificationsPanel paper-material>div {
+	background: #3E51B5;
+	color: white;
+	
+}
+
+#notificationsPanel paper-material p {
+	font-size: 16px;
+	padding: 0 20px;
+}
+
+.center-center h1 {
+	text-align: center;
+}
+
+.diminished {
+	color: #ccc;
+}
+
+/*.disabled {
+	opacity: 0.5;
+	filter: grayscale(1);
+	-webkit-filter: grayscale(1);
+}*/
+
+.ghost {
+	visibility: hidden;
+}
