@@ -66,6 +66,11 @@ Polymer({
   },
   stop : function() {
     console.log(this.localName + ' stop');
+    this._reset();
+  },
+  _reset : function() {
+    this.set('verifiedItem', {});
+    this.showOnlySelector('aside'); 
   },
 
   /* form */

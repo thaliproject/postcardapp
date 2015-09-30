@@ -179,11 +179,6 @@ Polymer({
     console.log("#" + this.lastPage + " -> selectedPage: #" + this.selectedPage);
     this.set('title', this._getSelectedPageTitle()); // update page title
 
-    // stop active processes on last page 
-    if(this.lastPage) {
-      this.querySelector('page-'+this.lastPage).stop(); // stop biz logic!
-    }
-
     // hide notifications panel
     this.hideSelector("#notificationsPanel");
 
@@ -201,8 +196,9 @@ Polymer({
   },
 
   _pageDidAnimate: function() {
+    // stop active processes on last page 
     if(this.lastPage) {
-      // reset last page view state? 
+      this.querySelector('page-'+this.lastPage).stop(); // stop biz logic!
     }
     this.lastPage = this.selectedPage;
 

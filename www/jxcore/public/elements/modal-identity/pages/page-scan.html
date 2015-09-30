@@ -8,7 +8,7 @@
 
 <template>
 	<iron-selector attr-for-selected="index" on-click="_onItemSelected" hidden>
-    <iron-list items="{{listItems.peers}}" as="item" class="fit">
+    <iron-list items="{{listItems}}" as="item" class="fit">
       <template>
         <paper-material id="{{index}}" class="row">
           <div class="fit layout horizontal center">
@@ -37,8 +37,12 @@ Polymer({
       PageBehaviors.TreeTraversing,
     ],
   properties: {
+		pollingData : {
+			type: Object
+		},
     listItems: {
-      type: Object,
+      type: Array,
+			value: [],
       notify: true
     },
     isStarted: {
@@ -51,24 +55,30 @@ Polymer({
   },
   setup : function() {
     console.log(this.localName + ' setup');
-    this.set('listItems', {});
   },
   start : function() {
     console.log(this.localName + ' start');
-    this._updateView();
     this._putIdentityExchange();
   },
   stop : function() {
     console.log(this.localName + ' stop');
     if(this.isStarted) {
-      console.log("Stop the identity exchange process...");
+      console.log("Kill the identity exchange process!");
       this._deleteIdentityExchange();
     }
+    this._stopTask();
+    this._reset();
+  },
+  _stopTask : function() {
     if(this.task) {
       console.log("Stop identity exchange task");
       clearInterval(this.task);
       this.task = null;
     }
+  },
+  _reset : function() {
+    this.set('listItems', []);
+    this._updateView();
   },
 
   /* scan */
@@ -76,13 +86,15 @@ Polymer({
   _onItemSelected: function(e) {
     var selectedIndex = this.getParentAttribute(e.target, 'paper-material', 'id');
     if (selectedIndex!==false && selectedIndex>=0) {
-      var selectedItem = this.listItems.peers[selectedIndex];
+      var selectedItem = this.listItems[selectedIndex]; //this.listItems.peers[selectedIndex];
       // stop scanning once selected
-      this.stop();
+      this._stopTask();
       // person selected to pair with
       this.modalNextFire(selectedItem);
     }
   },
+
+
 
   /* rest api */
 
@@ -92,7 +104,7 @@ Polymer({
       method : 'PUT',
       url : myApp.webview + 'IdentityExchange',
       contentType: 'application/json',
-      data: JSON.stringify({ 
+      data: JSON.stringify({
         peerFriendlyName: myApp.username
       }),
       timeout : 4000
@@ -137,14 +149,63 @@ Polymer({
       console.log("getIdentityExchange:" + textStatus);
       console.log(data);
       if (data) {
-        this.set('listItems', data);
+        this.isStarted = false;
+        this._mergeDataWithList(data); //this.set('listItems', data);
         this._updateView();
       }
     });
   },
 
+	/* view */
+
+	_mergeDataWithList : function(data) {
+		if(!data || !data.peers) {
+			console.log("Error data");
+			return false;
+		}
+
+		// if there are no items in list and we have peers then just set list to peers.
+		if ( this.listItems.length==0 && data.peers.length>0 ) {
+			this.set('listItems', data.peers);
+			return true;
+		}
+
+		// compare arrays: listItems against data.peers
+		var i = this.listItems.length;
+		while (i--) {
+			var isFound = false;
+			var j = data.peers.length;
+			while (j--) {
+				if ( this.listItems[i].peerPublicKeyHash === data.peers[j].peerPublicKeyHash ) {
+					isFound = true;
+					break;
+				}
+			}
+			if(!isFound) {
+				this.splice('listItems', i, 1); // remove from list
+			}
+		}
+
+		// compare arrays: data.peers against listItems
+		var i = data.peers.length;
+		while (i--) {
+			var isFound = false;
+			var j = this.listItems.length;
+			while (j--) {
+				if ( this.listItems[j].peerPublicKeyHash === data.peers[i].peerPublicKeyHash ) {
+					isFound = true;
+					break;
+				}
+			}
+			if(!isFound) {
+				this.unshift('listItems', data.peers[i]); // add to list
+			}
+		}
+
+	},
+
   _updateView: function() {
-    if(this.listItems.peers && this.listItems.peers.length>0) {
+    if(this.listItems && this.listItems.length>0) { // if(this.listItems.peers && this.listItems.peers.length>0) {
       this.showOnlySelector("iron-selector"); // show list
     } else {
       this.showOnlySelector("aside"); // show spinner

@@ -60,20 +60,28 @@ Polymer({
   },
   start : function() {
     console.log(this.localName + ' start');
-    this._updateView();
     this._putExecuteExchange();
   },
   stop : function() {
     console.log(this.localName + ' stop');
     if(this.isStarted) {
-      console.log("Stop the exchange process...");
+      console.log("Kill the exchange process!");
       this._deleteExecuteExchange();
     }
+    this._stopTask();
+    this._reset();
+  },
+  _stopTask : function() {
     if(this.task) {
       console.log("Stop exchange service");
       clearInterval(this.task);
       this.task = null;
     }
+  },
+  _reset : function() {
+    this.set('selectedItem', {});
+    this.set('verifiedItem', {});
+    this._updateView();
   },
 
   /* pair */
@@ -143,11 +151,11 @@ Polymer({
       console.log("getIdentityExchange:" + textStatus);
       console.log(data);
       if (data && data.status==="complete") {
+        this.isStarted = false;
+        this._stopTask();
         data.peerFriendlyName = peerFriendlyName; // add name to item 
         this.set('verifiedItem', data); // update model
         this.showOnlySelector('main');
-        this.isStarted = false;
-        this.stop();
       } else {
         console.log("exchange status: " + data.status);
       }

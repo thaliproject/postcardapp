@@ -3,35 +3,48 @@ var faker = require('faker');
 
 // this is a mock API to start testing ajax calls from UI
 
-function webview (manager) {
+function webview () {
     var api = express.Router();
 
     // fake user's personal public key
     var publicKeyHash = faker.random.uuid();
 
+    var pollingData = {
+                peerFriendlyName: "Me",
+                peers: []
+            };
+
     // faker functions
     function fakePeers() {
-        var data = {
-                    peerFriendlyName: "Me",
-                    peers: []
-                };
-        var i = Math.floor( Math.random()*10 );
-        console.log("found "+i+" peers");
-        while(i--) {
+        // remove
+        if (Math.random()*1 > 0.9) {
+          var x = Math.round( Math.random()*pollingData.peers.length );
+          if (x>0) {
+            console.log("lost "+x+" peers");
+            while (x--) {
+              pollingData.peers.splice( Math.floor(Math.random()*pollingData.peers.length), 1 );//pollingData.peers.pop();
+            }
+          }
+        }
+
+        // add
+        var i = Math.round( Math.random()*1 );
+        console.log("found "+i+" new peers");
+        while (i--) {
             var peerPublicKeyHash = faker.random.uuid();
             var peerDeviceId = faker.random.uuid();
             var peerFriendlyName = faker.internet.userName();
-            data.peers.push({ 
-                "peerPublicKeyHash" : peerPublicKeyHash, 
-                "peerDeviceId" : peerDeviceId, 
+            pollingData.peers.push({
+                "peerPublicKeyHash" : peerPublicKeyHash,
+                "peerDeviceId" : peerDeviceId,
                 "peerFriendlyName" : peerFriendlyName });
         }
-        return data;
+        return pollingData;
     }
 
     // returns random 6 digit string
     function generateCode() {
-        return (""+Math.random()).substring(2,8); 
+        return (""+Math.random()).substring(2,8);
     }
 
     // rest api
