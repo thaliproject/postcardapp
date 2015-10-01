@@ -48,15 +48,15 @@ Polymer({
       url: myApp.api + 'me',
       type: 'GET',
       dataType: 'json',
-    }).fail( function(jqXHR, textStatus, errorThrown) {
-      console.log('@ me error:' + errorThrown + "\n" + JSON.stringify(jqXHR));
+    }).fail( function() {
+      console.log('@ me error:');
       this._login();
-    }).done( function(data, textStatus, jqXHR) {
+    }).done( function(data) {
       if(data.user && data.user.length>0) {
         // found 'me' and user record
         console.log("Hello, " + data.user);
         myApp.username = data.user; // create session
-        getURL("home"); // no need to login as 'me' record is found - redirect 
+        getURL("home"); // no need to login as 'me' record is found - redirect
       } else {
         console.log("Error, no me record or user property");
         this._login();

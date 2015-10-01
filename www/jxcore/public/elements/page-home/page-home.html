@@ -34,7 +34,7 @@
 Polymer({
   is: "page-home",
   behaviors: [
-      PageBehaviors.ButtonListeners, 
+      PageBehaviors.ButtonListeners,
       PageBehaviors.TreeTraversing,
       PageBehaviors.PathComponents,
       PageBehaviors.MultiPlatform
@@ -90,7 +90,7 @@ Polymer({
 
     var toolbarButtonArray = [this.addButton, this.deleteButton];
     var toolbarFunctionArray = [this._addCard, this._toggleEditMode.bind(this)];
-    this.activateButtons(toolbarButtonArray, toolbarFunctionArray);    
+    this.activateButtons(toolbarButtonArray, toolbarFunctionArray);
   },
   deactivate: function() {
     console.log(this.localName + " deactivate... active status:" + this._isActivated);
@@ -108,7 +108,7 @@ Polymer({
     this._generateRequest();
   },
 
-  // enable editting for selected postcard 
+  // enable editting for selected postcard
   _itemSelected: function(e) {
     var selectedIndex = this.getParentAttribute(e.target, 'paper-card', 'id');
     var cardId = this.getParentAttribute(e.target, 'paper-fab', 'id');
@@ -129,12 +129,11 @@ Polymer({
   _deleteCard: function(index, cardId) {
     console.log("delete index #" + index + " cardId:" + cardId);
     $.ajax({
-      context: this,
       url: myApp.url + cardId,
       type: 'DELETE'
-    }).fail( function(jqXHR, textStatus, errorThrown) {
+    }).fail( function() {
       alert("Error deleting card");
-    }).done( function(data, textStatus, jqXHR) {
+    }).done( function(data) {
       if(data.ok && data.ok===true) {
         console.log("Card deleted");
       } else {
@@ -176,13 +175,13 @@ Polymer({
       //sort records by date created
       this.set('listData.rows', _.sortBy(this.listData.rows, function(o){
         return -o.doc.dateCreated;
-      } 
+      }
       ));
 
       this._isLoaded = true;
       this._updateUserView();
   },
-  
+
   // toogle edit mode
   _toggleEditMode: function() {
     this._isEditMode = !this._isEditMode;
@@ -219,7 +218,7 @@ Polymer({
       this.querySelector("aside").removeAttribute("hidden");
       this.querySelector('iron-list').setAttribute("hidden", true);
       this.deleteButton.setAttribute("hidden", true);
-    }   
+    }
   },
 
   // update client with card changes event detail rather than reloading all records
@@ -247,9 +246,9 @@ Polymer({
       return;
     }
 
-    // find row index with id to be updated / deleted 
+    // find row index with id to be updated / deleted
     if (isDeleted || revNo>1) {
-      index = this._getDataArrayIndex('listData.rows', id); 
+      index = this._getDataArrayIndex('listData.rows', id);
       console.log("card found #" + index + " revNo:" + revNo + " id:" + id );
     }
 
@@ -294,11 +293,11 @@ Polymer({
         context: this,
         url: myApp.url + cardId,
         type: 'GET'
-      }).fail( function(jqXHR, textStatus, errorThrown) {
+      }).fail( function() {
         console.log("Error loading card. Reload data...");
         this._reloadData();
-      }).done( function(data, textStatus, jqXHR) {
-        
+      }).done( function(data) {
+
         if (!data._id) {
           console.log("Error with loaded card data format. Reload data...");
           this._reloadData();
@@ -340,11 +339,11 @@ Polymer({
       return false;
     }
     var record = {
-      doc: data, 
-      id: data._id, 
-      key: data._id, 
-      value: { 
-        rev: data._rev 
+      doc: data,
+      id: data._id,
+      key: data._id,
+      value: {
+        rev: data._rev
       }
     };
     var result = this.unshift('listData.rows', record);

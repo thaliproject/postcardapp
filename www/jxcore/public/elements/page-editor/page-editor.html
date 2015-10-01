@@ -42,14 +42,14 @@ Polymer({
   viewWillAppear: function(id) {
     console.log(this.localName + ' viewWillAppear: ' + id);
     this.activate();
-    
+
     if(id === "new"){
-      // new message 
+      // new message
       myApp.title = "New Postcard";
       this.editText = "";
       this.autoFocus(this.textBox); // UX send autofocus to textarea
     } else {
-      // edit message 
+      // edit message
       myApp.title = "Edit Postcard";
       this._getCard(id);
       this.shouldFocus(this.textBox); // UX send autofocus to textarea
@@ -63,7 +63,7 @@ Polymer({
   },
   activate: function() {
     console.log(this.localName + " activate... active status:" + this._isActivated);
-    
+
     // local scope
     this.textBox = this.querySelector("textarea");
 
@@ -97,8 +97,8 @@ Polymer({
       console.log("save edited message:" + this.editText);
       this.updateItem(this.editText, this.editDoc._id);
     }
-    
-    // go back 
+
+    // go back
     getURL("home");
   },
   _getCard: function(index) {
@@ -111,7 +111,7 @@ Polymer({
     }
   },
 
-  // create item 
+  // create item
   createItem: function(content) {
     var cardId = generateUUID();
     console.log("+ Create item:" + content + " id:"+ cardId);
@@ -125,18 +125,17 @@ Polymer({
   _saveCard: function(cardId, author, content) {
     console.log("=> Save item:" + content + " id:"+ cardId + " by:"+ author);
     $.ajax({
-      context: this,
       url: myApp.url + cardId,
       type: 'PUT',
       contentType: 'application/json',
-      data: JSON.stringify({ 
-        author: author, 
+      data: JSON.stringify({
+        author: author,
         content: content
       }),
       dataType: 'json'
-    }).fail( function(jqXHR, textStatus, errorThrown) {
+    }).fail( function() {
       alert("Error saving card");
-    }).done( function(data, textStatus, jqXHR) {
+    }).done( function(data) {
       if(data.ok && data.ok===true) {
         console.log("Card saved");
       } else {
