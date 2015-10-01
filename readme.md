@@ -76,6 +76,11 @@ You will need two (it's a peer to peer system) Android devices running at least 
 
 # Building the postcard app
 
+[Bower](http://bower.io/) is required to install web app dependencies. 
+```
+npm install -g bower
+```
+
 ```shell
 curl https://codeload.github.com/thaliproject/postcardapp/zip/master > thali.zip
 unzip thali.zip
@@ -84,6 +89,8 @@ cordova platform add android
 cordova platform add ios
 cd www/jxcore
 jx npm install --production --autoremove "*.gz"
+bower install
+find ./bower_components -name "*.gz" -type f -delete
 cordova build android
 cordova build ios
 ```
