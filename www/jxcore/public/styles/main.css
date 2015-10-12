@@ -15,7 +15,7 @@ html,body{
 
 /* disable webkit bounce effect in the browser */
 html,body {
-    overflow: hidden; 
+    overflow: hidden;
     -webkit-overflow-scrolling: touch;
 }
 
@@ -31,7 +31,7 @@ body, .noSelect {
 }
 
 /* iOS nav bar style */
-#appName {	
+#appName {
 	display: block;
 	width: 120px;
 	margin-left: -60px;
@@ -97,6 +97,10 @@ body, .noSelect {
 /* iron-list row */
 .row {
 	padding-bottom: 20px;
+}
+
+.row paper-material.paper-material-0[elevation="1"] {
+	box-shadow: none; /* hide footer shadow */
 }
 
 /* iron-list row divider */
