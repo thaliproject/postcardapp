@@ -108,9 +108,11 @@ cordova build android
 
 On Windows one needs to use [Git Bash](https://git-scm.com/download/win) or equivalent to run the above commands.
 
-# Running as development environment on localhost
-
-You will need to add
+## Running in development environment on localhost
+You will also need to copy the Thali_CordovaPlugin 'mockmobile.js' script if you want run in development mode. This allows native methods to be called on the desktop when UX testing the web app.
+```
+cp Thali_CordovaPlugin/test/www/jxcore/bv_tests/mockmobile.js postcardapp/www/jxcore/node_modules/thali/
+```
 
 # Fun issues you are probably going to run into
 
