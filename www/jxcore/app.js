@@ -11,18 +11,17 @@ console.log('starting app.js');
 var app = express();
 app.disable('x-powered-by');
 
+var dbPath = path.join(os.tmpdir(), 'dbPath');
+
 var env = process.env.NODE_ENV || 'production'; // default to production
 if ('development' === env) {
-    console.log('localhost "' + app.get('env') + '" environment');
-    var Mobile = require('thali/mockmobile.js');
+  console.log('localhost "' + app.get('env') + '" environment');
+  var Mobile = require('thali/mockmobile.js');
 }
 
-var dbPath = path.join(os.tmpdir(), 'dbPath');
 var LevelDownPouchDB = process.platform === 'android' || process.platform === 'ios' ?
     PouchDB.defaults({db: require('leveldown-mobile'), prefix: dbPath}) :
     PouchDB.defaults({db: require('leveldown'), prefix: dbPath});
-
-
 
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
@@ -55,7 +54,7 @@ var server = app.listen(5000, function () {
     console.log('Express server started. (port: 5000)');
 
     var manager = new ThaliReplicationManager(db);
-    manager.start(String(Math.floor(Math.random() * 100)), 5000, 'thali');
+    manager.start(5000, 'thali');
 });
 
 

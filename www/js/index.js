@@ -9,7 +9,7 @@ var inter = setInterval(function() {
     return;
 
   clearInterval(inter);
-  
+
   jxcore.isReady(function() {
     log('READY');
     // register log method from UI to jxcore instance
@@ -19,7 +19,7 @@ var inter = setInterval(function() {
       if (err) {
         alert(JSON.stringify(err));
       } else {
-        log('Loaded');
+        log('jxcore_ready');
         jxcore_ready();
       }
     });

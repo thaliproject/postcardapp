@@ -4,7 +4,7 @@ Postcard App Demo with the following features
 
 2. Sync the cards from other devices over http
 
-![alt text](demo.gif "Postcard app demo")
+![alt text](https://cloud.githubusercontent.com/assets/1880480/10515480/95a32aa6-734b-11e5-972e-d934763b93e9.gif "Postcard app demo")
 
 This is intended as a sample project illustrating how to use the [Thali Project](http://www.thaliproject.org) APIs.
 
@@ -54,7 +54,7 @@ set PATH=%PATH%;%ANDROID_HOME%\tools;%ANDROID_HOME%\platform-tools
 Follow the instructions at [http://jxcore.com/downloads/](http://jxcore.com/downloads/). Their download page is a little confusing so please pay attention to the section at the top that says in a tiny little font 'Installation'. When you're done, check that the installation worked:
 ```
 $ jx -jxv
-v 0.3.0.5
+v 0.3.0.7
 ```
 
 ## Install Apache Cordova
@@ -70,23 +70,47 @@ Windows:
 ```
 $ jx install -g cordova
 ```
+
+## Install Bower
+
+```
+$ npm install -g bower
+```
+
 ## Hardware
 
 You will need two (it's a peer to peer system) Android devices running at least KitKat. And no, the emulator won't work. We depend on specific radios to work and they aren't in the emulator.
 
-# Building the postcard app on Android
+# Building the postcard app
 
 ```shell
-curl https://codeload.github.com/thaliproject/postcardapp/zip/story_0 > thali.zip
-unzip thali.zip
-cd postcardapp-story_0
+git clone -b story_0 https://github.com/thaliproject/postcardapp.git
+git clone https://github.com/thaliproject/Thali_CordovaPlugin.git
+
+cd postcardapp
+
+cordova platform add ios
 cordova platform add android
+
 cd www/jxcore
+# Install node_modules
 jx npm install --production --autoremove "*.gz"
-cordova build
+# Use updated Thali_CordovaPlugin
+jx npm install ../../../Thali_CordovaPlugin/thali --save
+find ./node_modules -name "*.gz" -type f -delete
+# Install bower_components
+bower install
+find ./bower_components -name "*.gz" -type f -delete
+
+cordova build ios
+cordova build android
 ```
 
 On Windows one needs to use [Git Bash](https://git-scm.com/download/win) or equivalent to run the above commands.
+
+# Running as development environment on localhost
+
+You will need to add
 
 # Fun issues you are probably going to run into
 
@@ -113,7 +137,3 @@ And yes, we are going to make this easier. See [here](https://github.com/thalipr
 ### Using logcat
 
 The easiest way in my opinion to use logcat, especially given that there are two devices involved, is to use Android Studio and its logcat viewer. But for masochists out there you can also use logcat via adb. But you have to specify which device you want to get your logcat output from. So first run `adb devices` to get a list of your attached devices. Then issue `adb -s [id] logcat` where [id] is the device ID you got from `adb devices`.
-
-## Using the UX
-
-Even when there is synching the data will only actually show up if you hit the refresh button in the upper right part of the screen. And yes, this will eventually be fixed when we switch to the new UX.
