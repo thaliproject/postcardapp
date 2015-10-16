@@ -73,6 +73,8 @@ $ jx install -g cordova
 
 ## Install Bower
 
+[Bower](http://bower.io/) is required to install web app dependencies.
+
 ```
 $ npm install -g bower
 ```
@@ -81,7 +83,7 @@ $ npm install -g bower
 
 You will need two (it's a peer to peer system) Android devices running at least KitKat. And no, the emulator won't work. We depend on specific radios to work and they aren't in the emulator.
 
-# Building the postcard app
+## Building the postcard app
 
 ```shell
 git clone -b story_0 https://github.com/thaliproject/postcardapp.git
@@ -138,7 +140,7 @@ The easiest way in my opinion to use logcat, especially given that there are two
 ## Support for iOS 9
 
 iOS 8 is the current supported platform. But the plan is to move forward to iOS 9 once we have tested everything.
-In the meantime, if you have updated to iOS 9 you will need to add an App Transport entry to your `Info.plist` until we put a fix in. 
+In the meantime, if you have updated to iOS 9 you will need to add an App Transport entry to your `Info.plist` until we put a fix in.
 
 ```xml
 <key>NSAppTransportSecurity</key>
