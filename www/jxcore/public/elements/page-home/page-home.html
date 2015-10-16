@@ -34,7 +34,7 @@
 Polymer({
   is: "page-home",
   behaviors: [
-      PageBehaviors.ButtonListeners, 
+      PageBehaviors.ButtonListeners,
       PageBehaviors.TreeTraversing,
       PageBehaviors.PathComponents,
       PageBehaviors.MultiPlatform
@@ -45,7 +45,6 @@ Polymer({
       notify: true
     },
     addButton: Object,
-    refreshButton: Object,
     deleteButton: Object,
     _isEditMode: false,
     _isLoaded: false
@@ -91,7 +90,7 @@ Polymer({
 
     var toolbarButtonArray = [this.addButton, this.deleteButton];
     var toolbarFunctionArray = [this._addCard, this._toggleEditMode.bind(this)];
-    this.activateButtons(toolbarButtonArray, toolbarFunctionArray);    
+    this.activateButtons(toolbarButtonArray, toolbarFunctionArray);
   },
   deactivate: function() {
     console.log(this.localName + " deactivate... active status:" + this._isActivated);
@@ -109,7 +108,7 @@ Polymer({
     this._generateRequest();
   },
 
-  // enable editting for selected postcard 
+  // enable editting for selected postcard
   _itemSelected: function(e) {
     var selectedIndex = this.getParentAttribute(e.target, 'paper-card', 'id');
     var cardId = this.getParentAttribute(e.target, 'paper-fab', 'id');
@@ -129,25 +128,17 @@ Polymer({
   // delete card
   _deleteCard: function(index, cardId) {
     console.log("delete index #" + index + " cardId:" + cardId);
-    var self = this;
     $.ajax({
-        url: myApp.url + cardId,
-        type: 'DELETE',
-        error: function(jqXHR, textStatus, errorThrown) {
-          console.log('@ error in delete Card ' + JSON.stringify(jqXHR) + ' ' + textStatus + ' ' + errorThrown);
-          alert("Error deleting card");
-        },
-        success: function(data, textStatus, jqXHR) {
-          console.log("@ deleted Card - " + textStatus);
-          console.log(data);
-          // if 'ok' update client UI else alert user with error
-          if(data.ok && data.ok===true) {
-            self.splice('listData.rows', index, 1);
-            self._updateUserView(); // update user view after delete
-          } else {
-            alert("Delete card error");
-          }
-        }
+      url: myApp.url + cardId,
+      type: 'DELETE'
+    }).fail( function() {
+      alert("Error deleting card");
+    }).done( function(data) {
+      if(data.ok && data.ok===true) {
+        console.log("Card deleted");
+      } else {
+        alert("Delete card data error");
+      }
     });
   },
 
@@ -184,13 +175,13 @@ Polymer({
       //sort records by date created
       this.set('listData.rows', _.sortBy(this.listData.rows, function(o){
         return -o.doc.dateCreated;
-      } 
+      }
       ));
 
       this._isLoaded = true;
       this._updateUserView();
   },
-  
+
   // toogle edit mode
   _toggleEditMode: function() {
     this._isEditMode = !this._isEditMode;
@@ -227,13 +218,147 @@ Polymer({
       this.querySelector("aside").removeAttribute("hidden");
       this.querySelector('iron-list').setAttribute("hidden", true);
       this.deleteButton.setAttribute("hidden", true);
-    }   
+    }
   },
 
+  // update client with card changes event detail rather than reloading all records
   cardChangedHandler: function(e) {
-    console.log("cardChangedHandler");
-    console.log(e);
-    this._reloadData();
+    var id, seq, rev, revNo;
+    var index = -1;
+    var isDeleted = false;
+
+    // parse event detail data
+    if (e.detail && e.detail.id && e.detail.seq && e.detail.changes && e.detail.changes.length>=1 && e.detail.changes[0].rev) {
+      id = e.detail.id;
+      seq = e.detail.seq;
+      rev = e.detail.changes[0].rev;
+      revNo = parseInt( rev.substring(0,rev.indexOf('-')) );
+      isDeleted = (e.detail.deleted && e.detail.deleted===true) ? true : false;
+    } else {
+      console.log("Error with changed event detail format. Reload data...");
+      this._reloadData();
+      return;
+    }
+
+    // ignore 'me' record added during peer connection
+    if (id==="me") {
+      console.log("Ignore 'me' record!");
+      return;
+    }
+
+    // find row index with id to be updated / deleted
+    if (isDeleted || revNo>1) {
+      index = this._getDataArrayIndex('listData.rows', id);
+      console.log("card found #" + index + " revNo:" + revNo + " id:" + id );
+    }
+
+    // perform deleted/updated changes at row index or else create a new row
+    if (isDeleted && index >= 0) {
+      // deleted
+      console.log("[-] deleted:" + index);
+      var result = this.splice('listData.rows', index, 1);
+      if(result && result.length>0) {
+        this._updateUserView();
+      } else {
+        console.log("Error, client failed to delete record. Reload data...");
+        this._reloadData();
+      }
+    } else if (index >= 0) {
+      // updated
+      console.log("[=] updated:" + index);
+      this._loadCard(id, index);
+    } else if (revNo === 1) {
+      // created
+      console.log("[+] created:" + index);
+      this._loadCard(id);
+    } else {
+      console.log("Error, failed to determine a change action to perform. Reload data...");
+      this._reloadData();
+    }
+  },
+
+  _getDataArrayIndex: function(dataArrayPath, id) {
+    var rows = this.get(dataArrayPath);
+    var i = rows.length;
+    while (i--) {
+      if(rows[i].doc._id === id) {
+        return i;
+      }
+    }
+    return -1;
+  },
+
+  _loadCard: function(cardId, index) {
+    $.ajax({
+        context: this,
+        url: myApp.url + cardId,
+        type: 'GET'
+      }).fail( function() {
+        console.log("Error loading card. Reload data...");
+        this._reloadData();
+      }).done( function(data) {
+
+        if (!data._id) {
+          console.log("Error with loaded card data format. Reload data...");
+          this._reloadData();
+          return;
+        }
+
+        var isSuccess = false;
+        // perform an update/create with the loaded card
+        if (index > -1) {
+          // Postcard to be updated
+          isSuccess = this._didUpdateCard(data, index);
+        } else {
+          // Postcard record to be inserted
+          isSuccess = this._didCreateCard(data);
+        }
+
+        if(!isSuccess) {
+          console.log("Error, client failed to create/update. Reload data... ***");
+          this._reloadData();
+        }
+      });
+  },
+
+  _didUpdateCard : function(data, index) {
+    if ( !this._isCardDataValid(data) ) {
+      return false;
+    }
+    var path = 'listData.rows.'+index+'.doc';
+    if ( this.get(path) ) {
+      this.set(path, data); // update doc
+      this.querySelector('iron-list')._update(); // redraw list view for dynamic row height size changes
+      return true;
+    }
+    return false;
+  },
+
+  _didCreateCard : function(data) {
+    if ( !this._isCardDataValid(data) ) {
+      return false;
+    }
+    var record = {
+      doc: data,
+      id: data._id,
+      key: data._id,
+      value: {
+        rev: data._rev
+      }
+    };
+    var result = this.unshift('listData.rows', record);
+    // when first item is created the view needs updated to show list
+    if (result===1) {
+      this._updateUserView();
+    }
+    if (result>0) {
+      return true;
+    }
+    return false;
+  },
+
+  _isCardDataValid : function(data) {
+    return (data && data._id && data._rev && data.author && data.content && data.dateCreated);
   }
 
 });
