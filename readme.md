@@ -85,7 +85,6 @@ You will need two (it's a peer to peer system) Android devices running at least 
 
 ```shell
 git clone -b story_0 https://github.com/thaliproject/postcardapp.git
-git clone https://github.com/thaliproject/Thali_CordovaPlugin.git
 
 cd postcardapp
 
@@ -93,12 +92,7 @@ cordova platform add ios
 cordova platform add android
 
 cd www/jxcore
-# Install node_modules
 jx npm install --production --autoremove "*.gz"
-# Use updated Thali_CordovaPlugin
-jx npm install ../../../Thali_CordovaPlugin/thali --save
-find ./node_modules -name "*.gz" -type f -delete
-# Install bower_components
 bower install
 find ./bower_components -name "*.gz" -type f -delete
 
@@ -111,7 +105,8 @@ On Windows one needs to use [Git Bash](https://git-scm.com/download/win) or equi
 ## Running in development environment on localhost
 You will also need to copy the Thali_CordovaPlugin 'mockmobile.js' script if you want run in development mode. This allows native methods to be called on the desktop when UX testing the web app.
 ```
-cp Thali_CordovaPlugin/test/www/jxcore/bv_tests/mockmobile.js postcardapp/www/jxcore/node_modules/thali/
+git clone https://github.com/thaliproject/Thali_CordovaPlugin.git
+cp -v Thali_CordovaPlugin/test/www/jxcore/bv_tests/mockmobile.js postcardapp/www/jxcore/node_modules/thali/
 ```
 
 # Fun issues you are probably going to run into
@@ -139,3 +134,30 @@ And yes, we are going to make this easier. See [here](https://github.com/thalipr
 ### Using logcat
 
 The easiest way in my opinion to use logcat, especially given that there are two devices involved, is to use Android Studio and its logcat viewer. But for masochists out there you can also use logcat via adb. But you have to specify which device you want to get your logcat output from. So first run `adb devices` to get a list of your attached devices. Then issue `adb -s [id] logcat` where [id] is the device ID you got from `adb devices`.
+
+## Support for iOS 9
+
+iOS 8 is the current supported platform. But the plan is to move forward to iOS 9 once we have tested everything.
+In the meantime, if you have updated to iOS 9 you will need to add an App Transport entry to your `Info.plist` until we put a fix in. 
+
+```xml
+<key>NSAppTransportSecurity</key>
+<dict>
+	<key>NSExceptionDomains</key>
+    <dict>
+        <key>localhost</key>
+        <dict>
+            <key>NSTemporaryExceptionAllowsInsecureHTTPLoads</key>
+            <true/>
+            <key>NSTemporaryExceptionAllowsInsecureHTTPSLoads</key>
+            <false/>
+            <key>NSIncludesSubdomains</key>
+            <true/>
+            <key>NSTemporaryExceptionMinimumTLSVersion</key>
+            <string>1.0</string>
+            <key>NSTemporaryExceptionRequiresForwardSecrecy</key>
+            <false/>
+        </dict>
+    </dict>
+</dict>
+```
