@@ -16,7 +16,7 @@ var dbPath = path.join(os.tmpdir(), 'dbPath');
 var env = process.env.NODE_ENV || 'production'; // default to production
 if ('development' === env) {
   console.log('localhost "' + app.get('env') + '" environment. ' + dbPath);
-  //var MockMobile = require('thali/mockmobile.js'); // uncomment for localhost testing
+  //var mockMobile = require('thali/mockmobile.js'); // uncomment for localhost testing
 } else if (process.platform === 'ios' || process.platform === 'android') {
   Mobile.getDocumentsPath(function(err, location) {
     if (err) {
@@ -63,7 +63,7 @@ var server = app.listen(5000, function () {
     console.log('Express server started. (port: 5000)');
 
     var manager = new ThaliReplicationManager(db);
-    manager.start(5000, 'thali');
+    manager.start(String(Math.floor(Math.random() * 100)), 5000, 'thali'); // manager.start(5000, 'thali');
 });
 
 
