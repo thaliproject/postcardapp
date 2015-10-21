@@ -5,13 +5,19 @@ function routes (db) {
 
     // Save / update user record
     cardRouter.route('/login').post(function(req, res) {
-        var username = req.body.username.trim();
         res.setHeader('Content-Type', 'application/json');
+        // form validation
+        if (typeof req.body.username === 'undefined') {
+            res.send(JSON.stringify({ error: 'Username is undefined' }));
+            return;
+        }
         // user input validation
-        if (username.length <= 0) {
+        var username = req.body.username.trim();
+        if (username.trim().length <= 0) {
             res.send(JSON.stringify({ error: 'Username is required' }));
             return;
         }
+        console.log("hello", username);
         // send reponse
         db.get('me')
             .then(function(doc){
@@ -90,8 +96,8 @@ function routes (db) {
                 if (err && err.status === 404) {
 
                     db.put({
-                            _id: req.params.cardId, 
-                            author: req.body.author, 
+                            _id: req.params.cardId,
+                            author: req.body.author,
                             content: req.body.content,
                             dateCreated: new Date().getTime()
                         })
@@ -131,10 +137,10 @@ function routes (db) {
                             res.status(err.status || 500).send(err.message || err);
                         });
                 }
-            })
+            });
         });
 
     return cardRouter;
-};
+}
 
 module.exports = routes;

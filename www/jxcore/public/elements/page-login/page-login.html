@@ -4,7 +4,7 @@
 <dom-module id="page-login">
 
 <template>
-  <form is="iron-form" id="form-login" method="post" action="/api/login" class="inset" hidden>
+  <form is="iron-form" id="form-login" method="POST" action="/api/login" class="inset" hidden>
     <paper-input name="username" label="Username" bind-value="{{username::input}}" error-message="{{error_username}}" required></paper-input>
     <div class="alignCenter">
       <paper-button class="accent" raised on-click="submitForm">Save</paper-button>
@@ -93,14 +93,17 @@ Polymer({
     console.log("Form was submitted");
   },
   _formResponse: function(e) {
-    console.log("Server Response: ", e.detail);
+    console.log("Server Response");
     // check server response
     if(e.detail && e.detail.user) {
-      console.log("save username: " + e.detail.user);
+      console.log("Save username: " + e.detail.user);
       myApp.username = e.detail.user; //this.username;
       getURL("home");
     } else {
-      alert("Error, unable to save user session. Please try again.");
+      var user = this.username.trim();
+      console.log("Error, unable to verify response data. Using user name: " + user);
+      myApp.username = user;
+      getURL("home");
     }
   },
   _formError: function(e) {

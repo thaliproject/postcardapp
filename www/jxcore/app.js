@@ -15,8 +15,17 @@ var dbPath = path.join(os.tmpdir(), 'dbPath');
 
 var env = process.env.NODE_ENV || 'production'; // default to production
 if ('development' === env) {
-  console.log('localhost "' + app.get('env') + '" environment');
-  var Mobile = require('thali/mockmobile.js');
+  console.log('localhost "' + app.get('env') + '" environment. ' + dbPath);
+  //var mockMobile = require('thali/mockmobile.js'); // uncomment for localhost testing
+} else if (process.platform === 'ios' || process.platform === 'android') {
+  Mobile.getDocumentsPath(function(err, location) {
+    if (err) {
+      console.error("Error", err);
+    } else {
+      dbPath = path.join(location, 'dbPath');
+      console.log("Mobile Documents dbPath location: ", dbPath);
+    }
+  });
 }
 
 var LevelDownPouchDB = process.platform === 'android' || process.platform === 'ios' ?
@@ -54,7 +63,7 @@ var server = app.listen(5000, function () {
     console.log('Express server started. (port: 5000)');
 
     var manager = new ThaliReplicationManager(db);
-    manager.start(5000, 'thali');
+    manager.start(String(Math.floor(Math.random() * 100)), 5000, 'thali'); // manager.start(5000, 'thali');
 });
 
 
@@ -64,7 +73,7 @@ db.changes({
     live: true
 }).on('change', cardChanged);
 var io = require('socket.io')(server);
-function cardChanged(e){
-    console.log('card #' + e.id + ' changed');
-    io.emit('cardChanged', e );
+function cardChanged(e) {
+  console.log('card #' + e.id + ' changed');
+  io.emit('cardChanged', e );
 }
