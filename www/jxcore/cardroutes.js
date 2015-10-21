@@ -8,16 +8,15 @@ function routes (db) {
         res.setHeader('Content-Type', 'application/json');
         // form validation
         if (typeof req.body.username === 'undefined') {
-            res.send(JSON.stringify({ error: 'Username is undefined' }));
+            res.status(400).json({ error: 'Username is undefined' });
             return;
         }
         // user input validation
         var username = req.body.username.trim();
-        if (username.trim().length <= 0) {
-            res.send(JSON.stringify({ error: 'Username is required' }));
+        if (username.length <= 0) {
+            res.status(400).json({ error: 'Username is required' });
             return;
         }
-        console.log("hello", username);
         // send reponse
         db.get('me')
             .then(function(doc){
