@@ -17,8 +17,6 @@
   "author": "",
   "license": "MIT",
   "scripts": {
-    "start": "NODE_ENV=development jx ./app.js"
+    "localhost": "MOCK_MOBILE=true NODE_ENV=development jx ./app.js"
   }
 }
-
-        
