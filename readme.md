@@ -85,7 +85,7 @@ You will need two (it's a peer to peer system) Android devices running at least 
 
 ## Building the postcard app
 
-```shell
+```bash
 git clone -b story_0 https://github.com/thaliproject/postcardapp.git
 
 cd postcardapp
@@ -129,6 +129,33 @@ And yes, we are going to make this easier. See [here](https://github.com/thalipr
 ### Using logcat
 
 The easiest way in my opinion to use logcat, especially given that there are two devices involved, is to use Android Studio and its logcat viewer. But for masochists out there you can also use logcat via adb. But you have to specify which device you want to get your logcat output from. So first run `adb devices` to get a list of your attached devices. Then issue `adb -s [id] logcat` where [id] is the device ID you got from `adb devices`.
+
+## Adding JXCore Cordova plugin
+
+If you get Cordova 'Build Failed' due to "error: cannot find symbol jxcore" then the JXCore Cordova plugin did not automatically install and you will need to add the plugin:
+
+```
+$ jx install -g download-cli
+```
+
+```bash
+cd postcard/thaliDontCheckIn
+download https://github.com/jxcore/jxcore-cordova-release/raw/master/0.0.7/io.jxcore.node.jx
+jx io.jxcore.node.jx
+cordova plugins add io.jxcore.node/
+```
+
+```bash
+cordova platform remove android
+cordova platform add android
+cordova build android
+```
+
+```bash
+cordova platform remove ios
+cordova platform add ios
+cordova build ios
+```
 
 ## Support for iOS 9
 
