@@ -14,10 +14,12 @@ app.disable('x-powered-by');
 var dbPath = path.join(os.tmpdir(), 'dbPath');
 
 var env = process.env.NODE_ENV || 'production'; // default to production
-if ('development' === env) {
-  console.log('localhost "' + app.get('env') + '" environment. ' + dbPath);
-  //var mockMobile = require('thali/mockmobile.js'); // uncomment for localhost testing
-} else if (process.platform === 'ios' || process.platform === 'android') {
+
+if (process.env.MOCK_MOBILE) {
+  global.Mobile = require('thali/mockmobile.js');
+}
+
+if (process.platform === 'ios' || process.platform === 'android') {
   Mobile.getDocumentsPath(function(err, location) {
     if (err) {
       console.error("Error", err);

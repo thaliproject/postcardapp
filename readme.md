@@ -85,7 +85,7 @@ You will need two (it's a peer to peer system) Android devices running at least 
 
 ## Building the postcard app
 
-```bash
+```shell
 git clone -b story_0 https://github.com/thaliproject/postcardapp.git
 
 cd postcardapp
@@ -103,6 +103,17 @@ cordova build android
 ```
 
 On Windows one needs to use [Git Bash](https://git-scm.com/download/win) or equivalent to run the above commands.
+
+## Running in development environment on localhost
+You will also need to copy the Thali_CordovaPlugin 'mockmobile.js' script if you want run in development mode. This allows native methods to be called on the desktop when UX testing the web app.
+```
+cd www/jxcore
+jx npm install --production --autoremove "*.gz"
+bower install
+find ./bower_components -name "*.gz" -type f -delete
+cp -v ../../thaliDontCheckIn/Thali_CordovaPlugin-master/test/www/jxcore/bv_tests/mockmobile.js node_modules/thali/
+jx npm run localhost
+```
 
 # Fun issues you are probably going to run into
 
