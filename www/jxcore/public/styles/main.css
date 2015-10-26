@@ -99,8 +99,10 @@ body, .noSelect {
 	padding-bottom: 20px;
 }
 
-.row paper-material.paper-material-0[elevation="1"] {
-	box-shadow: none; /* hide footer shadow */
+/* fix to hide list row footer shadow */
+.row paper-material.paper-material-0[elevation="1"],
+paper-card.paper-card-0[elevation="1"] {
+	box-shadow: none;
 }
 
 /* iron-list row divider */

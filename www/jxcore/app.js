@@ -63,7 +63,7 @@ var server = app.listen(5000, function () {
     console.log('Express server started. (port: 5000)');
 
     var manager = new ThaliReplicationManager(db);
-    manager.start(String(Math.floor(Math.random() * 100)), 5000, 'thali'); // manager.start(5000, 'thali');
+    manager.start(5000, 'thali');
 });
 
 
