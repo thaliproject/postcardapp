@@ -141,33 +141,6 @@ And yes, we are going to make this easier. See [here](https://github.com/thalipr
 
 The easiest way in my opinion to use logcat, especially given that there are two devices involved, is to use Android Studio and its logcat viewer. But for masochists out there you can also use logcat via adb. But you have to specify which device you want to get your logcat output from. So first run `adb devices` to get a list of your attached devices. Then issue `adb -s [id] logcat` where [id] is the device ID you got from `adb devices`.
 
-## Adding JXCore Cordova plugin
-
-If you get Cordova 'Build Failed' due to "error: cannot find symbol jxcore" then the JXCore Cordova plugin did not automatically install and you will need to add the plugin:
-
-```
-$ jx install -g download-cli
-```
-
-```bash
-cd postcard/thaliDontCheckIn
-download https://github.com/jxcore/jxcore-cordova-release/raw/master/0.0.7/io.jxcore.node.jx
-jx io.jxcore.node.jx
-cordova plugins add io.jxcore.node/
-```
-
-```bash
-cordova platform remove android
-cordova platform add android
-cordova build android
-```
-
-```bash
-cordova platform remove ios
-cordova platform add ios
-cordova build ios
-```
-
 ## Support for iOS 9
 
 iOS 8 is the current supported platform. But the plan is to move forward to iOS 9 once we have tested everything.
