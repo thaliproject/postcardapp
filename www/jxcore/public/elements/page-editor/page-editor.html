@@ -1,0 +1,149 @@
+<link rel="import" href="/bower_components/polymer/polymer.html">
+<link rel="import" href="/elements/behaviors/button-listeners.html">
+<link rel="import" href="/elements/behaviors/multi-platform.html">
+
+<dom-module id="page-editor">
+
+<template>
+  <main class="layout vertical fit">
+    <textarea id="textbox" class="postcard flex" value="{{editText::input}}" placeholder="Message" on-focus="shouldFocusWithoutScrollUp"></textarea>
+  </main>
+</template>
+
+<script>
+Polymer({
+  is: "page-editor",
+  behaviors: [
+      PageBehaviors.ButtonListeners,
+      PageBehaviors.MultiPlatform
+    ],
+  properties: {
+    editText: {
+      type: String,
+      value: "",
+    },
+    backButton: Object,
+    saveButton: Object,
+    textBox: Object,
+    editDoc: Object
+  },
+  created: function() {
+    console.log(this.localName + ' was created');
+  },
+  ready : function() {
+    console.log(this.localName + ' ready');
+  },
+  attached: function() {
+    console.log(this.localName + ' was attached');
+  },
+  detached: function() {
+    console.log(this.localName + ' was detached');
+  },
+  viewWillAppear: function(id) {
+    console.log(this.localName + ' viewWillAppear: ' + id);
+    this.activate();
+
+    if(id === "new"){
+      // new message
+      myApp.title = "New Postcard";
+      this.editText = "";
+      this.autoFocus(this.textBox); // UX send autofocus to textarea
+    } else {
+      // edit message
+      myApp.title = "Edit Postcard";
+      this._getCard(id);
+      this.shouldFocus(this.textBox); // UX send autofocus to textarea
+    }
+  },
+  viewWillDisappear: function() {
+    console.log(this.localName + ' viewWillDisappear');
+    this.deactivate();
+    this.editDoc = null; // reset edit doc
+    document.activeElement.blur(); // reset text input cursor
+  },
+  activate: function() {
+    console.log(this.localName + " activate... active status:" + this._isActivated);
+
+    // local scope
+    this.textBox = this.querySelector("textarea");
+
+    // document scope
+    this.backButton = document.querySelector("#backButton");
+    this.saveButton = document.querySelector("#saveButton");
+
+    var toolbarButtonArray = [this.backButton, this.saveButton];
+    var toolbarFunctionArray = [this._backButtonHandler, this._saveButtonHandler.bind(this)];
+    this.activateButtons(toolbarButtonArray, toolbarFunctionArray);
+  },
+  deactivate: function() {
+    console.log(this.localName + " deactivate... active status:" + this._isActivated);
+    this.deactivateButtons([this.backButton, this.saveButton]);
+  },
+  _backButtonHandler: function(routeDestination) {
+    console.log("<- don't save and go back to:" + routeDestination);
+    getURL("home");
+  },
+  _saveButtonHandler: function(e) {
+    if(this.editText.length == 0) {
+      console.log("Please enter a message");
+      alert("Please enter a message"); // notify user
+      this.shouldFocus(this.textBox); // UX send focus to textarea
+      return;
+    }
+    if(!this.editDoc) {
+      console.log("save new message:" + this.editText);
+      this.createItem(this.editText);
+    } else {
+      console.log("save edited message:" + this.editText);
+      this.updateItem(this.editText, this.editDoc._id);
+    }
+
+    // go back
+    getURL("home");
+  },
+  _getCard: function(index) {
+    var doc = document.querySelector("page-home").get('listData.rows.'+index+'.doc');
+    if(doc && doc._id && doc.content) {
+      this.editText = doc.content;
+      this.editDoc = doc;
+    } else {
+      console.log("Error looking up doc object at index:",index);
+    }
+  },
+
+  // create item
+  createItem: function(content) {
+    var cardId = generateUUID();
+    console.log("+ Create item:" + content + " id:"+ cardId);
+    this._saveCard(cardId, myApp.username, content);
+  },
+  // update item
+  updateItem: function(content, cardId) {
+    console.log("+ Edit item:" + content + " id:"+ cardId);
+    this._saveCard(cardId, myApp.username, content);
+  },
+  _saveCard: function(cardId, author, content) {
+    console.log("=> Save item:" + content + " id:"+ cardId + " by:"+ author);
+    $.ajax({
+      url: myApp.url + cardId,
+      type: 'PUT',
+      contentType: 'application/json',
+      data: JSON.stringify({
+        author: author,
+        content: content
+      }),
+      dataType: 'json'
+    }).fail( function() {
+      alert("Error saving card");
+    }).done( function(data) {
+      if(data.ok && data.ok===true) {
+        console.log("Card saved");
+      } else {
+        alert("Save card data error");
+      }
+    });
+  }
+
+});
+</script>
+</dom-module>

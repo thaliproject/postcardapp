@@ -25,7 +25,24 @@ build/Release
 # Dependency directory
 # https://www.npmjs.org/doc/misc/npm-faq.html#should-i-check-my-node_modules-folder-into-git
 node_modules
+bower_components
 
-# Intellij
-*.iml
+# Intellij and Android
 .idea/
+
+# VS Code
+.settings/
+
+platforms/
+plugins/
+shortid
+ejs-locals
+express
+fast-future
+gulp
+gulp-nodemon
+leveldown
+thaliDontCheckIn/
+
+# Mac
+.DS_Store

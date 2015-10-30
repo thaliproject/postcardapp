@@ -1,0 +1,42 @@
+<script>
+var PageBehaviors = PageBehaviors || {}; // namespace
+
+/*
+ * This behaviour is for smoothing multi-platform nuances and UX niggles.
+ */
+
+PageBehaviors.MultiPlatform = {
+
+	// triggers input.focus() with a timeout
+	autoFocus : function(input) {
+		this._focus(input, 0);
+	},
+
+	// triggers input.focus() on everything except on iOS devices. For example if an input has already received autofocus it can result in disabling soft-keyboard text entry.
+	shouldFocus : function(input) {
+		if( !this._isiOS() ) {
+			this._focus(input, 0);
+		}
+	},
+	
+	_focus : function(input, delay) {
+		setTimeout(function() {
+			console.log("focus");
+  			input.focus();
+		}, delay);
+	},
+
+	// hack for iOS to prevent scrolling view up when soft keyboard pops up
+	shouldFocusWithoutScrollUp : function(e) {
+		if( this._isiOS() ) {
+    		e.target.style.webkitTransform = 'translate3d(0px,-10000px,0)'; 
+    		webkitRequestAnimationFrame(function() { this.style.webkitTransform = ''; }.bind(e.target));
+    	}
+	},
+
+	_isiOS : function() {
+		return navigator.userAgent.match(/iPhone|iPad|iPod/i);
+	}
+
+};
+</script>
