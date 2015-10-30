@@ -86,7 +86,7 @@ You will need two (it's a peer to peer system) Android devices running at least 
 ## Building the postcard app
 
 ```shell
-git clone -b story_0 https://github.com/thaliproject/postcardapp.git
+git clone https://github.com/thaliproject/postcardapp.git
 
 cd postcardapp
 
