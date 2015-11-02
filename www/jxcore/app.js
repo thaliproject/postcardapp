@@ -20,6 +20,7 @@ var env = process.env.NODE_ENV || 'production'; // default to production
 
 if (process.env.MOCK_MOBILE) {
   global.Mobile = require('thali/mockmobile.js');
+  app.use('/webview', require('./routes/webview')()); // Mock webview api for UX testing
 }
 
 if (process.platform === 'ios' || process.platform === 'android') {
@@ -43,7 +44,6 @@ var PrivatePouchDB = process.platform === 'android' || process.platform === 'ios
 app.use('/db', require('express-pouchdb')(PrivatePouchDB, { mode: 'minimumForPouchDB'}));
 var dbPrivate = new PrivatePouchDB('private');
 app.use('/_api', require('./privateroutes')(dbPrivate)); // private api
-
 
 // shared db
 var LevelDownPouchDB = process.platform === 'android' || process.platform === 'ios' ?
@@ -79,9 +79,6 @@ var server = app.listen(5000, function () {
     var manager = new ThaliReplicationManager(db);
     manager.start(5000, 'thali');
 });
-
-// Mock webview
-app.use('/webview', require('./routes/webview')());
 
 // Sync changes
 db.changes({
