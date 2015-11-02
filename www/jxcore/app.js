@@ -10,8 +10,11 @@ var ThaliReplicationManager = require('thali/thalireplicationmanager');
 console.log('starting app.js');
 var app = express();
 app.disable('x-powered-by');
+app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({ extended: true }));
 
 var dbPath = path.join(os.tmpdir(), 'dbPath');
+var dbPrivatePath = path.join(os.tmpdir(), 'dbPrivatePath');
 
 var env = process.env.NODE_ENV || 'production'; // default to production
 
@@ -25,23 +28,32 @@ if (process.platform === 'ios' || process.platform === 'android') {
       console.error("Error", err);
     } else {
       dbPath = path.join(location, 'dbPath');
+      dbPrivatePath = path.join(location, 'dbPrivatePath');
       console.log("Mobile Documents dbPath location: ", dbPath);
+      console.log("Mobile Documents dbPrivatePath location: ", dbPrivatePath);
     }
   });
 }
 
+// private db
+var PrivatePouchDB = process.platform === 'android' || process.platform === 'ios' ?
+    PouchDB.defaults({db: require('leveldown-mobile'), prefix: dbPrivatePath}) :
+    PouchDB.defaults({db: require('leveldown'), prefix: dbPrivatePath});
+
+app.use('/db', require('express-pouchdb')(PrivatePouchDB, { mode: 'minimumForPouchDB'}));
+var dbPrivate = new PrivatePouchDB('private');
+app.use('/_api', require('./privateroutes')(dbPrivate)); // private api
+
+
+// shared db
 var LevelDownPouchDB = process.platform === 'android' || process.platform === 'ios' ?
     PouchDB.defaults({db: require('leveldown-mobile'), prefix: dbPath}) :
     PouchDB.defaults({db: require('leveldown'), prefix: dbPath});
 
-app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({ extended: true }));
-
 app.use('/db', require('express-pouchdb')(LevelDownPouchDB, { mode: 'minimumForPouchDB'}));
 var db = new LevelDownPouchDB('thali');
 
-var cardRouter = require('./cardroutes')(db);
-app.use('/api', cardRouter);
+app.use('/api', require('./cardroutes')(db));
 
 app.engine('ejs',ejsEngine);
 app.set('view engine','ejs');
@@ -68,6 +80,8 @@ var server = app.listen(5000, function () {
     manager.start(5000, 'thali');
 });
 
+// Mock webview
+app.use('/webview', require('./routes/webview')());
 
 // Sync changes
 db.changes({

@@ -62,7 +62,7 @@ Polymer({
     if(myApp.discoverButton) {
       myApp.discoverButton.removeAttribute("hidden");
     }
-    
+
     if(id === "new"){
       // new message
       myApp.title = "New Postcard";
@@ -124,15 +124,15 @@ Polymer({
       console.log("Save edited message:" + this.editText);
       this.updateItem(this.editText, this.editDoc._id);
     }
-    
+
     // go back (while saving)
     getURL("home");
   },
 
   _getCard: function(index) {
     var doc = document.querySelector("page-home").get('listData.rows.'+index+'.doc');
-    if(doc && doc._id && doc.text) {
-      this.editText = doc.text;
+    if(doc && doc._id && doc.content) {
+      this.editText = doc.content;
       this.editDoc = doc;
     } else {
       console.log("Error looking up doc object at index:",index);
@@ -140,10 +140,10 @@ Polymer({
   },
 
   // create item
-  createItem: function(text) {
+  createItem: function(content) {
     var cardId = generateUUID();
-    console.log("+ Create item:" + text + " id:"+ cardId);
-    this._saveCard(cardId, myApp.username, text);
+    console.log("+ Create item:" + content + " id:"+ cardId);
+    this._saveCard(cardId, myApp.username, content);
   },
   // update item
   updateItem: function(text, cardId) {
@@ -151,13 +151,13 @@ Polymer({
     this._saveCard(cardId, myApp.username, text);
   },
   _saveCard: function(cardId, author, content) {
-    console.log("=> Save item:" + text + " id:"+ cardId + " by:"+ author);
+    console.log("=> Save item:" + content + " id:"+ cardId + " by:"+ author);
     $.ajax({
         url: myApp.url + cardId,
         type: 'PUT',
         contentType: 'application/json',
-        data: JSON.stringify({ 
-          author: author, 
+        data: JSON.stringify({
+          author: author,
           content: content
         }),
         dataType: 'json',
@@ -214,10 +214,10 @@ Polymer({
       }
       //*/
 
-      //sort records by username 
+      //sort records by username
       this.set('listData.rows', _.sortBy(this.listData.rows, function(o){
         return o.doc.username;
-      } 
+      }
       ));
 
       this._updateSelection();
@@ -247,7 +247,7 @@ Polymer({
     }
   },
 
-  // TODO: if editing we need to match postcard's 'to' list of pks against private address book pks 
+  // TODO: if editing we need to match postcard's 'to' list of pks against private address book pks
   _updateSelection : function() {
     if( this.isEdit ) {
       this._clearSelection(); // (select none for now)
@@ -258,7 +258,7 @@ Polymer({
     var options = this.querySelectorAll('option'), i = options.length;
     while (i--) {
       var option = options[i];
-      option.selected = false; 
+      option.selected = false;
     }
   }
 

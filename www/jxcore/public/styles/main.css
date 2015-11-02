@@ -16,7 +16,7 @@ html,body{
 
 /* disable webkit bounce effect in the browser */
 html,body {
-    overflow: hidden; 
+    overflow: hidden;
     -webkit-overflow-scrolling: touch;
 }
 
@@ -36,7 +36,7 @@ body {
 }
 
 /* iOS nav bar style */
-#appName {	
+#appName {
 	display: block;
 	width: 120px;
 	margin-left: -60px;
@@ -61,11 +61,11 @@ body {
 	top: 10px;
 }
 
-#rightToolbarButtons paper-icon-button, 
+#rightToolbarButtons paper-icon-button,
 #rightToolbarButtons>div {
 	float: left;
 }
-#leftToolbarButtons paper-icon-button, 
+#leftToolbarButtons paper-icon-button,
 #leftToolbarButtons>div {
 	float: left;
 }
@@ -156,7 +156,7 @@ paper-card.row {
 }
 
 /* row text format */
-.postcard h6, .postcard p, .postcard pre, textarea.postcard,  
+.postcard h6, .postcard p, .postcard pre, textarea.postcard,
 .row p {
 	font-size: 24px;
 	padding: 0 10px;
@@ -218,7 +218,7 @@ paper-fab.FAB {
 p.label {
 	line-height: 80px;
 	position: absolute;
-	top: 0; 
+	top: 0;
 	left: 0;
 	margin: 0;
 	padding: 0 10px;
@@ -229,7 +229,7 @@ p.label {
 select.fill {
 	position: absolute;
 	left: 50px; /* same as label width */
-	top: 0; 
+	top: 0;
 	text-indent: 0px;
 	margin: 0;
 	padding: 0;
@@ -356,7 +356,6 @@ paper-badge.icon {
 #notificationsPanel paper-material>div {
 	background: #3E51B5;
 	color: white;
-	
 }
 
 #notificationsPanel paper-material p {
@@ -380,4 +379,10 @@ paper-badge.icon {
 
 .ghost {
 	visibility: hidden;
+}
+
+/* fix to hide list row footer shadow */
+.row paper-material.paper-material-0[elevation="1"],
+paper-card.paper-card-0[elevation="1"] {
+	box-shadow: none;
 }
