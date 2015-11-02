@@ -11,45 +11,37 @@ console.log('starting app.js');
 var app = express();
 app.disable('x-powered-by');
 
-app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({ extended: true }));
+var dbPath = path.join(os.tmpdir(), 'dbPath');
 
 var env = process.env.NODE_ENV || 'production'; // default to production
-if ('development' === env) {
-    console.log('localhost "' + app.get('env') + '" environment');
-    var Mobile = require('thali/mockmobile.js');
+
+if (process.env.MOCK_MOBILE) {
+  global.Mobile = require('thali/mockmobile.js');
 }
 
-// private db
-var dbPathPrefix = path.join(os.tmpdir(),'db_'), dbName = 'private';
-//var PrivatePouchDB = PouchDB.defaults({ prefix: dbPathPrefix });
-var PrivatePouchDB = process.platform === 'android' || process.platform === 'ios' ?
-    PouchDB.defaults({db: require('leveldown-mobile'), prefix: dbPathPrefix}) :
-    PouchDB.defaults({db: require('leveldown'), prefix: dbPathPrefix});
+if (process.platform === 'ios' || process.platform === 'android') {
+  Mobile.getDocumentsPath(function(err, location) {
+    if (err) {
+      console.error("Error", err);
+    } else {
+      dbPath = path.join(location, 'dbPath');
+      console.log("Mobile Documents dbPath location: ", dbPath);
+    }
+  });
+}
 
-app.use('/dblocal/', require('express-pouchdb')(PrivatePouchDB, {
-    mode: 'minimumForPouchDB',
-    // overrideMode: {
-    //     include: ['fauxton']
-    // }
-}));
-var dbPrivate = new PrivatePouchDB( dbName );
-console.log('privateDBPath: '+dbPathPrefix+dbName);
-// private api router for storing contacts
-app.use('/_api', require('./privateroutes')(dbPrivate)); // private api
-
-// shared db
-var dbPath = path.join(os.tmpdir(), 'dbPath');
 var LevelDownPouchDB = process.platform === 'android' || process.platform === 'ios' ?
     PouchDB.defaults({db: require('leveldown-mobile'), prefix: dbPath}) :
     PouchDB.defaults({db: require('leveldown'), prefix: dbPath});
 
-app.use('/db', require('express-pouchdb')(LevelDownPouchDB, { mode: 'minimumForPouchDB' }));
+app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({ extended: true }));
+
+app.use('/db', require('express-pouchdb')(LevelDownPouchDB, { mode: 'minimumForPouchDB'}));
 var db = new LevelDownPouchDB('thali');
 
-app.use('/api', require('./cardroutes')(db));
-
-
+var cardRouter = require('./cardroutes')(db);
+app.use('/api', cardRouter);
 
 app.engine('ejs',ejsEngine);
 app.set('view engine','ejs');
@@ -69,14 +61,12 @@ app.get('/', function (req, res) {
     res.render('ejs/index', { isDebug:false, isDevelopment:('development'===env) });
 });
 
-
 var server = app.listen(5000, function () {
     console.log('Express server started. (port: 5000)');
-    var manager = new ThaliReplicationManager(db);
-    manager.start(String(Math.floor(Math.random() * 100)), 5000, 'thali');
-});
 
-app.use('/webview', require('./routes/webview')());
+    var manager = new ThaliReplicationManager(db);
+    manager.start(5000, 'thali');
+});
 
 
 // Sync changes
@@ -85,7 +75,7 @@ db.changes({
     live: true
 }).on('change', cardChanged);
 var io = require('socket.io')(server);
-function cardChanged(e){
-    console.log('card #' + e.id + ' changed');
-    io.emit('cardChanged', e );
+function cardChanged(e) {
+  console.log('card #' + e.id + ' changed');
+  io.emit('cardChanged', e );
 }

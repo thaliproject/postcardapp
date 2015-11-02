@@ -10,18 +10,13 @@
     "tests"
   ],
   "dependencies": {
-    "paper-elements": "PolymerElements/paper-elements#~1.0.5",
-    "iron-elements": "PolymerElements/iron-elements#~1.0.3",
-    "neon-animation": "PolymerElements/neon-animation#~1.0.6",
-    "node-uuid": "~1.4.3",
-    "page.js": "~1.6.3",
-    "moment": "~2.10.6",
-    "underscore": "~1.8.3",
-    "jquery": "~2.1.4"
-  },
-  "devDependencies": {
-    "faker": "Faker#~3.0.1"
+    "iron-elements": "PolymerElements/iron-elements#1.0.4",
+    "jquery": "2.1.4",
+    "moment": "2.10.6",
+    "neon-animation": "PolymerElements/neon-animation#1.0.7",
+    "node-uuid": "1.4.3",
+    "page.js": "1.6.3",
+    "paper-elements": "PolymerElements/paper-elements#1.0.5",
+    "underscore": "1.8.3"
   }
 }
-
-        

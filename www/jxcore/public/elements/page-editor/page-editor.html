@@ -64,14 +64,14 @@ Polymer({
     }
     
     if(id === "new"){
-      // new message 
+      // new message
       myApp.title = "New Postcard";
       this.isEdit = false;
       this.editText = "";
       this.autoFocus(this.textBox); // UX send autofocus to textarea
       this._selectAll(); // select all contacts by default
     } else {
-      // edit message 
+      // edit message
       myApp.title = "Edit Postcard";
       this.isEdit = true;
       this._getCard(id);
@@ -89,7 +89,7 @@ Polymer({
   },
   activate: function() {
     console.log(this.localName + " activate... active status:" + this._isActivated);
-    
+
     // local scope
     this.textBox = this.querySelector("textarea");
 
@@ -139,7 +139,7 @@ Polymer({
     }
   },
 
-  // create item 
+  // create item
   createItem: function(text) {
     var cardId = generateUUID();
     console.log("+ Create item:" + text + " id:"+ cardId);
@@ -150,8 +150,7 @@ Polymer({
     console.log("+ Edit item:" + text + " id:"+ cardId);
     this._saveCard(cardId, myApp.username, text);
   },
-  _saveCard: function(cardId, author, text) {
-    var self = this;
+  _saveCard: function(cardId, author, content) {
     console.log("=> Save item:" + text + " id:"+ cardId + " by:"+ author);
     $.ajax({
         url: myApp.url + cardId,
@@ -159,7 +158,7 @@ Polymer({
         contentType: 'application/json',
         data: JSON.stringify({ 
           author: author, 
-          text: text
+          content: content
         }),
         dataType: 'json',
         error: function(jqXHR, textStatus, errorThrown) {

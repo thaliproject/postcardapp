@@ -5,11 +5,16 @@ function routes (db) {
 
     // Save / update user record
     cardRouter.route('/login').post(function(req, res) {
-        var username = req.body.username.trim();
         res.setHeader('Content-Type', 'application/json');
+        // form validation
+        if (typeof req.body.username === 'undefined') {
+            res.status(400).json({ error: 'Username is undefined' });
+            return;
+        }
         // user input validation
+        var username = req.body.username.trim();
         if (username.length <= 0) {
-            res.send(JSON.stringify({ error: 'Username is required' }));
+            res.status(400).json({ error: 'Username is required' });
             return;
         }
         // send reponse
@@ -90,9 +95,9 @@ function routes (db) {
                 if (err && err.status === 404) {
 
                     db.put({
-                            _id: req.params.cardId, 
-                            author: req.body.author, 
-                            text: req.body.text,
+                            _id: req.params.cardId,
+                            author: req.body.author,
+                            content: req.body.content,
                             dateCreated: new Date().getTime()
                         })
                         .then(function (response) {
@@ -104,7 +109,7 @@ function routes (db) {
                 } else if (err) {
                     res.status(err.status || 500).send(err.message || err);
                 } else {
-                    doc.text = req.body.text;
+                    doc.content = req.body.content;
                     db.put(doc)
                         .then(function (response) {
                             res.status(200).json(response);
@@ -131,10 +136,10 @@ function routes (db) {
                             res.status(err.status || 500).send(err.message || err);
                         });
                 }
-            })
+            });
         });
 
     return cardRouter;
-};
+}
 
 module.exports = routes;
