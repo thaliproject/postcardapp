@@ -19,6 +19,7 @@ var dbPrivatePath = path.join(os.tmpdir(), 'dbPrivatePath');
 
 if (process.env.MOCK_MOBILE) {
   global.Mobile = require('thali/mockmobile.js');
+  //app.use('/webview', require('./routes/mockwebview')()); // Mock webview api for UX testing
 }
 
 if (process.platform === 'ios' || process.platform === 'android') {
@@ -72,23 +73,18 @@ app.get('/', function (req, res) {
 });
 
 var manager = new ThaliReplicationManager(db);
-app.use('/dev', require('./routes/dev')(manager));
+var webview = require('thali/identityExchange/identityexchangeendpoint');
 
 manager.on('started', function () {
   console.log('*** Thali replication manager started ***');
+  app.use('/dev', require('./routes/dev')(manager));
+  var identityExchange = new IdentityExchange(app, 5000, manager, 'thali');
+  webview(app, manager, identityExchange); // webview Identity Exchange API
 });
-
-if (process.env.MOCK_MOBILE) {
-  //app.use('/webview', require('./routes/mockwebview')()); // Mock webview api for UX testing
-}
-var identityExchange = new IdentityExchange(app,5000,manager,'thali');
-var webview = require('thali/identityExchange/identityexchangeendpoint');
-webview(app,manager,identityExchange);
 
 var server = app.listen(5000, function (){
     console.log('Express server started. (port: 5000)');
     manager.start(5000, 'thali');
-    console.log("open http://localhost:5000");
 });
 
 // Sync changes
