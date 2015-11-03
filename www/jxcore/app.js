@@ -6,6 +6,7 @@ var bodyParser = require('body-parser');
 var ejsEngine = require('ejs-locals');
 var PouchDB = require('pouchdb');
 var ThaliReplicationManager = require('thali/thalireplicationmanager');
+var IdentityExchange = require('thali/identityExchange/identityexchange');
 
 console.log('starting app.js');
 var app = express();
@@ -16,11 +17,8 @@ app.use(bodyParser.urlencoded({ extended: true }));
 var dbPath = path.join(os.tmpdir(), 'dbPath');
 var dbPrivatePath = path.join(os.tmpdir(), 'dbPrivatePath');
 
-var env = process.env.NODE_ENV || 'production'; // default to production
-
 if (process.env.MOCK_MOBILE) {
   global.Mobile = require('thali/mockmobile.js');
-  app.use('/webview', require('./routes/webview')()); // Mock webview api for UX testing
 }
 
 if (process.platform === 'ios' || process.platform === 'android') {
@@ -43,7 +41,7 @@ var PrivatePouchDB = process.platform === 'android' || process.platform === 'ios
 
 app.use('/db', require('express-pouchdb')(PrivatePouchDB, { mode: 'minimumForPouchDB'}));
 var dbPrivate = new PrivatePouchDB('private');
-app.use('/_api', require('./privateroutes')(dbPrivate)); // private api
+app.use('/_api', require('./routes/_api')(dbPrivate)); // private api
 
 // shared db
 var LevelDownPouchDB = process.platform === 'android' || process.platform === 'ios' ?
@@ -53,7 +51,7 @@ var LevelDownPouchDB = process.platform === 'android' || process.platform === 'i
 app.use('/db', require('express-pouchdb')(LevelDownPouchDB, { mode: 'minimumForPouchDB'}));
 var db = new LevelDownPouchDB('thali');
 
-app.use('/api', require('./cardroutes')(db));
+app.use('/api', require('./routes/api')(db));
 
 app.engine('ejs',ejsEngine);
 app.set('view engine','ejs');
@@ -70,14 +68,27 @@ app.use(function allowCrossDomain(req, res, next) {
 
 app.get('/', function (req, res) {
     //res.sendFile(path.join(__dirname + '/index.html'));
-    res.render('ejs/index', { isDebug:false, isDevelopment:('development'===env) });
+    res.render('ejs/index', { isDebug:true, isMockMobile:process.env.MOCK_MOBILE });
 });
 
-var server = app.listen(5000, function () {
-    console.log('Express server started. (port: 5000)');
+var manager = new ThaliReplicationManager(db);
+app.use('/dev', require('./routes/dev')(manager));
 
-    var manager = new ThaliReplicationManager(db);
+manager.on('started', function () {
+  console.log('*** Thali replication manager started ***');
+});
+
+if (process.env.MOCK_MOBILE) {
+  //app.use('/webview', require('./routes/mockwebview')()); // Mock webview api for UX testing
+}
+var identityExchange = new IdentityExchange(app,5000,manager,'thali');
+var webview = require('thali/identityExchange/identityexchangeendpoint');
+webview(app,manager,identityExchange);
+
+var server = app.listen(5000, function (){
+    console.log('Express server started. (port: 5000)');
     manager.start(5000, 'thali');
+    console.log("open http://localhost:5000");
 });
 
 // Sync changes

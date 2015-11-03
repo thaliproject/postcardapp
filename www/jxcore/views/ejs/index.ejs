@@ -10,8 +10,8 @@
   <meta name="format-detection" content="telephone=no"/>
   <!-- server -->
   <script type="text/javascript">
-  var IS_DEVELOPMENT = "<%= isDevelopment %>"==="true" ? true : false;
   var IS_DEBUG = "<%= isDebug %>"==="true" ? true : false;
+  var IS_MOCKMOBILE = "<%= isMockMobile %>"==="true" ? true : false;
   </script>
   <!-- common -->
   <script src="bower_components/webcomponentsjs/webcomponents-lite.js"></script>
@@ -59,7 +59,15 @@
     <!-- end top bar -->
 
     <!-- debugger pane -->
-    <textarea id="debugConsoleLog" hidden></textarea>
+    <div id="debugConsoleLog" hidden>
+      <textarea readonly></textarea>
+      <aside>
+        <paper-icon-button id="stopButton" icon="radio-button-unchecked" hidden></paper-icon-button>
+        <paper-icon-button id="startButton" icon="power-settings-new" hidden></paper-icon-button>
+        <paper-icon-button id="deviceInfoButton" icon="perm-device-information"></paper-icon-button>
+        <paper-icon-button id="trashButton" icon="delete"></paper-icon-button>
+      </aside>
+    </div>
 
     <!-- contents iron-pages -->
     <iron-pages attr-for-selected="data-route" selected="{{route}}">

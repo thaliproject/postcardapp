@@ -1,7 +1,7 @@
 {
   "name": "PostCardApp",
   "version": "1.0.0",
-  "description": "Sample app to demosntrate the Thali framework",
+  "description": "Sample app to demonstrate the Thali framework",
   "main": "app.js",
   "dependencies": {
     "body-parser": "^1.13.1",
@@ -20,6 +20,6 @@
   "author": "",
   "license": "MIT",
   "scripts": {
-    "localhost": "MOCK_MOBILE=true NODE_ENV=development jx ./app.js"
+    "localhost": "MOCK_MOBILE=true jx ./app.js"
   }
 }

@@ -43,27 +43,6 @@ Polymer({
   },
   ready: function() {
     console.log(this.localName + ' ready');
-    // find me
-    $.ajax({
-      url: myApp.api + 'me',
-      type: 'GET',
-      dataType: 'json',
-      error: function(jqXHR, textStatus, errorThrown) {
-        console.log('@ me error:' + errorThrown + "\n" + JSON.stringify(jqXHR));
-        self._login();
-      },
-      success: function(data, textStatus, jqXHR) {
-        if(data.user && data.user.length>0) {
-          // found 'me' and user record
-          console.log("Hello, " + data.user);
-          myApp.username = data.user; // create session
-          getURL("home"); // found 'me' record - no need to login
-        } else {
-          console.log("Error, no me record or user property");
-          self._login();
-        }
-      }
-    });
   },
   attached: function() {
     console.log(this.localName + ' was attached');
@@ -73,9 +52,37 @@ Polymer({
   },
   viewWillAppear: function() {
     console.log(this.localName + " viewWillAppear");
+    this._findme();
   },
   viewWillDisappear: function() {
     console.log(this.localName + " viewWillDisappear");
+    this.querySelector("aside").removeAttribute("hidden");
+    this.querySelector("form").setAttribute("hidden", true);
+  },
+  _findme: function() {
+    console.log("find me");
+    $.ajax({
+      timeout: 1000,
+      context: this,
+      url: myApp.api + 'me',
+      type: 'GET',
+      dataType: 'json',
+      error: function(jqXHR, textStatus, errorThrown) {
+        console.log('@ me error:' + errorThrown + "\n" + JSON.stringify(jqXHR));
+        this._login();
+      },
+      success: function(data, textStatus, jqXHR) {
+        if(data.user && data.user.length>0) {
+          // found 'me' and user record
+          console.log("Hello, " + data.user);
+          myApp.username = data.user; // create session
+          getURL("home"); // found 'me' record - no need to login
+        } else {
+          console.log("Error, no me record or user property");
+          this._login();
+        }
+      }
+    });
   },
   _login: function() {
     console.log("show login form");

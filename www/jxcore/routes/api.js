@@ -139,6 +139,16 @@ function routes (db) {
             });
         });
 
+      cardRouter.route('/destroy').delete(function (req, res) {
+          db.destroy().then(function (response) {
+            console.log("destroyed cards db");
+            res.status(200).json(response); // success
+          }).catch(function (err) {
+            console.log(err);
+            res.status(err.status || 500).send(err.message || err);
+          });
+      });
+
     return cardRouter;
 }
 

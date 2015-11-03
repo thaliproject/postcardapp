@@ -78,6 +78,14 @@ body {
 	top: 0;
 	width: 100%;
 	height: 100%;
+}
+
+#debugConsoleLog textarea {
+	position: absolute;
+	left: 0;
+	top: 0;
+	width: 100%;
+	height: calc( 100% - 64px ); /* calc */
 	background: black;
 	color: white;
 	margin: 0;
@@ -86,6 +94,21 @@ body {
 	border-radius: 0; /* remove rounded corners on iOS */
 	resize: none; /* hide resize box in firefox */
 	font-family: monospace;
+}
+
+#debugConsoleLog aside {
+	position: absolute;
+	left: 0;
+	bottom: 0;
+	width: 100%;
+	height: 64px; /* calc */
+	background: #F34383;
+	text-align: center;
+	color: white;
+}
+
+#debugConsoleLog aside paper-icon-button {
+	margin: 10px; /* button spacing */
 }
 
 /* minimal margin for input text and labels */
