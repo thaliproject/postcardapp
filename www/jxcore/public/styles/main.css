@@ -72,7 +72,7 @@ body {
 
 /* debug log */
 #debugConsoleLog {
-	z-index: 1;
+	z-index: 14; /* higher than modal */
 	position: absolute;
 	left: 0;
 	top: 0;
@@ -83,9 +83,9 @@ body {
 #debugConsoleLog textarea {
 	position: absolute;
 	left: 0;
-	top: 0;
+	top: 56px; /* calc */
 	width: 100%;
-	height: calc( 100% - 64px ); /* calc */
+	height: calc( 100% - 112px ); /* calc */
 	background: black;
 	color: white;
 	margin: 0;
@@ -94,6 +94,22 @@ body {
 	border-radius: 0; /* remove rounded corners on iOS */
 	resize: none; /* hide resize box in firefox */
 	font-family: monospace;
+}
+
+#debugConsoleLog header {
+	position: absolute;
+	left: 0;
+	top: 0;
+	width: 100%;
+	height: 56px; /* calc */
+	background: #F34383;
+}
+
+#debugConsoleLog header h1 {
+	text-align: center;
+	font-size: 18px;
+	color: white;
+	padding-top: 8px;
 }
 
 #debugConsoleLog aside {
@@ -214,7 +230,11 @@ paper-fab.FAB {
 	position: fixed; /* Beware: use only in non-scrolling views as fixed position doesn't play well within a iOS scroll view */
 	bottom: 40px;
 	right: 20px;
-	z-index: 1; /* should appear above everything else? */
+	z-index: 1;
+}
+
+paper-fab#debugButton {
+	z-index: 15; /* above panel */
 }
 
 .gutter {
@@ -271,7 +291,7 @@ select.fill {
 /* modal page */
 
 modal-identity {
-	z-index: 1;
+	/*z-index: 12;*/
 	position: absolute;
 	left: 0;
 	top: 0;

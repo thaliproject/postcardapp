@@ -36,6 +36,21 @@
 <body unresolved fullbleed layout vertical>
 <template is="dom-bind" id="my-app">
 
+  <!-- developer -->
+  <paper-fab id="debugButton" class="FAB" icon="bug-report" hidden></paper-fab>
+
+  <!-- debug log pane -->
+  <div id="debugConsoleLog" hidden>
+    <header><h1>Developer Console</h1></header>
+    <textarea readonly></textarea>
+    <aside>
+      <paper-icon-button id="stopButton" icon="report" hidden></paper-icon-button>
+      <paper-icon-button id="startButton" icon="power-settings-new" hidden></paper-icon-button>
+      <paper-icon-button id="deviceInfoButton" icon="perm-device-information"></paper-icon-button>
+      <paper-icon-button id="trashButton" icon="delete"></paper-icon-button>
+    </aside>
+  </div>
+
   <!-- modals -->
   <modal-identity entry-animation="slide-from-bottom-animation" exit-animation="slide-from-top-animation" modal></modal-identity>
 
@@ -44,7 +59,6 @@
     <paper-toolbar id="mainToolbar">
       <div id="leftToolbarButtons">
           <paper-icon-button id="backButton" icon="arrow-back" hidden></paper-icon-button>
-          <paper-icon-button id="debugButton" icon="bug-report" hidden></paper-icon-button>
           <paper-icon-button id="discoverButton" icon="social:group-add" hidden></paper-icon-button>
         </div>
       <!-- Application name -->
@@ -57,17 +71,6 @@
       </div>
     </paper-toolbar>
     <!-- end top bar -->
-
-    <!-- debugger pane -->
-    <div id="debugConsoleLog" hidden>
-      <textarea readonly></textarea>
-      <aside>
-        <paper-icon-button id="stopButton" icon="radio-button-unchecked" hidden></paper-icon-button>
-        <paper-icon-button id="startButton" icon="power-settings-new" hidden></paper-icon-button>
-        <paper-icon-button id="deviceInfoButton" icon="perm-device-information"></paper-icon-button>
-        <paper-icon-button id="trashButton" icon="delete"></paper-icon-button>
-      </aside>
-    </div>
 
     <!-- contents iron-pages -->
     <iron-pages attr-for-selected="data-route" selected="{{route}}">
