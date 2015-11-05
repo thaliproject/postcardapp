@@ -131,8 +131,8 @@ Polymer({
 
   _getCard: function(index) {
     var doc = document.querySelector("page-home").get('listData.rows.'+index+'.doc');
-    if(doc && doc._id && doc.content) {
-      this.editText = doc.content;
+    if(doc && doc._id && doc.text) {
+      this.editText = doc.text;
       this.editDoc = doc;
     } else {
       console.log("Error looking up doc object at index:",index);
@@ -140,25 +140,25 @@ Polymer({
   },
 
   // create item
-  createItem: function(content) {
-    var cardId = generateUUID();
-    console.log("+ Create item:" + content + " id:"+ cardId);
-    this._saveCard(cardId, myApp.username, content);
+  createItem: function(text) {
+    var cardId = generatePostcardId(); //generateUUID();
+    console.log("+ Create item:" + text + " id:"+ cardId);
+    this._saveCard(cardId, myApp.username, text);
   },
   // update item
   updateItem: function(text, cardId) {
     console.log("+ Edit item:" + text + " id:"+ cardId);
     this._saveCard(cardId, myApp.username, text);
   },
-  _saveCard: function(cardId, author, content) {
-    console.log("=> Save item:" + content + " id:"+ cardId + " by:"+ author);
+  _saveCard: function(cardId, author, text) {
+    console.log("=> Save item:" + text + " id:"+ cardId + " by:"+ author);
     $.ajax({
         url: myApp.api + "cards/" + cardId,
         type: 'PUT',
         contentType: 'application/json',
         data: JSON.stringify({
-          author: author,
-          content: content
+          from: author,
+          text: text
         }),
         dataType: 'json',
         error: function(jqXHR, textStatus, errorThrown) {

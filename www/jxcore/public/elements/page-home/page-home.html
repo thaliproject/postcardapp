@@ -14,8 +14,8 @@
         <paper-card id="{{index}}" class="row">
           <div class="card-content postcard">
             <span>[[_humanizeDate(item.doc.dateCreated)]]</span>
-            <pre>{{item.doc.content}}</pre>
-            <p>[[item.doc.author]]</p>
+            <pre>{{item.doc.text}}</pre>
+            <p>[[item.doc.from]]</p>
             <paper-fab id="{{item.doc._id}}" icon="delete" class="FAB" hidden></paper-fab>
           </div>
         </paper-card>
@@ -362,7 +362,7 @@ Polymer({
   },
 
   _isCardDataValid : function(data) {
-    return (data && data._id && data._rev && data.author && data.content && data.dateCreated);
+    return (data && data._id && data._rev && data.from && data.text && data.dateCreated);
   }
 
 });

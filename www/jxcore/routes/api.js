@@ -18,8 +18,8 @@ function postcardRoutes (db) {
 
     router.route('/cards/:cardId')
         .get(function (req,res) {
-
-            db.get(req.params.cardId)
+            var id = req.params.cardId;
+            db.get(id)
                 .then(function (doc) {
                     res.status(200).json(doc);
                 })
@@ -29,15 +29,15 @@ function postcardRoutes (db) {
 
         })
         .put(function (req, res) {
-
-            db.get(req.params.cardId, function (err, doc) {
+            var id = req.params.cardId;
+            db.get(id, function (err, doc) {
                 // Not found so let's add it
                 if (err && err.status === 404) {
 
                     db.put({
-                            _id: req.params.cardId,
-                            author: req.body.author,
-                            content: req.body.content,
+                            _id: id,
+                            from: req.body.from,
+                            text: req.body.text,
                             dateCreated: new Date().getTime()
                         })
                         .then(function (response) {
@@ -49,7 +49,7 @@ function postcardRoutes (db) {
                 } else if (err) {
                     res.status(err.status || 500).send(err.message || err);
                 } else {
-                    doc.content = req.body.content;
+                    doc.text = req.body.text;
                     db.put(doc)
                         .then(function (response) {
                             res.status(200).json(response);
@@ -61,9 +61,9 @@ function postcardRoutes (db) {
             });
         })
         .delete(function (req, res) {
-
+            var id = req.params.cardId;
             // Race condition, so let's drop 404s if we get them
-            db.get(req.params.cardId, function (err, doc) {
+            db.get(id, function (err, doc) {
                 if (err && err.status === 404) {
                     res.status(200).end();
                 } else if (err) {

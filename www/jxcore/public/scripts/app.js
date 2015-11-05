@@ -79,6 +79,16 @@ function generateUUID() {
     return uuid.v4(); // using node-uuid
 }
 
+// generate cryptnum for postcard
+function generateSecureRandomNumber() {
+	var cryptnum = window.crypto.getRandomValues(new Uint32Array(2));
+	return cryptnum.join('');
+}
+
+function generatePostcardId() {
+	return 'postcard-' + generateSecureRandomNumber() +'-'+ myApp.deviceIdentity;
+}
+
 function isFunction(functionToCheck) {
 	var getType = {};
 	return functionToCheck && getType.toString.call(functionToCheck) === '[object Function]';
