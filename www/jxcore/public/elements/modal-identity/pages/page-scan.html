@@ -106,11 +106,9 @@ Polymer({
       contentType: 'application/json',
       data: JSON.stringify({
         peerFriendlyName: myApp.username
-      }),
-      timeout : 4000
+      })
     }).fail( function( jqXHR, textStatus, errorThrown ){
-      alert("Error, could not get device identity. " + textStatus);
-      // TODO: go back and try again
+      alert("Error, could not get device identity. " + textStatus + " error: " + errorThrown);
     }).done( function(data, textStatus, jqXHR){
       console.log("putIdentityExchange:" + textStatus);
       this.isStarted = true;

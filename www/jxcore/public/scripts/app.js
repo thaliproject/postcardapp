@@ -82,7 +82,9 @@ function generateUUID() {
 // generate cryptnum for postcard
 function generateSecureRandomNumber() {
 	if(window.crypto) {
-		return window.crypto.getRandomValues(new Uint32Array(1));
+		var buf = new Uint32Array(1);
+		window.crypto.getRandomValues(buf);
+		return buf[0];
 	}
 	return generateUUID().replace('-',''); // fallback
 }
