@@ -17,9 +17,10 @@ app.use(bodyParser.urlencoded({ extended: true }));
 var dbPath = path.join(os.tmpdir(), 'dbPath');
 var dbPrivatePath = path.join(os.tmpdir(), 'dbPrivatePath');
 
+// Mock native calls on mobile for desktop testing
 if (process.env.MOCK_MOBILE) {
   global.Mobile = require('thali/mockmobile.js');
-  //app.use('/webview', require('./routes/mockwebview')()); // Mock webview api for UX testing
+  app.use('/webview', require('./routes/mockwebview')()); // Mock Identity Exchange api for UX testing
 }
 
 if (process.platform === 'ios' || process.platform === 'android') {
@@ -77,7 +78,7 @@ var webview = require('thali/identityExchange/identityexchangeendpoint');
 
 manager.on('started', function () {
   console.log('*** Thali replication manager started ***');
-  app.use('/dev', require('./routes/dev')(manager));
+  app.use('/dev', require('./routes/manager')(manager));
   var identityExchange = new IdentityExchange(app, 5000, manager, 'thali');
   webview(app, manager, identityExchange); // webview Identity Exchange API
 });

@@ -1,21 +1,21 @@
 var express = require('express');
 
-function developerRoutes (manager) {
-    var routes = express.Router();
+function managerRoutes (manager) {
+    var router = express.Router();
 
-    routes.route('/start').get(function(req, res) {
+    router.route('/start').get(function(req, res) {
       console.log("*** START TRM ***");
       manager.start(5000, 'thali');
       res.status(200).end();
     });
 
-    routes.route('/stop').get(function(req, res) {
+    router.route('/stop').get(function(req, res) {
       console.log("*** STOP TRM ***");
       manager.stop();
       res.status(200).end();
     });
 
-    return routes;
+    return router;
 }
 
-module.exports = developerRoutes;
+module.exports = managerRoutes;

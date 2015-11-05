@@ -119,7 +119,7 @@ Polymer({
     console.log("=> Save contact:" + username + " id:"+ contactId + " device id:" + deviceId);
     $.ajax({
       context: this,
-      url: myApp._url + contactId,
+      url: myApp._api + "contacts/" + contactId,
       type: 'PUT',
       contentType: 'application/json',
       data: JSON.stringify({ 

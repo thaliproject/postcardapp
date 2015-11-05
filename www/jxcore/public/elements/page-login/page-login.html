@@ -4,8 +4,9 @@
 <dom-module id="page-login">
 
 <template>
-  <form is="iron-form" id="form-login" method="POST" action="/api/login" class="inset" hidden>
+  <form is="iron-form" id="form-login" method="POST" action="/_api/login" class="inset" hidden>
     <paper-input name="username" label="Username" bind-value="{{username::input}}" error-message="{{error_username}}" required></paper-input>
+    <input is="iron-input" name="deviceIdentity" bind-value="{{deviceIdentity::input}}" type="hidden" />
     <div class="alignCenter">
       <paper-button class="accent" raised on-click="submitForm">Save</paper-button>
     </div>
@@ -30,6 +31,10 @@ Polymer({
     error_username: {
       type: String,
       value: "Please enter a username."
+    },
+    deviceIdentity: {
+      type: String,
+      value: ""
     }
   },
   listeners: {
@@ -43,6 +48,7 @@ Polymer({
   },
   ready: function() {
     console.log(this.localName + ' ready');
+    this._getDeviceIdentity();
   },
   attached: function() {
     console.log(this.localName + ' was attached');
@@ -52,33 +58,57 @@ Polymer({
   },
   viewWillAppear: function() {
     console.log(this.localName + " viewWillAppear");
-    this._findme();
   },
   viewWillDisappear: function() {
     console.log(this.localName + " viewWillDisappear");
     this.querySelector("aside").removeAttribute("hidden");
     this.querySelector("form").setAttribute("hidden", true);
   },
-  _findme: function() {
-    console.log("find me");
+  _getDeviceIdentity: function() {
+    console.log("getting device identity");
     $.ajax({
       timeout: 1000,
       context: this,
-      url: myApp.api + 'me',
+      url: myApp.webview + 'DeviceIdentity',
       type: 'GET',
       dataType: 'json',
       error: function(jqXHR, textStatus, errorThrown) {
-        console.log('@ me error:' + errorThrown + "\n" + JSON.stringify(jqXHR));
+        alert("Error. Couldn't get device identity!" + errorThrown);
+      },
+      success: function(data) {
+        console.log("data");
+        if(data && data.deviceIdentity) {
+          this.set("deviceIdentity", data.deviceIdentity); // update user form input
+      		console.log("Found Device Identity: " + this.deviceIdentity);
+          this._findme( this.deviceIdentity );
+        } else {
+          alert("Error. Device identity was not the expected data format.");
+        }
+      }
+    });
+  },
+  _findme: function(deviceIdentity) {
+    $.ajax({
+      timeout: 1000,
+      context: this,
+      url: myApp._api + 'me/' + deviceIdentity,
+      type: 'GET',
+      dataType: 'json',
+      error: function(jqXHR, textStatus, errorThrown) {
+        //console.log('@ me error:' + errorThrown + "\n" + JSON.stringify(jqXHR));
+        console.log("Unable to find me: addressbook-" + deviceIdentity + " - login");
         this._login();
       },
       success: function(data, textStatus, jqXHR) {
-        if(data.user && data.user.length>0) {
+        if(data.username && data.username.length>0) {
           // found 'me' and user record
-          console.log("Hello, " + data.user);
-          myApp.username = data.user; // create session
+          console.log("Hello, " + data.username);
+          // retain app user session data
+          myApp.username = data.username;
+          myApp.deviceIdentity = deviceIdentity;
           getURL("home"); // found 'me' record - no need to login
         } else {
-          console.log("Error, no me record or user property");
+          console.log("No user record found - login");
           this._login();
         }
       }
@@ -107,7 +137,6 @@ Polymer({
     if(e.detail && e.detail.user) {
       console.log("save username: " + e.detail.user + " _id:" + e.detail._id);
       myApp.username = e.detail.user;
-      myApp.user_id = e.detail._id;
       getURL("home");
     } else {
       var user = this.username.trim();

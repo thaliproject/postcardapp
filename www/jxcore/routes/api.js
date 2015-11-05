@@ -1,69 +1,9 @@
 var express = require('express');
 
-function routes (db) {
-    var cardRouter = express.Router();
+function postcardRoutes (db) {
+    var router = express.Router();
 
-    // Save / update user record
-    cardRouter.route('/login').post(function(req, res) {
-        res.setHeader('Content-Type', 'application/json');
-        // form validation
-        if (typeof req.body.username === 'undefined') {
-            res.status(400).json({ error: 'Username is undefined' });
-            return;
-        }
-        // user input validation
-        var username = req.body.username.trim();
-        if (username.length <= 0) {
-            res.status(400).json({ error: 'Username is required' });
-            return;
-        }
-        // send reponse
-        db.get('me')
-            .then(function(doc){
-                if (doc && doc.user !== username) {
-                    // Username found, but record needs updated
-                    console.log("User updated from:" + doc.user + " to:" + username);
-                    doc.user = username;
-                    db.put(doc)
-                        .then(function () {
-                            res.send(JSON.stringify({ user: username }));
-                        })
-                        .catch(function (err) {
-                            res.send(JSON.stringify({ error: err }));
-                        });
-                } else {
-                    // Respond with the username record
-                    console.log("Same user: " + doc.user );
-                    res.send(JSON.stringify({ user: doc.user }));
-                }
-            })
-            .catch(function(err){
-                if(err && err.status === 404) {
-                // No 'me' record found - add new record
-                console.log("User added:" + username);
-                db.put({ _id: 'me', user: username })
-                    .then(function () {
-                        res.send(JSON.stringify({ user: username }));
-                    })
-                    .catch(function (err) {
-                        res.send(JSON.stringify({ error: err }));
-                    });
-                } else {
-                    // Something else went wrong - notify client of error
-                    res.send(JSON.stringify({ error: err }));
-                }
-            });
-    });
-
-    cardRouter.route('/me').get(function(req, res) {
-        db.get('me').then(function(doc){
-            res.status(200).json(doc);
-        }).catch(function(err){
-            res.send(JSON.stringify({ error: err }));
-        });
-    });
-
-    cardRouter.route('/cards')
+    router.route('/cards')
         .get(function (req, res) {
 
             db.allDocs({
@@ -76,7 +16,7 @@ function routes (db) {
 
         });
 
-    cardRouter.route('/cards/:cardId')
+    router.route('/cards/:cardId')
         .get(function (req,res) {
 
             db.get(req.params.cardId)
@@ -139,7 +79,7 @@ function routes (db) {
             });
         });
 
-      cardRouter.route('/destroy').delete(function (req, res) {
+      router.route('/destroy').delete(function (req, res) {
           db.destroy().then(function (response) {
             console.log("destroyed cards db");
             res.status(200).json(response); // success
@@ -149,7 +89,7 @@ function routes (db) {
           });
       });
 
-    return cardRouter;
+    return router;
 }
 
-module.exports = routes;
+module.exports = postcardRoutes;

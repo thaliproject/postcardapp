@@ -153,7 +153,7 @@ Polymer({
   _saveCard: function(cardId, author, content) {
     console.log("=> Save item:" + content + " id:"+ cardId + " by:"+ author);
     $.ajax({
-        url: myApp.url + cardId,
+        url: myApp.api + "cards/" + cardId,
         type: 'PUT',
         contentType: 'application/json',
         data: JSON.stringify({

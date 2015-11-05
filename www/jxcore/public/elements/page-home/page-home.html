@@ -133,7 +133,7 @@ Polymer({
   _deleteCard: function(index, cardId) {
     console.log("delete index #" + index + " cardId:" + cardId);
     $.ajax({
-      url: myApp.url + cardId,
+      url: myApp.api + "cards/" + cardId,
       type: 'DELETE'
     }).fail( function() {
       alert("Error deleting card");
@@ -156,8 +156,8 @@ Polymer({
       console.log("_onResponseReceived");
       console.log(this.listData);
 
-      if(!this.listData || !this.listData.rows || this.listData.total_rows==0 ) {
-        alert("Error. Peer session expired or failed to get any data."); // Reset app
+      if( !this.listData || !this.listData.rows ) {
+        alert("Error. Failed to get any data."); // Reset app
         return;
       }
 
@@ -295,7 +295,7 @@ Polymer({
   _loadCard: function(cardId, index) {
     $.ajax({
         context: this,
-        url: myApp.url + cardId,
+        url: myApp.api + "cards/" + cardId,
         type: 'GET'
       }).fail( function() {
         console.log("Error loading card. Reload data...");

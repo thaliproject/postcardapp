@@ -3,11 +3,11 @@ var faker = require('faker');
 
 // this is a mock API to start testing ajax calls from UI
 
-function webview () {
+function mockWebviewRoutes () {
     var api = express.Router();
 
     // fake user's personal public key
-    var publicKeyHash = faker.random.uuid();
+    var publicKeyHash = faker.internet.password(22)+'==';
 
     var pollingData = {
                 peerFriendlyName: "Me",
@@ -50,7 +50,7 @@ function webview () {
     // rest api
     api.route('/DeviceIdentity')
     	.get(function(req, res) {
-        	res.status(200).json({publicKeyHash:publicKeyHash});
+        	res.status(200).json({deviceIdentity:publicKeyHash}); // publicKeyHash
     	});
 
     api.route('/IdentityExchange')
@@ -94,4 +94,4 @@ function webview () {
 
 
 
-module.exports = webview;
+module.exports = mockWebviewRoutes;
