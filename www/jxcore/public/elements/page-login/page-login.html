@@ -80,6 +80,8 @@ Polymer({
         if(data && data.deviceIdentity) {
           this.set("deviceIdentity", data.deviceIdentity); // update user form input
       		console.log("Found Device Identity: " + this.deviceIdentity);
+          // retain device identity
+          myApp.deviceIdentity = data.deviceIdentity;
           this._findme( this.deviceIdentity );
         } else {
           alert("Error. Device identity was not the expected data format.");
@@ -105,7 +107,6 @@ Polymer({
           console.log("Hello, " + data.username);
           // retain app user session data
           myApp.username = data.username;
-          myApp.deviceIdentity = deviceIdentity;
           getURL("home"); // found 'me' record - no need to login
         } else {
           console.log("No user record found - login");

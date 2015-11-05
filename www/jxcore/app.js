@@ -78,7 +78,7 @@ var webview = require('thali/identityExchange/identityexchangeendpoint');
 
 manager.on('started', function () {
   console.log('*** Thali replication manager started ***');
-  app.use('/dev', require('./routes/manager')(manager));
+  app.use('/manager', require('./routes/manager')(manager));
   var identityExchange = new IdentityExchange(app, 5000, manager, 'thali');
   webview(app, manager, identityExchange); // webview Identity Exchange API
 });
