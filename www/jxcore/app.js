@@ -40,16 +40,18 @@ if (process.env.MOCK_MOBILE) {
 }
 
 // Temp path to save app data
-var dbPath = path.join(os.tmpdir(), 'cards');
-var dbAddressBookPath = path.join(os.tmpdir(), 'addressbook');
+var dbCards = 'cards';
+var dbAddressBook = 'addressbook';
+var dbPath = path.join(os.tmpdir(), dbCards);
+var dbAddressBookPath = path.join(os.tmpdir(), dbAddressBook);
 
 // Get documents path to save app data
 Mobile.GetDocumentsPath(function(err, location) {
   if (err) {
     console.error("Error getting Documents path.", err);
   } else {
-    dbPath = path.join(location, 'cards');
-    dbAddressBookPath = path.join(location, 'addressbook');
+    dbPath = path.join(location, dbCards);
+    dbAddressBookPath = path.join(location, dbAddressBook);
     console.log("cards db location: ", dbPath);
     console.log("addressbook db location: ", dbAddressBookPath);
   }
@@ -65,7 +67,7 @@ function appSetup() {
       PouchDB.defaults({db: require('leveldown-mobile'), prefix: dbAddressBookPath}) :
       PouchDB.defaults({db: require('leveldown'), prefix: dbAddressBookPath});
 
-  app.use('/db', require('express-pouchdb')(LevelDownAddressBook, { mode: 'minimumForPouchDB'}));
+  app.use('/_db', require('express-pouchdb')(LevelDownAddressBook, { mode: 'minimumForPouchDB'}));
   var dbAddressBook = new LevelDownAddressBook('private');
   app.use('/_api', require('./routes/_api')(dbAddressBook));
 
