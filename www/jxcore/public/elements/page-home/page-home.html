@@ -301,12 +301,12 @@ Polymer({
         console.log("Error loading card. Reload data...");
         this._reloadData();
       }).done( function(data) {
-
         if (!data._id) {
           console.log("Error with loaded card data format. Reload data...");
           this._reloadData();
           return;
         }
+        console.log("Loaded card id:" + data._id);
 
         var isSuccess = false;
         // perform an update/create with the loaded card

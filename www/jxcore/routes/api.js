@@ -33,12 +33,13 @@ function postcardRoutes (db) {
             db.get(id, function (err, doc) {
                 // Not found so let's add it
                 if (err && err.status === 404) {
-
+                    // create card
                     db.put({
                             _id: id,
                             from: req.body.from,
                             text: req.body.text,
-                            dateCreated: new Date().getTime()
+                            dateCreated: new Date().getTime(),
+                            to: req.body.to
                         })
                         .then(function (response) {
                             res.status(200).json(response);
@@ -49,7 +50,9 @@ function postcardRoutes (db) {
                 } else if (err) {
                     res.status(err.status || 500).send(err.message || err);
                 } else {
+                    // update card
                     doc.text = req.body.text;
+                    doc.to = req.body.to;
                     db.put(doc)
                         .then(function (response) {
                             res.status(200).json(response);

@@ -91,25 +91,24 @@ Polymer({
   },
 
   _onDeclineHandler: function(e) {
-    this.modalPrev(); 
+    this.modalPrev();
   },
 
   /* rest api */
 
   _putExecuteExchange : function() {
-    var peerDeviceID = this.selectedItem.peerDeviceId;
-    console.log("ExecuteExchange peerDeviceId:" + peerDeviceID);
+    var peerDeviceId = this.selectedItem.peerDeviceId;
+    console.log("ExecuteExchange peerDeviceId:" + peerDeviceId);
     $.ajax({
       context : this,
       method : 'PUT',
       url : myApp.webview + 'IdentityExchange/ExecuteExchange',
       contentType: 'application/json',
-      data: JSON.stringify({ 
-        peerDeviceID: peerDeviceID
-      }),
-      timeout : 4000
+      data: JSON.stringify({
+        peerDeviceId: peerDeviceId
+      })
     }).fail( function( jqXHR, textStatus, errorThrown ){
-      console.log("Error, could not Execute Exchange. " + textStatus);
+      alert("Error, could not execute exchange. " + errorThrown);
       // TODO: go back and try again
     }).done( function(data, textStatus, jqXHR){
       console.log("putIdentityExchange:" + textStatus);
@@ -128,7 +127,7 @@ Polymer({
       url : myApp.webview + 'IdentityExchange/ExecuteExchange',
       timeout : 4000
     }).fail( function( jqXHR, textStatus, errorThrown ){
-      alert("Error, could not delete device identity. " + textStatus);
+      alert("Error, could not delete device identity. " + errorThrown);
     }).done( function(data, textStatus, jqXHR){
       console.log("deleteIdentityExchange:" + textStatus);
       this.isStarted = false;
@@ -142,10 +141,9 @@ Polymer({
       context : this,
       method : 'GET',
       url : myApp.webview + 'IdentityExchange/ExecuteExchange',
-      data : 'json',
-      timeout : 4000
+      data : 'json'
     }).fail( function( jqXHR, textStatus, errorThrown ){
-      alert("Error, could not get device identity. " + textStatus);
+      alert("Error, could not exchange identity. " + errorThrown);
       // go back and try again
     }).done( function(data, textStatus, jqXHR){
       console.log("getIdentityExchange:" + textStatus);
@@ -153,7 +151,7 @@ Polymer({
       if (data && data.status==="complete") {
         this.isStarted = false;
         this._stopTask();
-        data.peerFriendlyName = peerFriendlyName; // add name to item 
+        data.peerFriendlyName = peerFriendlyName; // add name to item
         this.set('verifiedItem', data); // update model
         this.showOnlySelector('main');
       } else {
@@ -169,7 +167,7 @@ Polymer({
       this.showOnlySelector("aside"); // show spinner
     }
   },
- 
+
 });
 </script>
 </dom-module>

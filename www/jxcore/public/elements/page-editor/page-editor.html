@@ -11,7 +11,7 @@
       <iron-ajax url="/_api/contacts" last-response="{{listData}}" on-response="_onResponseReceived"></iron-ajax>
       <select class="fill" multiple on-change="_onChanged">
         <option value="all">All</option>
-        <template is="dom-repeat" items="{{listData.rows}}" as="item">
+        <template is="dom-repeat" items="{{listData.rows}}" as="item" on-dom-change="_onOptionsBound">
           <option value="[[item.doc._id]]">[[item.doc.username]]</option>
         </template>
       </select>
@@ -69,7 +69,7 @@ Polymer({
       this.isEdit = false;
       this.editText = "";
       this.autoFocus(this.textBox); // UX send autofocus to textarea
-      this._selectAll(); // select all contacts by default
+      this._reloadData(); // load contacts
     } else {
       // edit message
       myApp.title = "Edit Postcard";
@@ -77,8 +77,6 @@ Polymer({
       this._getCard(id);
       this.shouldFocus(this.textBox); // UX send autofocus to textarea
     }
-
-    this._reloadData(); // load contacts
   },
   viewWillDisappear: function() {
     console.log(this.localName + ' viewWillDisappear');
@@ -110,6 +108,14 @@ Polymer({
     getURL("home");
   },
   _saveButtonHandler: function(e) {
+    var select = this.querySelector("select");
+    console.log(select.selectedIndex);
+    if (select && select.selectedIndex < 0) {
+      alert("Please select a contact"); // notify user
+      this.shouldFocus(select); // UX send focus to select
+      return;
+    }
+
     if(this.editText.length == 0) {
       console.log("Please enter a message");
       alert("Please enter a message"); // notify user
@@ -134,6 +140,7 @@ Polymer({
     if(doc && doc._id && doc.text) {
       this.editText = doc.text;
       this.editDoc = doc;
+      this._reloadData(); // load contacts
     } else {
       console.log("Error looking up doc object at index:",index);
     }
@@ -150,15 +157,19 @@ Polymer({
     console.log("+ Edit item:" + text + " id:"+ cardId);
     this._saveCard(cardId, myApp.username, text);
   },
+  // note: any changes to data will need updated in the api.js
   _saveCard: function(cardId, author, text) {
-    console.log("=> Save item:" + text + " id:"+ cardId + " by:"+ author);
+    var toArray = this._getSelectedContacts();
+    console.log("=> Save item:" + text + " id:"+ cardId + " by:"+ author + " to:" + toArray.length);
+    console.log(toArray);
     $.ajax({
         url: myApp.api + "cards/" + cardId,
         type: 'PUT',
         contentType: 'application/json',
         data: JSON.stringify({
           from: author,
-          text: text
+          text: text,
+          to: toArray
         }),
         dataType: 'json',
         error: function(jqXHR, textStatus, errorThrown) {
@@ -220,7 +231,21 @@ Polymer({
       }
       ));
 
-      this._updateSelection();
+      //this._clearSelection(); // (select none for now)
+      //this._updateSelection(); // options may not be bound!
+  },
+
+  _getSelectedContacts : function() {
+    var toArray = [];
+    var options = this.querySelectorAll("option"), i = options.length;
+    while (i--) {
+      var option = options[i];
+      if (option.selected && option.value !== "all") {
+        toArray.push(option.value);
+      }
+    }
+    console.log("Selected contacts: " + toArray.length);
+    return toArray;
   },
 
   _selectAll : function() {
@@ -247,10 +272,25 @@ Polymer({
     }
   },
 
-  // TODO: if editing we need to match postcard's 'to' list of pks against private address book pks
+  // if editing we need to match postcard's 'to' list of pks against private address book pks
   _updateSelection : function() {
-    if( this.isEdit ) {
-      this._clearSelection(); // (select none for now)
+    if (!this.isEdit) {
+      return;
+    }
+
+    if (!this.editDoc.to || !Array.isArray(this.editDoc.to)) {
+      return;
+    }
+
+    var i = this.listData.rows.length; // total number of saved contacts
+    console.log("check options: " + i);
+    console.log(this.editDoc);
+    while(i--) {
+      var item = this.listData.rows[i];
+      if ( this.editDoc.to.indexOf(item.doc._id) > -1 ) {
+        console.log("select option: " + item.doc.username + " id:" + item.doc._id);
+        this.querySelector('option[value="'+item.doc._id+'"]').setAttribute('selected', true);
+      }
     }
   },
 
@@ -260,6 +300,11 @@ Polymer({
       var option = options[i];
       option.selected = false;
     }
+  },
+
+  _onOptionsBound : function() {
+    console.log("<option>s bound");
+    this._updateSelection();
   }
 
 });

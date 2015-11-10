@@ -7,53 +7,13 @@ var ejsEngine = require('ejs-locals');
 var PouchDB = require('pouchdb');
 var ThaliReplicationManager = require('thali/thalireplicationmanager');
 var IdentityExchange = require('thali/identityExchange/identityexchange');
+var webview = require('thali/identityExchange/identityexchangeendpoint');
 
 console.log('starting app.js');
 var app = express();
 app.disable('x-powered-by');
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
-
-var dbPath = path.join(os.tmpdir(), 'dbPath');
-var dbPrivatePath = path.join(os.tmpdir(), 'dbPrivatePath');
-
-// Mock native calls on mobile for desktop testing
-if (process.env.MOCK_MOBILE) {
-  global.Mobile = require('thali/mockmobile.js');
-  app.use('/webview', require('./routes/mockwebview')()); // Mock Identity Exchange api for UX testing
-}
-
-if (process.platform === 'ios' || process.platform === 'android') {
-  Mobile.getDocumentsPath(function(err, location) {
-    if (err) {
-      console.error("Error", err);
-    } else {
-      dbPath = path.join(location, 'dbPath');
-      dbPrivatePath = path.join(location, 'dbPrivatePath');
-      console.log("Mobile Documents dbPath location: ", dbPath);
-      console.log("Mobile Documents dbPrivatePath location: ", dbPrivatePath);
-    }
-  });
-}
-
-// private db
-var PrivatePouchDB = process.platform === 'android' || process.platform === 'ios' ?
-    PouchDB.defaults({db: require('leveldown-mobile'), prefix: dbPrivatePath}) :
-    PouchDB.defaults({db: require('leveldown'), prefix: dbPrivatePath});
-
-app.use('/db', require('express-pouchdb')(PrivatePouchDB, { mode: 'minimumForPouchDB'}));
-var dbPrivate = new PrivatePouchDB('private');
-app.use('/_api', require('./routes/_api')(dbPrivate)); // private api
-
-// shared db
-var LevelDownPouchDB = process.platform === 'android' || process.platform === 'ios' ?
-    PouchDB.defaults({db: require('leveldown-mobile'), prefix: dbPath}) :
-    PouchDB.defaults({db: require('leveldown'), prefix: dbPath});
-
-app.use('/db', require('express-pouchdb')(LevelDownPouchDB, { mode: 'minimumForPouchDB'}));
-var db = new LevelDownPouchDB('thali');
-
-app.use('/api', require('./routes/api')(db));
 
 app.engine('ejs',ejsEngine);
 app.set('view engine','ejs');
@@ -73,28 +33,73 @@ app.get('/', function (req, res) {
     res.render('ejs/index', { isDebug:true, isMockMobile:process.env.MOCK_MOBILE });
 });
 
-var manager = new ThaliReplicationManager(db);
-var webview = require('thali/identityExchange/identityexchangeendpoint');
+// Mock native calls on mobile for desktop testing
+if (process.env.MOCK_MOBILE) {
+  global.Mobile = require('thali/mockmobile.js');
+  app.use('/webview', require('./routes/mockwebview')()); // Mock Identity Exchange api for UX testing
+}
 
-manager.on('started', function () {
-  console.log('*** Thali replication manager started ***');
-  app.use('/manager', require('./routes/manager')(manager));
-  var identityExchange = new IdentityExchange(app, 5000, manager, 'thali');
-  webview(app, manager, identityExchange); // webview Identity Exchange API
+// Temp path to save app data
+var dbPath = path.join(os.tmpdir(), 'cards');
+var dbAddressBookPath = path.join(os.tmpdir(), 'addressbook');
+
+// Get documents path to save app data
+Mobile.GetDocumentsPath(function(err, location) {
+  if (err) {
+    console.error("Error getting Documents path.", err);
+  } else {
+    dbPath = path.join(location, 'cards');
+    dbAddressBookPath = path.join(location, 'addressbook');
+    console.log("cards db location: ", dbPath);
+    console.log("addressbook db location: ", dbAddressBookPath);
+  }
+  appSetup();
 });
 
-var server = app.listen(5000, function (){
-    console.log('Express server started. (port: 5000)');
-    manager.start(5000, 'thali');
-});
+var manager, server;
+function appSetup() {
+  console.log("app setup");
 
-// Sync changes
-db.changes({
-    since: 'now',
-    live: true
-}).on('change', cardChanged);
-var io = require('socket.io')(server);
-function cardChanged(e) {
-  console.log('card #' + e.id + ' changed');
-  io.emit('cardChanged', e );
+  // addressbook db
+  var LevelDownAddressBook = process.platform === 'android' || process.platform === 'ios' ?
+      PouchDB.defaults({db: require('leveldown-mobile'), prefix: dbAddressBookPath}) :
+      PouchDB.defaults({db: require('leveldown'), prefix: dbAddressBookPath});
+
+  app.use('/db', require('express-pouchdb')(LevelDownAddressBook, { mode: 'minimumForPouchDB'}));
+  var dbAddressBook = new LevelDownAddressBook('private');
+  app.use('/_api', require('./routes/_api')(dbAddressBook));
+
+  // cards db
+  var LevelDownPouchDB = process.platform === 'android' || process.platform === 'ios' ?
+      PouchDB.defaults({db: require('leveldown-mobile'), prefix: dbPath}) :
+      PouchDB.defaults({db: require('leveldown'), prefix: dbPath});
+
+  app.use('/db', require('express-pouchdb')(LevelDownPouchDB, { mode: 'minimumForPouchDB'}));
+  var db = new LevelDownPouchDB('thali');
+  app.use('/api', require('./routes/api')(db));
+
+  manager = new ThaliReplicationManager(db);
+
+  manager.on('started', function () {
+    console.log('*** Thali replication manager started ***');
+    app.use('/manager', require('./routes/manager')(manager));
+    var identityExchange = new IdentityExchange(app, 5000, manager, 'addressbook');
+    webview(app, manager, identityExchange); // webview Identity Exchange API
+  });
+
+  server = app.listen(5000, function (){
+      console.log('Express server started. (port: 5000)');
+      manager.start(5000, 'thali');
+  });
+
+  // sync changes
+  db.changes({
+      since: 'now',
+      live: true
+  }).on('change', cardChanged);
+  var io = require('socket.io')(server);
+  function cardChanged(e) {
+    console.log('card #' + e.id + ' changed');
+    io.emit('cardChanged', e );
+  }
 }
