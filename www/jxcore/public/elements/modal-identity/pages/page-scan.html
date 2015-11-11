@@ -107,9 +107,10 @@ Polymer({
       data: JSON.stringify({
         peerFriendlyName: myApp.username
       }),
-			timeout: 10000
+			timeout: 15000
     }).fail( function( jqXHR, textStatus, errorThrown ){
       alert("Error, could not put identity. " + textStatus + " error: " + errorThrown);
+			this.modalPrev(); // go back and try again
     }).done( function(data, textStatus, jqXHR){
       console.log("putIdentityExchange:" + textStatus);
       this.isStarted = true;
@@ -142,8 +143,7 @@ Polymer({
       data : 'json',
       timeout : 2000
     }).fail( function( jqXHR, textStatus, errorThrown ){
-      alert("Error, could not get identity. " + errorThrown);
-      // go back and try again
+      console.log("Error, could not get identity. " + errorThrown);
     }).done( function(data, textStatus, jqXHR){
       console.log("getIdentityExchange:" + textStatus);
       console.log(data);

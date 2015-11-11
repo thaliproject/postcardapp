@@ -196,7 +196,7 @@ Polymer({
   },
 
   _pageDidAnimate: function() {
-    // stop active processes on last page 
+    // stop active processes on last page
     if(this.lastPage) {
       this.querySelector('page-'+this.lastPage).stop(); // stop biz logic!
     }
@@ -214,7 +214,7 @@ Polymer({
         return i;
       }
     }
-    return -1; // return error not found 
+    return -1; // return error not found
   },
 
   _getSelectedPageIndex: function() {
@@ -309,6 +309,34 @@ Polymer({
     }
   },
 
+  /* stop/restart ThaliReplicationManager */
+
+  _stopThaliReplicationManager : function() {
+		console.log("Stopping ThaliReplicationManager");
+		$.ajax({
+			url: myApp.host + 'manager/stop',
+			type: 'GET'
+		}).fail( function() {
+			log("Error stopping ThaliReplicationManager, or maybe already stopped.");
+		}).done( function(data) {
+			log("ThaliReplicationManager stopping");
+			console.log(data);
+		});
+	},
+
+  _startThaliReplicationManager : function() {
+		console.log("Starting ThaliReplicationManager");
+		$.ajax({
+			url: myApp.host + 'manager/start',
+			type: 'GET'
+		}).fail( function() {
+			log("Error starting ThaliReplicationManager, or maybe already started.");
+		}).done( function(data) {
+			log("ThaliReplicationManager starting");
+			console.log(data);
+		});
+	},
+
   /* Polymer animation behavior methods */
 
   _renderOpened: function() {
@@ -333,9 +361,11 @@ Polymer({
     if (this.opened) {
       console.log("*** modal opened ***");
       this._finishRenderOpened();
+      this._stopThaliReplicationManager(); // starting Identity Exchange - stop TRM
     } else {
       this._finishRenderClosed();
       this._resetState(); // reset state for next time
+      this._startThaliReplicationManager(); // finished Identity Exchange - restart TRM
       console.log("*** modal closed ***");
     }
   }

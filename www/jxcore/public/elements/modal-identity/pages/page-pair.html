@@ -106,10 +106,11 @@ Polymer({
       contentType: 'application/json',
       data: JSON.stringify({
         peerDeviceId: peerDeviceId
-      })
+      }),
+      timeout: 15000
     }).fail( function( jqXHR, textStatus, errorThrown ){
       alert("Error, could not execute exchange. " + errorThrown);
-      // TODO: go back and try again
+      this.modalPrev(); // go back and try again
     }).done( function(data, textStatus, jqXHR){
       console.log("putIdentityExchange:" + textStatus);
       this.isStarted = true;
