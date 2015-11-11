@@ -81,7 +81,7 @@ function generateUUID() {
 }
 
 // generate cryptnum for postcard
-function generateSecureRandomNumber() {
+function generateCryptnum() {
 	if(window.crypto) {
 		var buf = new Uint32Array(1);
 		window.crypto.getRandomValues(buf);
@@ -91,7 +91,11 @@ function generateSecureRandomNumber() {
 }
 
 function generatePostcardId() {
-	return 'postcard-' + generateSecureRandomNumber() +'-'+ myApp.deviceIdentity;
+	return 'postcard-' + generateCryptnum() +'-'+ myApp.deviceIdentity;
+}
+
+function addressBookId(deviceIdentity) {
+	return 'addressbook-' + deviceIdentity;
 }
 
 function isFunction(functionToCheck) {

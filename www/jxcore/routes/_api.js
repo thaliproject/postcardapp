@@ -3,26 +3,24 @@ var express = require('express');
 function addressBookRoutes (db) {
     var router = express.Router();
 
-    var prefix = "addressbook-"; // id prefix
-
     // Save / update user record
     router.route('/login').post(function(req, res) {
         res.setHeader('Content-Type', 'application/json');
         // form validation
         if (typeof req.body.username === 'undefined' || typeof req.body.deviceIdentity === 'undefined') {
-            res.status(400).json({ error: 'Username is undefined' });
+            res.status(400).json({ error: 'User identity is undefined' });
             return;
         }
         // user input validation
         var username = req.body.username.trim();
         var deviceIdentity = req.body.deviceIdentity.trim();
         if (username.length <= 0 || deviceIdentity.length <= 0) {
-            res.status(400).json({ error: 'Username is required' });
+            res.status(400).json({ error: 'User identity is required' });
             return;
         }
-        // send reponse
-        var userId = prefix+deviceIdentity;
-        db.get(userId)
+        // send form submission reponse
+        var contactId = 'addressbook-' + deviceIdentity;
+        db.get(contactId)
             .then(function(doc){
                 if (doc && doc.username !== username) {
                     // Username found, but record needs updated
@@ -44,11 +42,11 @@ function addressBookRoutes (db) {
             .catch(function(err){
                 if(err && err.status === 404) {
                 // No 'me' record found - add new record
-                console.log("User added:" + username + " id:" + userId);
+                console.log("User added:" + username + " contactId:" + contactId);
                 db.put({
-                      _id: userId,
+                      _id: contactId,
                       username: username,
-                      dateCreated: Math.floor((new Date()).getTime() / 1000) 
+                      dateCreated: Math.floor((new Date()).getTime() / 1000)
                     })
                     .then(function () {
                         res.send(JSON.stringify({ user: username }));
@@ -64,8 +62,8 @@ function addressBookRoutes (db) {
     });
 
     // check for user entry
-    router.route('/me/:deviceIdentity').get(function(req, res) {
-        db.get(prefix+req.params.deviceIdentity).then(function(doc){
+    router.route('/me/:contactId').get(function(req, res) {
+        db.get(req.params.contactId).then(function(doc){
             res.status(200).json(doc);
         }).catch(function(err){
             res.send(JSON.stringify({ error: err }));

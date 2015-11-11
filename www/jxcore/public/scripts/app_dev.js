@@ -61,7 +61,6 @@ function setupDebugButtons() {
 }
 
 function stopButtonClicked() {
-	log("STOP");
 	$.ajax({
 		url: myApp.host + 'manager/stop',
 		type: 'GET'
@@ -74,7 +73,6 @@ function stopButtonClicked() {
 }
 
 function startButtonClicked() {
-	log("START");
 	$.ajax({
 		url: myApp.host + 'manager/start',
 		type: 'GET'
@@ -87,7 +85,6 @@ function startButtonClicked() {
 }
 
 function deviceInfoButtonClicked() {
-	log("IDENTITY EXCHANGE API");
 	$.ajax({
 		url: myApp.host + 'webview/DeviceIdentity',
 		type: 'GET'
@@ -105,7 +102,6 @@ function deviceInfoButtonClicked() {
 }
 
 function trashButtonClicked() {
-	log("DESTROY APP DATABASE(S)");
   destroyPostcards();
 }
 

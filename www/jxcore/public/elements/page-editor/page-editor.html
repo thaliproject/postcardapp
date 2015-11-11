@@ -231,8 +231,7 @@ Polymer({
       }
       ));
 
-      //this._clearSelection(); // (select none for now)
-      //this._updateSelection(); // options may not be bound!
+      // note: _updateSelection will be called when option elements are bound
   },
 
   _getSelectedContacts : function() {
@@ -275,6 +274,7 @@ Polymer({
   // if editing we need to match postcard's 'to' list of pks against private address book pks
   _updateSelection : function() {
     if (!this.isEdit) {
+      this._selectAll(); // select all by default for new postcard
       return;
     }
 
@@ -285,11 +285,12 @@ Polymer({
     var i = this.listData.rows.length; // total number of saved contacts
     console.log("check options: " + i);
     console.log(this.editDoc);
-    while(i--) {
+    while (i--) {
       var item = this.listData.rows[i];
       if ( this.editDoc.to.indexOf(item.doc._id) > -1 ) {
         console.log("select option: " + item.doc.username + " id:" + item.doc._id);
-        this.querySelector('option[value="'+item.doc._id+'"]').setAttribute('selected', true);
+        var option = this.querySelector('option[value="'+item.doc._id+'"]'); // .setAttribute('selected', true);
+        option.selected = true;
       }
     }
   },

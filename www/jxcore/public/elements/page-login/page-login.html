@@ -5,7 +5,7 @@
 
 <template>
   <form is="iron-form" id="form-login" method="POST" action="/_api/login" class="inset" hidden>
-    <paper-input name="username" label="Username" bind-value="{{username::input}}" error-message="{{error_username}}" required></paper-input>
+    <paper-input name="username" label="Username" bind-value="{{username::input}}" error-message="{{error_username}}" prevent-invalid-input allowed-pattern="[A-Za-z0-9_\.]" required></paper-input>
     <input is="iron-input" name="deviceIdentity" bind-value="{{deviceIdentity::input}}" type="hidden" />
     <div class="alignCenter">
       <paper-button class="accent" raised on-click="submitForm">Save</paper-button>
@@ -90,15 +90,16 @@ Polymer({
     });
   },
   _findme: function(deviceIdentity) {
+    var contactId = addressBookId(deviceIdentity);
     $.ajax({
       timeout: 1000,
       context: this,
-      url: myApp._api + 'me/' + deviceIdentity,
+      url: myApp._api + 'me/' + contactId,
       type: 'GET',
       dataType: 'json',
       error: function(jqXHR, textStatus, errorThrown) {
         //console.log('@ me error:' + errorThrown + "\n" + JSON.stringify(jqXHR));
-        console.log("Unable to find me: addressbook-" + deviceIdentity + " - login");
+        console.log("Login unable to find me: " + contactId);
         this._login();
       },
       success: function(data, textStatus, jqXHR) {

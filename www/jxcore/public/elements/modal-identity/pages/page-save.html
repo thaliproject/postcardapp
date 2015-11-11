@@ -70,13 +70,13 @@ Polymer({
   },
   _reset : function() {
     this.set('verifiedItem', {});
-    this.showOnlySelector('aside'); 
+    this.showOnlySelector('aside');
   },
 
   /* form */
 
   _onSubmitForm: function() {
-    var isSuccess = true;  
+    var isSuccess = true;
     this.querySelector('form').submit();
   },
 
@@ -100,10 +100,14 @@ Polymer({
   _formSubmit: function(e) {
     console.log("Form was submitted");
     //console.log(e.detail);
-    var contactId = e.detail._peerPublicKeyHash;
-    var username = e.detail.username;
-    var deviceId = e.detail._peerDeviceId;
-    this._saveContact(contactId, username, deviceId);
+    if(e.detail){
+      var contactId = addressBookId(e.detail._peerPublicKeyHash);
+      var username = e.detail.username;
+      var deviceId = e.detail._peerDeviceId;
+      this._saveContact(contactId, username, deviceId);
+    } else {
+      alert("Error, failed to save contact");
+    }
   },
   _formResponse: function(e) {
     console.log("Server Response:", e.detail);
@@ -116,13 +120,13 @@ Polymer({
 
   _saveContact: function(contactId, username, deviceId) {
     this._isSaving = true;
-    console.log("=> Save contact:" + username + " id:"+ contactId + " device id:" + deviceId);
+    console.log("=> Save contact:" + username + " contactId:"+ contactId + " deviceId:" + deviceId);
     $.ajax({
       context: this,
       url: myApp._api + "contacts/" + contactId,
       type: 'PUT',
       contentType: 'application/json',
-      data: JSON.stringify({ 
+      data: JSON.stringify({
         username: username,
         deviceId : deviceId
       }),
