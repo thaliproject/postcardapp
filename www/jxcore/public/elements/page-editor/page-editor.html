@@ -1,16 +1,17 @@
 <link rel="import" href="/bower_components/polymer/polymer.html">
 <link rel="import" href="/elements/behaviors/button-listeners.html">
 <link rel="import" href="/elements/behaviors/multi-platform.html">
+<link rel="import" href="/elements/behaviors/ui-helper.html">
 
 <dom-module id="page-editor">
 
 <template>
   <main class="layout vertical fit">
-    <paper-material elevation="1" class="selectBox">
+    <paper-material id="selectTo" elevation="1" class="selectBox" hidden>
       <p class="label"><strong>To</strong></p>
       <iron-ajax url="/_api/contacts" last-response="{{listData}}" on-response="_onResponseReceived"></iron-ajax>
-      <select class="fill" multiple on-change="_onChanged">
-        <option value="all">All</option>
+      <select class="fill" multiple>
+        <!-- <option value="all">All</option> -->
         <template is="dom-repeat" items="{{listData.rows}}" as="item" on-dom-change="_onOptionsBound">
           <option value="[[item.doc._id]]">[[item.doc.username]]</option>
         </template>
@@ -27,7 +28,8 @@ Polymer({
   is: "page-editor",
   behaviors: [
       PageBehaviors.ButtonListeners,
-      PageBehaviors.MultiPlatform
+      PageBehaviors.MultiPlatform,
+      PageBehaviors.UIHelper
     ],
   properties: {
     editText: {
@@ -62,14 +64,12 @@ Polymer({
     if(myApp.discoverButton) {
       myApp.discoverButton.removeAttribute("hidden");
     }
-
     if(id === "new"){
       // new message
       myApp.title = "New Postcard";
       this.isEdit = false;
       this.editText = "";
       this.autoFocus(this.textBox); // UX send autofocus to textarea
-      this._reloadData(); // load contacts
     } else {
       // edit message
       myApp.title = "Edit Postcard";
@@ -77,12 +77,13 @@ Polymer({
       this._getCard(id);
       this.shouldFocus(this.textBox); // UX send autofocus to textarea
     }
+    this._reloadContacts(); // reload contacts
   },
   viewWillDisappear: function() {
     console.log(this.localName + ' viewWillDisappear');
     this.deactivate();
     this.editDoc = null; // reset edit doc
-    this._clearSelection(); // clear selection
+    this._resetView();
     document.activeElement.blur(); // reset text input cursor
   },
   activate: function() {
@@ -108,13 +109,12 @@ Polymer({
     getURL("home");
   },
   _saveButtonHandler: function(e) {
-    var select = this.querySelector("select");
-    console.log(select.selectedIndex);
-    if (select && select.selectedIndex < 0) {
-      alert("Please select a contact"); // notify user
-      this.shouldFocus(select); // UX send focus to select
-      return;
-    }
+    // var select = this.querySelector("select");
+    // if (select && select.selectedIndex < 0) {
+    //   alert("Please select a contact"); // notify user
+    //   this.shouldFocus(select); // UX send focus to select
+    //   return;
+    // }
 
     if(this.editText.length == 0) {
       console.log("Please enter a message");
@@ -140,7 +140,6 @@ Polymer({
     if(doc && doc._id && doc.text) {
       this.editText = doc.text;
       this.editDoc = doc;
-      this._reloadData(); // load contacts
     } else {
       console.log("Error looking up doc object at index:",index);
     }
@@ -190,10 +189,10 @@ Polymer({
   },
 
   // iron-ajax request
-  _reloadData: function() {
+  _reloadContacts: function() {
     var ironAjax = this.querySelector("iron-ajax");
     if(ironAjax){
-        console.log("load data");
+        console.log("load contacts data");
         ironAjax.generateRequest();
     }
   },
@@ -228,8 +227,7 @@ Polymer({
       //sort records by username
       this.set('listData.rows', _.sortBy(this.listData.rows, function(o){
         return o.doc.username;
-      }
-      ));
+      }));
 
       // note: _updateSelection will be called when option elements are bound
   },
@@ -247,17 +245,16 @@ Polymer({
     return toArray;
   },
 
+/*
   _selectAll : function() {
     this.querySelector('option[value="all"]').setAttribute('selected', true);
     this._changed('all');
   },
-
   _onChanged : function(e) {
     var value = e.target.value;
     console.log("user selected option value:" + value );
     this._changed(value);
   },
-
   _changed : function(value) {
     var options = this.querySelectorAll("option"), i = options.length;
     var optionAll = options[0];
@@ -265,31 +262,28 @@ Polymer({
       console.log("Select all");
       while (i--) {
         var option = options[i];
-        //option.setAttribute('selected', true);
         option.selected = true;
       }
     }
   },
+//*/
 
   // if editing we need to match postcard's 'to' list of pks against private address book pks
   _updateSelection : function() {
-    if (!this.isEdit) {
-      this._selectAll(); // select all by default for new postcard
-      return;
-    }
-
-    if (!this.editDoc.to || !Array.isArray(this.editDoc.to)) {
-      return;
-    }
-
     var i = this.listData.rows.length; // total number of saved contacts
-    console.log("check options: " + i);
-    console.log(this.editDoc);
+    console.log("contact options: " + i);
+    // show selectTo element if contacts available
+    if(i>0) {
+      this.showSelector("#selectTo");
+    }
     while (i--) {
       var item = this.listData.rows[i];
+      if (!this.editDoc || !this.editDoc.to || !Array.isArray(this.editDoc.to)) {
+        break;
+      }
       if ( this.editDoc.to.indexOf(item.doc._id) > -1 ) {
         console.log("select option: " + item.doc.username + " id:" + item.doc._id);
-        var option = this.querySelector('option[value="'+item.doc._id+'"]'); // .setAttribute('selected', true);
+        var option = this.querySelector('option[value="'+item.doc._id+'"]');
         option.selected = true;
       }
     }
@@ -303,8 +297,13 @@ Polymer({
     }
   },
 
+  _resetView : function() {
+    this.hideSelector("#selectTo");
+    this._clearSelection(); // reset selection
+  },
+
   _onOptionsBound : function() {
-    console.log("<option>s bound");
+    console.log("<option> elements bound");
     this._updateSelection();
   }
 
