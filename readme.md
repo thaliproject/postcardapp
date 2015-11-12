@@ -108,7 +108,7 @@ On Windows one needs to use [Git Bash](https://git-scm.com/download/win) or equi
 You will also need to copy the Thali_CordovaPlugin 'mockmobile.js' script if you want run in development mode. This allows native methods to be called on the desktop when UX testing the web app.
 ```
 cd www/jxcore
-jx npm install --production --autoremove "*.gz"
+jx npm install --autoremove "*.gz"
 bower install
 find ./bower_components -name "*.gz" -type f -delete
 cp -v ../../thaliDontCheckIn/Thali_CordovaPlugin-master/test/www/jxcore/bv_tests/mockmobile.js node_modules/thali/

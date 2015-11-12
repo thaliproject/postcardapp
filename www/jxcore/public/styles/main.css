@@ -189,6 +189,11 @@ paper-card.row {
 	color: #333;
 }
 
+/* highlight postcards sent to you */
+.you {
+	background-color: #cceeff;
+}
+
 /* iOS 8.4 drop-shadow */
 .postcard {
 	box-shadow: 0px 10px 10px #AAA;

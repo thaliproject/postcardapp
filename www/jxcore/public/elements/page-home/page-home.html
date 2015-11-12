@@ -12,7 +12,7 @@
     <iron-list id="my-postcards" items="{{listData.rows}}" as="item" class="fit">
       <template>
         <paper-card id="{{index}}" class="row">
-          <div class="card-content postcard">
+          <div class$="{{_classNames(item.doc.to)}}">
             <span>[[_humanizeDate(item.doc.dateCreated)]]</span>
             <pre>{{item.doc.text}}</pre>
             <p>[[item.doc.from]]</p>
@@ -103,6 +103,19 @@ Polymer({
   _humanizeDate: function(date) {
     return moment.utc(date,'x').fromNow();
   },
+  _classNames: function(toArray) {
+    if (toArray.length == 0 ) {
+      return "card-content postcard";
+    }
+    var me = 'addressbook-'+myApp.deviceIdentity;
+    if ( toArray.indexOf(me) >= 0 ) {
+      console.log("ITS ME");
+      return "card-content postcard you";
+    } else {
+      return "card-content postcard";
+    }
+  },
+
   _addCard: function(e) {
     console.log("add card: " + e);
     getURL("editor");
@@ -164,6 +177,7 @@ Polymer({
       console.log("listData offset:" + this.listData.offset + " total_rows:" + this.listData.total_rows );
 
       // splice out 'me' record
+      /*
       if(this.listData.rows.length>0) {
         var row;
         for(var i=0; i<this.listData.rows.length; i++) {
@@ -175,6 +189,7 @@ Polymer({
           }
         }
       }
+      //*/
 
       //sort records by date created
       this.set('listData.rows', _.sortBy(this.listData.rows, function(o){
