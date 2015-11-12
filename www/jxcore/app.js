@@ -49,7 +49,7 @@ if (process.env.MOCK_MOBILE) {
 var dbPath = path.join(os.tmpdir(), DB_CARDS);
 var dbAddressBookPath = path.join(os.tmpdir(), DB_ADDRESS_BOOK);
 
-// Get documents path to save app data
+// Get documents path to save and persist app data
 Mobile.GetDocumentsPath(function(err, location) {
   if (err) {
     console.error("Error getting Documents path.", err);
@@ -61,7 +61,7 @@ Mobile.GetDocumentsPath(function(err, location) {
   }
 });
 
-// addressbook db
+// PouchDB addressbook
 var LevelDownAddressBook = process.platform === 'android' || process.platform === 'ios' ?
     PouchDB.defaults({db: require('leveldown-mobile'), prefix: dbAddressBookPath}) :
     PouchDB.defaults({db: require('leveldown'), prefix: dbAddressBookPath});
@@ -70,7 +70,7 @@ app.use('/_db', require('express-pouchdb')(LevelDownAddressBook, { mode: 'minimu
 var dbPrivate = new LevelDownAddressBook('private');
 app.use('/_api', require('./routes/_api')(dbPrivate));
 
-// cards db
+// PouchDB postcards
 var LevelDownPouchDB = process.platform === 'android' || process.platform === 'ios' ?
     PouchDB.defaults({db: require('leveldown-mobile'), prefix: dbPath}) :
     PouchDB.defaults({db: require('leveldown'), prefix: dbPath});
@@ -79,6 +79,7 @@ app.use('/db', require('express-pouchdb')(LevelDownPouchDB, { mode: 'minimumForP
 var db = new LevelDownPouchDB(DB_NAME);
 app.use('/api', require('./routes/api')(db));
 
+// Thali replication manager
 var manager = new ThaliReplicationManager(db);
 var identityExchange = new IdentityExchange(app, PORT, manager, DB_NAME);
 app.use('/manager', require('./routes/manager')(manager));
@@ -88,12 +89,13 @@ manager.on('started', function () {
   console.log('*** Thali replication manager started ***');
 });
 
+// Express server
 var server = app.listen(PORT, function (){
     console.log('Express server started on port:', PORT);
     manager.start(PORT, DB_NAME);
 });
 
-// sync changes
+// Socket.io sync postcard changes
 db.changes({
     since: 'now',
     live: true
@@ -103,3 +105,12 @@ function cardChanged(e) {
   console.log('card #' + e.id + ' changed');
   io.emit('cardChanged', e );
 }
+
+// Thali logger
+manager._emitter.on('peerAvailabilityChanged', function (peers) {
+  io.emit('peerAvailabilityChanged', peers);
+});
+
+manager._emitter.on('networkChanged', function (isAvailable) {
+  io.emit('networkChanged', isAvailable);
+});

@@ -38,15 +38,36 @@ myApp.addEventListener('dom-change', function() {
 		myApp.discoverButton.addEventListener("click", openModalDialog);
 		//myApp.discoverButton.removeAttribute("hidden");
 	}
-	// auto-refresh content when card changed
-	if (socket) {
-		socket.on("cardChanged", function (data) {
-	    	console.log("client received card changes");
-	    	console.log(data);
-	    	var event = new CustomEvent('card-changed', { 'detail': data });
-	    	document.querySelector('page-home').dispatchEvent(event);
-		});
+
+	// end if socket.io is unavailable
+	if (typeof socket === 'undefined') {
+		return;
 	}
+
+	// auto-refresh content when card changed
+	socket.on("cardChanged", function (data) {
+		console.log("client received card changes");
+		console.log(data);
+		var event = new CustomEvent('card-changed', { 'detail': data });
+		document.querySelector('page-home').dispatchEvent(event);
+	});
+
+	// log jxcore events
+	socket.on("peerAvailabilityChanged", function (peers) {
+		var i = peers.length;
+		while (i--) {
+			var peer = peers[i];
+			log("peer available:" + peer.peerAvailable + " id:" + peer.peerIdentifier + " peerName:" + peer.peerName);
+		}
+	});
+
+	socket.on("networkChanged", function (isAvailable) {
+		log("networkChanged isAvailable: " + isAvailable);
+		if (!isAvailable) {
+			alert("Working offline.");
+		}
+	});
+
 });
 
 function openModalDialog(e) {
