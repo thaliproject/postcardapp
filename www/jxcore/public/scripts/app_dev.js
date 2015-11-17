@@ -94,9 +94,10 @@ function deviceInfoButtonClicked() {
 		console.log(data);
 		if (data.deviceIdentity) {
 			log("DeviceIdentity: " + data.deviceIdentity);
+      log("DeviceIdentity urlsafe: " + URLSafeBase64.encode(data.deviceIdentity));
 		}
 		if (data.publicKeyHash) {
-			log("PublicKeyHash: " + data.publicKeyHash);
+			log("PublicKeyHash: " + data.publicKeyHash); // old API
 		}
 	});
 }

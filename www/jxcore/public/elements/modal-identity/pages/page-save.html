@@ -100,8 +100,10 @@ Polymer({
   _formSubmit: function(e) {
     console.log("Form was submitted");
     //console.log(e.detail);
+    var urlsafePublicKeyHash = URLSafeBase64.encode(e.detail._peerPublicKeyHash);
+    log("PK# " + e.detail._peerPublicKeyHash +" -> "+ urlsafePublicKeyHash);
     if(e.detail){
-      var contactId = addressBookId(e.detail._peerPublicKeyHash);
+      var contactId = addressBookId(urlsafePublicKeyHash);
       var username = e.detail.username;
       var deviceId = e.detail._peerDeviceId;
       this._saveContact(contactId, username, deviceId);

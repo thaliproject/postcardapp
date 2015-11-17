@@ -78,10 +78,10 @@ Polymer({
       success: function(data) {
         console.log("data");
         if(data && data.deviceIdentity) {
-          this.set("deviceIdentity", data.deviceIdentity); // update user form input
-      		console.log("Found Device Identity: " + this.deviceIdentity);
-          // retain device identity
-          myApp.deviceIdentity = data.deviceIdentity;
+          // retain device identity as urlsafe value
+          myApp.deviceIdentity = URLSafeBase64.encode(data.deviceIdentity);
+          this.set("deviceIdentity", myApp.deviceIdentity); // update user form input with urlsafe value
+      		console.log("Found Device Identity: " + data.deviceIdentity + " urlsafe:" + this.deviceIdentity);
           this._findme( this.deviceIdentity );
         } else {
           alert("Error. Device identity was not the expected data format.");
@@ -98,7 +98,6 @@ Polymer({
       type: 'GET',
       dataType: 'json',
       error: function(jqXHR, textStatus, errorThrown) {
-        //console.log('@ me error:' + errorThrown + "\n" + JSON.stringify(jqXHR));
         console.log("Login unable to find me: " + contactId);
         this._login();
       },
@@ -142,7 +141,7 @@ Polymer({
       getURL("home");
     } else {
       var user = this.username.trim();
-      console.log("Error, unable to verify response data. Using user name: " + user);
+      console.log("Warning - unable to verify response data. Using user name: " + user);
       myApp.username = user;
       getURL("home");
     }

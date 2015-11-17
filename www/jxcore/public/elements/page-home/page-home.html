@@ -7,7 +7,7 @@
 <dom-module id="page-home">
 
 <template>
-  <iron-ajax url="/_api/contacts" last-response="{{addressBook}}" on-response="_onContactsReceived" auto></iron-ajax>
+  <iron-ajax url="/_api/contacts" last-response="{{addressBook}}" on-response="_onContactsReceived" id="contacts"></iron-ajax>
   <iron-ajax url="/api/cards" last-response="{{listData}}" on-response="_onCardsReceived" id="postcards"></iron-ajax>
   <iron-selector attr-for-selected="index" on-click="_itemSelected">
     <iron-list id="my-postcards" items="{{listData.rows}}" as="item" class="fit">
@@ -85,6 +85,7 @@ Polymer({
     if(myApp.discoverButton) {
       myApp.discoverButton.removeAttribute("hidden");
     }
+    this.querySelector("#contacts").generateRequest(); // iron-ajax
     if (this._isLoaded) {
       this._updateUserView(); // shows delete button (if needed) when back pressed
     }
@@ -129,10 +130,6 @@ Polymer({
     console.log("add card: " + e);
     getURL("editor");
   },
-  _reloadData: function(e) {
-    console.log("*** RELOAD DATA... ***");
-    this._generateRequest();
-  },
 
   // enable editting for selected postcard
   _itemSelected: function(e) {
@@ -169,8 +166,9 @@ Polymer({
   },
 
   // iron-ajax request
-  _generateRequest: function() {
-    this.querySelector("#postcards").generateRequest(); // iron-ajax
+  _reloadData: function(e) {
+    console.log("*** RELOAD DATA... ***");
+    this.querySelector("#postcards").generateRequest();
   },
 
   // iron-ajax response
@@ -210,8 +208,8 @@ Polymer({
     var isHidden = !this._isEditMode;
     for (var i=0; i<elements.length; i++) {
       var element = elements[i];
-      var deleteButton = element.querySelector('paper-fab');
-      this._setVisibility(deleteButton, isHidden);
+      var cardDeleteButton = element.querySelector('paper-fab');
+      this._setVisibility(cardDeleteButton, isHidden);
     }
   },
 
@@ -228,12 +226,16 @@ Polymer({
     if (this.listData.rows.length>0) {
       this.querySelector("aside").setAttribute("hidden", true);
       this.querySelector('iron-list').removeAttribute("hidden");
-      this.deleteButton.removeAttribute("hidden");
+      if (this.deleteButton) {
+        this.deleteButton.removeAttribute("hidden");
+      }
     } else {
       console.log("prompt user to go create a postcard!");
       this.querySelector("aside").removeAttribute("hidden");
       this.querySelector('iron-list').setAttribute("hidden", true);
-      this.deleteButton.setAttribute("hidden", true);
+      if (this.deleteButton) {
+        this.deleteButton.setAttribute("hidden", true);
+      }
     }
   },
 
@@ -343,7 +345,7 @@ Polymer({
     }
     var path = 'listData.rows.'+index+'.doc';
     if ( this.get(path) ) {
-      this._updateDoc(data); // add properties for display purposes only
+      this._appendDoc(data); // add properties for display purposes only
       this.set(path, data); // update doc
       this.querySelector('iron-list')._update(); // redraw list view for dynamic row height size changes
       return true;
@@ -355,7 +357,7 @@ Polymer({
     if ( !this._isCardDataValid(data) ) {
       return false;
     }
-    this._updateDoc(data); // add properties for display purposes only
+    this._appendDoc(data); // add properties for display purposes only
     var record = {
       doc: data,
       id: data._id,
@@ -383,6 +385,10 @@ Polymer({
   _onContactsReceived : function() {
     // save contacts to separate arrays for quicker calc with binding properties
     var i = this.addressBook.rows.length;
+    console.log("Contact records received: " + i);
+    // reset
+    this.set('contacts', []);
+    this.set('identities', []);
     while (i--) {
       var doc = this.addressBook.rows[i].doc;
       var contact = doc.username;
@@ -391,44 +397,39 @@ Polymer({
       this.push('identities', identity);
     }
 
-    // load postcard data on first run then content should auto-refresh
+    // load postcard data on first run, new content will auto-refresh
     if (!this._isLoaded) {
-      this._reloadData();
+      this._reloadData(); // load all postcards
+    } else {
+      this._appendDisplayProperties(); // update existing postcard displays
     }
   },
 
+  // appends all postcard rows doc object with display properties
   _appendDisplayProperties : function() {
     if( !this.listData || !this.listData.rows || this.listData.total_rows==0 ) {
       return;
     }
     var i=0, len=this.listData.rows.length;
+    console.log("appending display properties on rows: " + len);
     while (i<len) {
-      //this._setSenderAtRowIndex(i);
-      this._updateDoc( this.get('listData.rows.'+i+'.doc') );
+      this._appendDoc( this.get('listData.rows.'+i+'.doc') );
       i++;
     }
   },
 
-  // _setSenderAtRowIndex : function(i) {
-  //   console.log("Update sender @ "+ i);
-  //   var from = this.listData.rows[i].doc.from;
-  //   this.set('listData.rows.'+i+'.doc._from', "from " + from);
-  // }
-
-  // add properties for display purposes only
-  _updateDoc : function(doc) {
+  // adds properties to doc for display purposes only
+  _appendDoc : function(doc) {
     // update sender information for display
     var from = 'from "' + doc.from +'"'; // default sender text
-
     // get device identity of the sender
     var senderIdentity = doc._id.split('-')[2];
-
     var index = this.identities.indexOf(senderIdentity);
     if ( index > -1 ) {
       var contact = this.contacts[index];
       from = 'from ' + contact; // use identity exchange 'pet name'
     }
-
+    // append doc _from property
     doc._from = from;
   }
 
