@@ -7,16 +7,26 @@
 
 <template>
   <main class="layout vertical fit">
-    <paper-material id="selectTo" elevation="1" class="selectBox" hidden>
-      <p class="label"><strong>To</strong></p>
-      <iron-ajax url="/_api/contacts" last-response="{{listData}}" on-response="_onResponseReceived"></iron-ajax>
-      <select class="fill" multiple>
-        <!-- <option value="all">All</option> -->
-        <template is="dom-repeat" items="{{listData.rows}}" as="item" on-dom-change="_onOptionsBound">
-          <option value="[[item.doc._id]]">[[item.doc.username]]</option>
-        </template>
-      </select>
+    <paper-material elevation="1" class="containerBox">
+      <!-- photo -->
+      <div id="attachPhoto" class="photoBox">
+        <iron-image id="cameraImage" src="[[imageSource]]" sizing="cover"></iron-image>
+        <paper-fab id="cameraButton" icon="image:photo-camera"></paper-fab>
+        <paper-fab id="discardPhotoButton" icon="cancel"></paper-fab>
+      </div>
+      <!-- select -->
+      <div id="selectTo" class="selectBox" hidden>
+        <p class="label"><strong>To</strong></p>
+        <iron-ajax url="/_api/contacts" last-response="{{listData}}" on-response="_onResponseReceived"></iron-ajax>
+        <select class="fill" multiple>
+          <!-- <option value="all">All</option> -->
+          <template is="dom-repeat" items="{{listData.rows}}" as="item" on-dom-change="_onOptionsBound">
+            <option value="[[item.doc._id]]">[[item.doc.username]]</option>
+          </template>
+        </select>
+      </div>
     </paper-material>
+
     <!-- message -->
     <textarea id="textbox" class="postcard flex" value="{{editText::input}}" placeholder="Message" on-focus="shouldFocusWithoutScrollUp"></textarea>
   </main>
@@ -38,6 +48,16 @@ Polymer({
     },
     backButton: Object,
     saveButton: Object,
+    cameraButton: Object,
+    discardPhotoButton: Object,
+    cameraImageData: {
+      type: String,
+      notify: true
+    },
+    imageSource: {
+      type: String,
+      computed: 'getImageSource(cameraImageData)'
+    },
     textBox: Object,
     editDoc: Object,
     listData: {
@@ -45,6 +65,10 @@ Polymer({
       notify: true
     },
     isEdit: false
+  },
+  listeners: {
+    'camera-success': 'onCameraSuccess',
+    'camera-error': 'onCameraError'
   },
   created: function() {
     console.log(this.localName + ' was created');
@@ -64,6 +88,10 @@ Polymer({
     if(myApp.discoverButton) {
       myApp.discoverButton.removeAttribute("hidden");
     }
+
+    // reset image
+    this.resetImageSource();
+
     if(id === "new"){
       // new message
       myApp.title = "New Postcard";
@@ -91,13 +119,15 @@ Polymer({
 
     // local scope
     this.textBox = this.querySelector("textarea");
+    this.cameraButton = this.querySelector("#cameraButton");
+    this.discardPhotoButton = this.querySelector("#discardPhotoButton");
 
     // document scope
     this.backButton = document.querySelector("#backButton");
     this.saveButton = document.querySelector("#saveButton");
 
-    var toolbarButtonArray = [this.backButton, this.saveButton];
-    var toolbarFunctionArray = [this._backButtonHandler, this._saveButtonHandler.bind(this)];
+    var toolbarButtonArray = [this.backButton, this.saveButton, this.cameraButton, this.discardPhotoButton];
+    var toolbarFunctionArray = [this._backButtonHandler, this._saveButtonHandler.bind(this), this._cameraButtonHandler.bind(this), this._discardPhotoButtonHandler.bind(this)];
     this.activateButtons(toolbarButtonArray, toolbarFunctionArray);
   },
   deactivate: function() {
@@ -123,16 +153,85 @@ Polymer({
       return;
     }
 
+    // go back after saving...
     if(!this.editDoc) {
       console.log("Save new message:" + this.editText);
-      this.createItem(this.editText);
+      this.createItem(this.editText, this.cameraImageData);
     } else {
       console.log("Save edited message:" + this.editText);
-      this.updateItem(this.editText, this.editDoc._id);
+      this.updateItem(this.editDoc._id, this.editText, this.cameraImageData);
     }
+  },
 
-    // go back (while saving)
-    getURL("home");
+  // Note: Cordova functions cannot be called directly inside an iframe.
+  // On mobile mobile webview origin is file://
+  // but the origin of iframe is http://localhost
+  // Therefore using Cross Origin Messaging to trigger Cordova functions
+  _cameraButtonHandler: function(e) {
+    // Desktop
+    if (IS_MOCKMOBILE) {
+      navigator.camera.getPicture( this._cameraSuccess.bind(this), this._cameraError.bind(this) );
+      return;
+    }
+    // Mobile targetOrigin is 'file://'
+    parent.postMessage('navigator.camera.getPicture', 'file://');
+  },
+  _cameraSuccess: function(imageData) {
+    console.log("Camera imageData loaded");
+    this._setCameraImageData(imageData);
+  },
+  _cameraError: function(message) {
+    // wrap alert() in setTimeout because of iOS image picker quirk
+    setTimeout(function() {
+      alert('Camera error: ' + message);
+    }, 0);
+  },
+
+  // handle Camera events fired from Cordova webview
+  onCameraSuccess: function(e) {
+    console.log("onCameraSuccess event");
+    console.log(e);
+    if (e.detail) {
+      this._cameraSuccess(e.detail);
+    }
+  },
+  onCameraError: function(e) {
+    console.log("onCameraError event");
+    console.log(e);
+    if (e.detail) {
+      this._cameraError(e.detail);
+    }
+  },
+
+  getImageSource: function(imageData) {
+    return "data:image/jpeg;base64," + imageData;
+  },
+
+  _setCameraImageData: function(imageData) {
+    this.cameraImageData = imageData;
+    this._updateButtonsWithPhoto(true);
+  },
+
+  resetImageSource: function() {
+    this.cameraImageData = "R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7"; //"R0lGODlhAQABAIAAAAUEBAAAACwAAAAAAQABAAACAkQBADs=";
+    this._updateButtonsWithPhoto(false);
+  },
+
+  _discardPhotoButtonHandler: function(e) {
+    console.log("Remove photo...");
+    this.resetImageSource();
+  },
+
+  _updateButtonsWithPhoto: function(isPhotoCaptured) {
+    if(isPhotoCaptured) {
+      console.log("x Photo");
+      this.hide(this.cameraButton);
+      this.show(this.discardPhotoButton);
+    } else {
+      console.log("+ Photo");
+      this.show(this.cameraButton);
+      this.hide(this.discardPhotoButton);
+    }
   },
 
   _getCard: function(index) {
@@ -140,27 +239,45 @@ Polymer({
     if(doc && doc._id && doc.text) {
       this.editText = doc.text;
       this.editDoc = doc;
+      var filename = doc._id + '.jpg';
+      if (doc._attachments && doc._attachments[filename]) {
+        var imageData = doc._attachments[filename].data;
+        if (typeof imageData !== 'undefined') {
+          //this.cameraImageData = imageData;
+          this._setCameraImageData(imageData);
+        }
+      }
     } else {
       console.log("Error looking up doc object at index:",index);
     }
   },
 
   // create item
-  createItem: function(text) {
+  createItem: function(text, imageData) {
     var cardId = generatePostcardId(); //generateUUID();
     console.log("+ Create item:" + text + " id:"+ cardId);
-    this._saveCard(cardId, myApp.username, text);
+    this._saveCard(cardId, myApp.username, text, imageData);
   },
   // update item
-  updateItem: function(text, cardId) {
+  updateItem: function(cardId, text, imageData) {
     console.log("+ Edit item:" + text + " id:"+ cardId);
-    this._saveCard(cardId, myApp.username, text);
+    this._saveCard(cardId, myApp.username, text, imageData);
   },
   // note: any changes to data will need updated in the api.js
-  _saveCard: function(cardId, author, text) {
+  _saveCard: function(cardId, author, text, imageData) {
     var toArray = this._getSelectedContacts();
     console.log("=> Save item:" + text + " id:"+ cardId + " by:"+ author + " to:" + toArray.length);
     console.log(toArray);
+    var attachments;
+    if(imageData.length>64){
+      var filename = cardId + '.jpg'; // using postcard id as image filename
+      attachments = {};
+      attachments[filename] = {
+        content_type: 'image/jpeg',
+        data: imageData
+      };
+      console.log(attachments);
+    }
     $.ajax({
         url: myApp.api + "cards/" + cardId,
         type: 'PUT',
@@ -168,7 +285,8 @@ Polymer({
         data: JSON.stringify({
           from: author,
           text: text,
-          to: toArray
+          to: toArray,
+          attachments: attachments
         }),
         dataType: 'json',
         error: function(jqXHR, textStatus, errorThrown) {
@@ -181,6 +299,7 @@ Polymer({
           // if 'ok' update client UI else alert user with error
           if(data.ok && data.ok===true) {
             console.log("OK",textStatus);
+            getURL("home"); // go back once doc and attachments are saved and ready
           } else {
             alert("Save card error");
           }

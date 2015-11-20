@@ -16,6 +16,7 @@
           <div class$="[[_classNames(item.doc.to)]]">
             <span class="date">[[_humanizeDate(item.doc.dateCreated)]]</span>
             <pre>[[item.doc.text]]</pre>
+            <iron-image src="[[_getImage(item.doc)]]" sizing="cover" class$="[[_imageClass(item.doc,index)]]"></iron-image>
             <span>[[item.doc._from]]</span>
             <paper-fab id="{{item.doc._id}}" icon="delete" class="FAB" hidden></paper-fab>
           </div>
@@ -124,6 +125,23 @@ Polymer({
     } else {
       return "card-content postcard";
     }
+  },
+  _getImage: function(doc) {
+    var filename = doc._id + '.jpg';
+    if (doc._attachments && doc._attachments[filename]) {
+      var imageData = doc._attachments[filename].data;
+      if (typeof imageData !== 'undefined') {
+        return "data:image/jpeg;base64," + imageData;
+      }
+    }
+    return "data:image/gif;base64,R0lGODlhAQABAIAAAAUEBAAAACwAAAAAAQABAAACAkQBADs="; // 1px black
+  },
+  _imageClass: function(doc, index) {
+    var filename = doc._id + '.jpg';
+    if (doc._attachments && doc._attachments[filename]) {
+      return "styledImage";
+    }
+    return "";
   },
 
   _addCard: function(e) {

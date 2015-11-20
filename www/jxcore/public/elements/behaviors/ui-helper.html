@@ -36,6 +36,13 @@ PageBehaviors.UIHelper = {
 		}
 	},
 
+	/* show one element and hide the other */
+
+	showAndHide: function(showElement, hideElement) {
+		this.show(showElement);
+		this.hide(hideElement);
+	},
+
 	/* methods for selectors */
 
 	hideSelector : function(selector) {
@@ -79,7 +86,7 @@ PageBehaviors.UIHelper = {
 	},
 
 	/* view state methods for pages */
-	
+
 	showOnlySelector : function(selector) {
 		var i = this.children.length;
 		while (i--) {
@@ -87,6 +94,6 @@ PageBehaviors.UIHelper = {
 		}
 		this.showSelector(selector);
 	}
-	
+
 };
 </script>

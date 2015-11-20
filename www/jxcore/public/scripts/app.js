@@ -1,27 +1,28 @@
 'use strict';
+/*global alert, IS_DEBUG, IS_MOCKMOBILE, socket, log, page, uuid, appDev */
+/*exported getURL, URLSafeBase64, generatePostcardId, addressBookId */
 
 // Polymer app
 var myApp = document.querySelector('#my-app');
 
 // myApp defaults
 myApp.title = "Postcards";
-myApp.route = "home"; // default route but will redirect to 'login' if no app.username set
-myApp.host = "http://localhost:5000/";
+// default route
+myApp.route = "home"; // NB: redirects to 'login' if no app.username
+// origin
+myApp.host = "http://localhost:5000";
 // postcard api routes
-myApp.api = myApp.host + "api/";
+myApp.api = myApp.host + "/api/";
 // private api routes
-myApp._api = myApp.host + "_api/";
+myApp._api = myApp.host + "/_api/";
 // identity exchange api
-myApp.webview = myApp.host + "webview/";
+myApp.webview = myApp.host + "/webview/";
+// manager api
+myApp.manager = myApp.host + "/manager/";
 
 // myApp user session vars
 myApp.username = "";
 myApp.deviceIdentity = "";
-
-// default logging function to call
-var log = function(message) {
-	console.log(message);
-};
 
 // Setup debug mode once Polymer template is bound
 myApp.addEventListener('dom-change', function() {
@@ -39,14 +40,9 @@ myApp.addEventListener('dom-change', function() {
 		//myApp.discoverButton.removeAttribute("hidden");
 	}
 
-	// end if socket.io is unavailable
-	if (typeof socket === 'undefined') {
-		return;
-	}
-
 	// auto-refresh content when card changed
 	socket.on("cardChanged", function (data) {
-		console.log("client received card changes");
+		console.log("*** client received card changes ***");
 		console.log(data);
 		var event = new CustomEvent('card-changed', { 'detail': data });
 		document.querySelector('page-home').dispatchEvent(event);
@@ -57,7 +53,8 @@ myApp.addEventListener('dom-change', function() {
 		var i = peers.length;
 		while (i--) {
 			var peer = peers[i];
-			log("peer available:" + peer.peerAvailable + " id:" + peer.peerIdentifier + " peerName:" + peer.peerName);
+			log("peer available:" + peer.peerAvailable +
+        " id:" + peer.peerIdentifier + " peerName:" + peer.peerName);
 		}
 	});
 
@@ -79,7 +76,7 @@ function openModalDialog(e) {
 
 // myApp client-side route handler
 function getURL(route, paramArray){
-	if(route == myApp.route) {
+	if(route === myApp.route) {
 		console.log("== page already routed '"+ route +"' ==");
 		return false;
 	}
@@ -95,6 +92,20 @@ function getURL(route, paramArray){
 	console.log("=> getURL route: " + route);
 	page(path);
 }
+
+// Takes a Base64 string and removes the URL unsafe characters
+var URLSafeBase64 = {
+  encode: function(string) {
+    // Replace '/' with '_' and remove ending '='
+    return string.replace(/\//g, '_').replace(/=+$/, '');
+  },
+  decode: function(base64) {
+    // Append ending '='
+    base64 += new Array(5 - base64.length % 4).join('=');
+    // Replace '_' with '/'
+    return base64.replace(/\_/g, '/');
+  }
+};
 
 // generate unique id for postcard
 function generateUUID() {
@@ -120,6 +131,38 @@ function addressBookId(deviceIdentity) {
 }
 
 function isFunction(functionToCheck) {
-	var getType = {};
-	return functionToCheck && getType.toString.call(functionToCheck) === '[object Function]';
+	return functionToCheck &&
+    Object.prototype.toString.call(functionToCheck) === '[object Function]';
+}
+
+// -----------------------------------------------------------------------------
+// Handle Cordova webview events
+// -----------------------------------------------------------------------------
+
+// Listen for messages to iframe
+window.addEventListener('message', receiveMessage, false);
+
+// Handle cross origin message
+function receiveMessage(event) {
+  console.log(event);
+	console.log('iframe:');// + event.data + ' from ' + event.origin + ' source:' + event.source);
+
+  if (event.origin !== "file://") {
+    alert("Access denied :[");
+    //return;
+  }
+
+	if (event.data.error) {
+		console.log("Cordova image data error: " + event.data.error);
+		var event = new CustomEvent('camera-error', { 'detail': event.data.error });
+		document.querySelector('page-editor').dispatchEvent(event);
+		return;
+	}
+
+	if (event.data.image) {
+		console.log("Cordova image data received!");
+		var event = new CustomEvent('camera-success', { 'detail': event.data.image });
+		document.querySelector('page-editor').dispatchEvent(event);
+		return;
+	}
 }

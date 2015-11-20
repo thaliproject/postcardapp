@@ -314,7 +314,7 @@ Polymer({
   _stopThaliReplicationManager : function() {
 		console.log("Stopping ThaliReplicationManager");
 		$.ajax({
-			url: myApp.host + 'manager/stop',
+			url: myApp.manager + 'stop',
 			type: 'GET'
 		}).fail( function() {
 			log("Error stopping ThaliReplicationManager, or maybe already stopped.");
@@ -327,7 +327,7 @@ Polymer({
   _startThaliReplicationManager : function() {
 		console.log("Starting ThaliReplicationManager");
 		$.ajax({
-			url: myApp.host + 'manager/start',
+			url: myApp.manager + 'start',
 			type: 'GET'
 		}).fail( function() {
 			log("Error starting ThaliReplicationManager, or maybe already started.");

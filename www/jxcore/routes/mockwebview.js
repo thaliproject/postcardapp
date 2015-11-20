@@ -1,3 +1,4 @@
+'use strict';
 var express = require('express');
 var faker = require('faker');
 
@@ -22,7 +23,8 @@ function mockWebviewRoutes () {
           if (x>0) {
             console.log("lost "+x+" peers");
             while (x--) {
-              pollingData.peers.splice( Math.floor(Math.random()*pollingData.peers.length), 1 );//pollingData.peers.pop();
+              pollingData.peers.splice( Math.floor( 
+                Math.random()*pollingData.peers.length), 1);
             }
           }
         }

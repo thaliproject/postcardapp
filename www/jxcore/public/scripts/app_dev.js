@@ -1,4 +1,17 @@
-// developer functions
+'use strict';
+/*global alert, IS_DEBUG, IS_MOCKMOBILE, myApp, URLSafeBase64, $:false */
+/*exported appDev */
+
+// -----------------------------------------------------------------------------
+// Developer functions
+// -----------------------------------------------------------------------------
+
+// default logging function to call
+var log = function(message) {
+	console.log(message);
+};
+
+// main
 function appDev() {
   if (IS_DEBUG) {
 		myApp.debugButton = document.querySelector("#debugButton");
@@ -15,11 +28,15 @@ function appDev() {
 			log("Welcome to Postcard");
 		}
 	}
+  if (IS_MOCKMOBILE) {
+    mockCamera();
+  }
 }
 
 // drop-in logging function for debug mode
 function logText(message) {
-	myApp.debugConsole.value = myApp.debugLineNo +': '+ message +"\n"+ myApp.debugConsole.value;
+	myApp.debugConsole.value = myApp.debugLineNo +': '+ message +
+                              "\n"+ myApp.debugConsole.value;
 	myApp.debugLineNo++;
   // TODO: limit lines (or buffer size)
 }
@@ -60,9 +77,13 @@ function setupDebugButtons() {
 	}
 }
 
+// -----------------------------------------------------------------------------
+// Dveloper button functions
+// -----------------------------------------------------------------------------
+
 function stopButtonClicked() {
 	$.ajax({
-		url: myApp.host + 'manager/stop',
+		url: myApp.manager + 'stop',
 		type: 'GET'
 	}).fail( function() {
 		alert("Error stopping TRM");
@@ -74,7 +95,7 @@ function stopButtonClicked() {
 
 function startButtonClicked() {
 	$.ajax({
-		url: myApp.host + 'manager/start',
+		url: myApp.manager + 'start',
 		type: 'GET'
 	}).fail( function() {
 		alert("Error starting TRM");
@@ -86,7 +107,7 @@ function startButtonClicked() {
 
 function deviceInfoButtonClicked() {
 	$.ajax({
-		url: myApp.host + 'webview/DeviceIdentity',
+		url: myApp.webview + 'DeviceIdentity',
 		type: 'GET'
 	}).fail( function() {
 		alert("Error getting DeviceIdentity");
@@ -94,7 +115,7 @@ function deviceInfoButtonClicked() {
 		console.log(data);
 		if (data.deviceIdentity) {
 			log("DeviceIdentity: " + data.deviceIdentity);
-      log("DeviceIdentity urlsafe: " + URLSafeBase64.encode(data.deviceIdentity));
+      log("=> urlsafe: " + URLSafeBase64.encode(data.deviceIdentity));
 		}
 		if (data.publicKeyHash) {
 			log("PublicKeyHash: " + data.publicKeyHash); // old API
@@ -137,4 +158,41 @@ function destroyAddresses() {
 			alert("Restart app");
 		}
 	});
+}
+
+// -----------------------------------------------------------------------------
+// Cordova localhost mock functions
+// -----------------------------------------------------------------------------
+
+// Cordova Camera mock for desktop
+function mockCamera() {
+	console.log("*** Mock Cordova Camera ***");
+  navigator.camera = {
+    getPicture : function(onSuccess, onFail, options) {
+      //onFail("Camera not implemented on desktop.");
+      fakeInput(onSuccess, onFail, options);
+    }
+  };
+
+  function fakeInput(onSuccess, onFail, options) {
+    // create file input without appending to DOM
+    var fileInput = document.createElement('input');
+    fileInput.setAttribute('type', 'file');
+    fileInput.setAttribute('accept', 'image/jpeg'); // 'image/*'
+
+    fileInput.onchange = function() {
+      var file = fileInput.files[0];
+      var reader = new FileReader();
+      reader.readAsDataURL(file);
+      reader.onloadend = function () {
+        // strip beginning from string
+        var encodedData = reader.result.replace(/data:image\/jpeg;base64,/, '');
+        return onSuccess(encodedData);
+      };
+      reader.onerror = function() {
+        return onFail("Error reading image.");
+      };
+    };
+    fileInput.click();
+  }
 }
