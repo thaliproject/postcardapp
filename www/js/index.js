@@ -40,31 +40,28 @@ function log(x) {
   console.log(x);
 }
 
+// -----------------------------------------------------------------------------
+// Handle Cordova iframe events
+// -----------------------------------------------------------------------------
+
 // Cordova ready
 var isCordovaReady = false;
 document.addEventListener("deviceready", onDeviceReady, false);
 function onDeviceReady() {
   isCordovaReady = true;
-	console.log("~~~ Cordova deviceready ~~~");
+	console.log("Cordova deviceready");
 }
 
-// window.onload = function() {
-//   iframe = document.getElementById('appFrame').contentWindow;
-//   console.log("~~~ iframe ready ~~~");
-//   console.log(iframe);
-// }
-
-// Listen for messages from iframe
+// Listen for messages posted from iframe
 window.addEventListener('message', receiveMessage, false);
 
 // Handle cross orgin message
 var contentWindow;
 function receiveMessage(event) {
-  console.log(event);
-  console.log('webview: ' + event.data + ' from ' + event.origin + ' source:' + event.source);
+  console.log('webview received message');
 
   if (event.origin !== HOST) {
-    alert("Access denied :(");
+    console.log("Access denied :(");
     return;
   }
 
@@ -72,7 +69,7 @@ function receiveMessage(event) {
   contentWindow = event.source;
 
   if (!isCordovaReady) {
-    console.log("Error, cordova not ready");
+    console.log("Error, Cordova not ready!");
     return;
   }
 
@@ -83,14 +80,15 @@ function receiveMessage(event) {
 
 function getPicture() {
   console.log("getPicture");
+  // returns image as base64 encoded string
   navigator.camera.getPicture( cameraSuccess, cameraFail, {
     quality: 80,
-    targetWidth: 320,
-    targetHeight: 320,
+    targetWidth: 1080,
+    targetHeight: 720,
     correctOrientation: true,
     saveToPhotoAlbum: false,
     allowEdit: false,
-    destinationType: Camera.DestinationType.DATA_URL // returns image as base64 encoded string
+    destinationType: Camera.DestinationType.DATA_URL
   });
 }
 

@@ -58,6 +58,7 @@ Polymer({
       type: String,
       computed: 'getImageSource(cameraImageData)'
     },
+    pixelData: "R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7",
     textBox: Object,
     editDoc: Object,
     listData: {
@@ -139,13 +140,6 @@ Polymer({
     getURL("home");
   },
   _saveButtonHandler: function(e) {
-    // var select = this.querySelector("select");
-    // if (select && select.selectedIndex < 0) {
-    //   alert("Please select a contact"); // notify user
-    //   this.shouldFocus(select); // UX send focus to select
-    //   return;
-    // }
-
     if(this.editText.length == 0) {
       console.log("Please enter a message");
       alert("Please enter a message"); // notify user
@@ -163,10 +157,11 @@ Polymer({
     }
   },
 
-  // Note: Cordova functions cannot be called directly inside an iframe.
-  // On mobile mobile webview origin is file://
-  // but the origin of iframe is http://localhost
-  // Therefore using Cross Origin Messaging to trigger Cordova functions
+  // Note:
+  // Cordova functions cannot be called directly from inside an iframe.
+  // On mobile the Cordova webview origin is file://
+  // but the origin of iframe running JXcore Express app is http://localhost
+  // Cordova functions are therefore triggered using Cross Origin Messaging.
   _cameraButtonHandler: function(e) {
     // Desktop
     if (IS_MOCKMOBILE) {
@@ -181,7 +176,7 @@ Polymer({
     this._setCameraImageData(imageData);
   },
   _cameraError: function(message) {
-    // wrap alert() in setTimeout because of iOS image picker quirk
+    // alert() warpped in setTimeout because of iOS image picker quirk
     setTimeout(function() {
       alert('Camera error: ' + message);
     }, 0);
@@ -204,7 +199,11 @@ Polymer({
   },
 
   getImageSource: function(imageData) {
-    return "data:image/jpeg;base64," + imageData;
+    if (typeof imageData !== 'undefined') {
+      return "data:image/jpeg;base64," + imageData;
+    }
+    return "data:image/gif;base64," + 
+      "R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7";
   },
 
   _setCameraImageData: function(imageData) {
@@ -213,7 +212,7 @@ Polymer({
   },
 
   resetImageSource: function() {
-    this.cameraImageData = "R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7"; //"R0lGODlhAQABAIAAAAUEBAAAACwAAAAAAQABAAACAkQBADs=";
+    this.cameraImageData = this.pixelData; // reset to 1px spacer image
     this._updateButtonsWithPhoto(false);
   },
 
@@ -243,7 +242,6 @@ Polymer({
       if (doc._attachments && doc._attachments[filename]) {
         var imageData = doc._attachments[filename].data;
         if (typeof imageData !== 'undefined') {
-          //this.cameraImageData = imageData;
           this._setCameraImageData(imageData);
         }
       }
@@ -269,7 +267,7 @@ Polymer({
     console.log("=> Save item:" + text + " id:"+ cardId + " by:"+ author + " to:" + toArray.length);
     console.log(toArray);
     var attachments;
-    if(imageData.length>64){
+    if ( imageData && imageData.length > 64 ) {
       var filename = cardId + '.jpg'; // using postcard id as image filename
       attachments = {};
       attachments[filename] = {

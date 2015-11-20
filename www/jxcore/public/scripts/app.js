@@ -139,17 +139,16 @@ function isFunction(functionToCheck) {
 // Handle Cordova webview events
 // -----------------------------------------------------------------------------
 
-// Listen for messages to iframe
+// Listen for messages posted to iframe
 window.addEventListener('message', receiveMessage, false);
 
 // Handle cross origin message
 function receiveMessage(event) {
-  console.log(event);
-	console.log('iframe:');// + event.data + ' from ' + event.origin + ' source:' + event.source);
+	console.log('iframe received message');
 
   if (event.origin !== "file://") {
-    alert("Access denied :[");
-    //return;
+    console.log("Access denied :[");
+    return;
   }
 
 	if (event.data.error) {

@@ -169,30 +169,33 @@ function mockCamera() {
 	console.log("*** Mock Cordova Camera ***");
   navigator.camera = {
     getPicture : function(onSuccess, onFail, options) {
-      //onFail("Camera not implemented on desktop.");
-      fakeInput(onSuccess, onFail, options);
+      localFileInput(onSuccess, onFail, options);
     }
   };
+}
 
-  function fakeInput(onSuccess, onFail, options) {
-    // create file input without appending to DOM
-    var fileInput = document.createElement('input');
-    fileInput.setAttribute('type', 'file');
-    fileInput.setAttribute('accept', 'image/jpeg'); // 'image/*'
-
-    fileInput.onchange = function() {
-      var file = fileInput.files[0];
-      var reader = new FileReader();
-      reader.readAsDataURL(file);
-      reader.onloadend = function () {
-        // strip beginning from string
-        var encodedData = reader.result.replace(/data:image\/jpeg;base64,/, '');
-        return onSuccess(encodedData);
-      };
-      reader.onerror = function() {
-        return onFail("Error reading image.");
-      };
-    };
-    fileInput.click();
-  }
+var imageInput;
+function localFileInput(onSuccess, onFail, options) {
+	// create file input without appending to DOM
+	if (typeof imageInput === "undefined") {
+		console.log("Create image file input");
+		imageInput = document.createElement('input');
+		imageInput.setAttribute('type', 'file');
+		imageInput.setAttribute('accept', 'image/jpeg'); // 'image/*'
+		imageInput.onchange = function() {
+			var file = imageInput.files[0];
+			var reader = new FileReader();
+			reader.readAsDataURL(file);
+			reader.onloadend = function () {
+				var encodedData = reader.result.replace(/data:image\/jpeg;base64,/, '');
+				return onSuccess(encodedData);
+			};
+			reader.onerror = function() {
+				return onFail("Error reading image.");
+			};
+		};
+	}
+	// open file browser
+	console.log("Attach image/jpeg");
+	imageInput.click();
 }
