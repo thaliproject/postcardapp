@@ -48,6 +48,20 @@ myApp.addEventListener('dom-change', function() {
 		document.querySelector('page-home').dispatchEvent(event);
 	});
 
+	// Listen for contact saved event
+	socket.on("contactChanged", function (data) {
+		console.log("*** client received contact changes ***");
+		console.log(data);
+		var selectedPage = document.querySelector("iron-pages .iron-selected").nodeName;
+		console.log("selectedPage:" + selectedPage);
+		if(!selectedPage){
+			console.log("Error, could not get selected page");
+			return;
+		}
+		var event = new CustomEvent('contact-changed', { 'detail': data });
+		document.querySelector(selectedPage).dispatchEvent(event);
+	});
+
 	// log jxcore events
 	socket.on("peerAvailabilityChanged", function (peers) {
 		var i = peers.length;

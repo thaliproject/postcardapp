@@ -122,14 +122,24 @@ var server = app.listen(PORT, function (){
 });
 
 // Socket.io sync postcard changes
+var io = require('socket.io')(server);
 db.changes({
     since: 'now',
     live: true
 }).on('change', cardChanged);
-var io = require('socket.io')(server);
 function cardChanged(e) {
   console.log('card #' + e.id + ' changed');
   io.emit('cardChanged', e );
+}
+
+// notify when contact record is changed
+dbPrivate.changes({
+    since: 'now',
+    live: true
+}).on('change', contactChanged);
+function contactChanged(e) {
+  console.log('contact #' + e.id + ' changed');
+  io.emit('contactChanged', e );
 }
 
 // Thali logger

@@ -69,7 +69,8 @@ Polymer({
   },
   listeners: {
     'camera-success': 'onCameraSuccess',
-    'camera-error': 'onCameraError'
+    'camera-error': 'onCameraError',
+    'contact-changed': 'contactChangedHandler'
   },
   created: function() {
     console.log(this.localName + ' was created');
@@ -202,7 +203,7 @@ Polymer({
     if (typeof imageData !== 'undefined') {
       return "data:image/jpeg;base64," + imageData;
     }
-    return "data:image/gif;base64," + 
+    return "data:image/gif;base64," +
       "R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7";
   },
 
@@ -303,6 +304,12 @@ Polymer({
           }
         }
     });
+  },
+
+  // refresh if contact changed
+  contactChangedHandler: function(e) {
+    console.log("*** Refresh All ***");
+    this._reloadContacts();
   },
 
   // iron-ajax request

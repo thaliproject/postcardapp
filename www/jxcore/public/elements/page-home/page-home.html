@@ -65,7 +65,8 @@ Polymer({
     }
   },
   listeners: {
-    'card-changed': 'cardChangedHandler'
+    'card-changed': 'cardChangedHandler',
+    'contact-changed': 'contactChangedHandler'
   },
   created: function() {
     console.log(this.localName + ' was created');
@@ -255,6 +256,12 @@ Polymer({
         this.deleteButton.setAttribute("hidden", true);
       }
     }
+  },
+
+  // refresh all postcards if contact changed
+  contactChangedHandler: function(e) {
+    console.log("*** Refresh All ***");
+    this.querySelector("#contacts").generateRequest(); // iron-ajax
   },
 
   // update client with card changes event detail rather than reloading all records
