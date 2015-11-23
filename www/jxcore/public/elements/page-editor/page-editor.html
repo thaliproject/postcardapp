@@ -308,8 +308,35 @@ Polymer({
 
   // refresh if contact changed
   contactChangedHandler: function(e) {
-    console.log("*** Refresh All ***");
-    this._reloadContacts();
+    console.log("*** Contact changed ***");
+    // Note: we could just reload all contacts like `this._reloadContacts();`
+    // But if the user made a selection then the selected indexes may not match 
+    // up after reloading as we are doing a sort by username.
+    // But we can just append a new contact to bottom of select options
+    // without sorting and any user selection will remain in tact.
+    this._appendContact(e.detail.id);
+  },
+
+  // append select option when a new is contact added
+  _appendContact: function(contactId) {
+    $.ajax({
+        context: this,
+        url: myApp._api + "contacts/" + contactId,
+        type: 'GET'
+      }).fail( function() {
+        console.log("Error loading contact: " + contactId);
+      }).done( function(data) {
+        if (!data._id) {
+          console.log("Error with loaded contact data format");
+          return;
+        }
+        console.log("Loaded contact id:" + data._id + " name:" + data.username);
+        var newIdentity = {
+          id: data._id,
+          doc: data
+        }
+        this.push('listData.rows', newIdentity);
+      });
   },
 
   // iron-ajax request
@@ -333,25 +360,38 @@ Polymer({
 
       console.log("listData offset:" + this.listData.offset + " total_rows:" + this.listData.total_rows );
 
-      // splice out 'me' record (doesn't exist here yet)
-      /*
-      if(this.listData.rows.length>0) {
-        var row;
-        for(var i=0; i<this.listData.rows.length; i++) {
-          row = this.listData.rows[i];
-          if(row.id === 'me') {
-            console.log("me:" + row.doc.user);
-            this.splice('listData.rows',i,1);
-            break;
-          }
-        }
-      }
-      //*/
-
-      //sort records by username
+      // sort records by username
       this.set('listData.rows', _.sortBy(this.listData.rows, function(o){
         return o.doc.username;
       }));
+
+      // if edit card then add 'unknown' users
+      if (!this.editDoc || !this.editDoc.to || !Array.isArray(this.editDoc.to)) {
+        return;
+      }
+      // make identities array for lookup
+      var identities = [];
+      var i = this.listData.rows.length;
+      while (i--) {
+        identities.push(this.listData.rows[i].doc._id);
+      }
+      // append 'unknown' identities
+      var l = this.editDoc.to.length;
+      while (l--) {
+        var id = this.editDoc.to[l];
+        if ( identities.indexOf(id) === -1 ) {
+          var uid = id.substring(id.indexOf('-')+1); // remove addressbook label
+          console.log("+ unknown contact id:" + uid);
+          var missingIdentity = {
+            id: id,
+            doc: {
+              _id : id,
+              username : uid
+            }
+          }
+          this.push('listData.rows', missingIdentity);
+        }
+      }
 
       // note: _updateSelection will be called when option elements are bound
   },
@@ -369,29 +409,6 @@ Polymer({
     return toArray;
   },
 
-/*
-  _selectAll : function() {
-    this.querySelector('option[value="all"]').setAttribute('selected', true);
-    this._changed('all');
-  },
-  _onChanged : function(e) {
-    var value = e.target.value;
-    console.log("user selected option value:" + value );
-    this._changed(value);
-  },
-  _changed : function(value) {
-    var options = this.querySelectorAll("option"), i = options.length;
-    var optionAll = options[0];
-    if (value === 'all') {
-      console.log("Select all");
-      while (i--) {
-        var option = options[i];
-        option.selected = true;
-      }
-    }
-  },
-//*/
-
   // if editing we need to match postcard's 'to' list of pks against private address book pks
   _updateSelection : function() {
     var i = this.listData.rows.length; // total number of saved contacts
@@ -400,11 +417,11 @@ Polymer({
     if(i>0) {
       this.showSelector("#selectTo");
     }
+    if (!this.editDoc || !this.editDoc.to || !Array.isArray(this.editDoc.to)) {
+      return;
+    }
     while (i--) {
       var item = this.listData.rows[i];
-      if (!this.editDoc || !this.editDoc.to || !Array.isArray(this.editDoc.to)) {
-        break;
-      }
       if ( this.editDoc.to.indexOf(item.doc._id) > -1 ) {
         console.log("select option: " + item.doc.username + " id:" + item.doc._id);
         var option = this.querySelector('option[value="'+item.doc._id+'"]');
