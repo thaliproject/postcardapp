@@ -116,7 +116,7 @@ jx npm run localhost
 # Fun issues you are probably going to run into
 
 ## Getting Discovery Working
-First and foremost, service discovery over Wi-Fi Direct is not terribly reliable. It can take anywhere from seconds to minutes to discover another device. Yes, we are working on this (including looking at moving completely over to BLE). In the meantime something you can do to improve things is reboot your devices. But otherwise the way to know if discovery actually occured is by looking at your logcat output. See below for instructions on using logcat. In the log you are looking for something like:
+First and foremost, service discovery over Wi-Fi Direct is not terribly reliable. It can take anywhere from seconds to minutes to discover another device. Yes, we are working on this (including looking at moving completely over to BLE). In the meantime something you can do to improve things is reboot your devices. But otherwise the way to know if discovery actually occurred is by looking at your logcat output. See below for instructions on using logcat. In the log you are looking for something like:
 
 ```
 08-07 11:18:47.444    6037-6037/org.thaliproject.postcardapp I/Service searcher﹕ Added service request
@@ -138,30 +138,3 @@ And yes, we are going to make this easier. See [here](https://github.com/thalipr
 ### Using logcat
 
 The easiest way in my opinion to use logcat, especially given that there are two devices involved, is to use Android Studio and its logcat viewer. But for masochists out there you can also use logcat via adb. But you have to specify which device you want to get your logcat output from. So first run `adb devices` to get a list of your attached devices. Then issue `adb -s [id] logcat` where [id] is the device ID you got from `adb devices`.
-
-## Support for iOS 9
-
-iOS 8 is the current supported platform. But the plan is to move forward to iOS 9 once we have tested everything.
-In the meantime, if you have updated to iOS 9 you will need to add an App Transport entry to your `Info.plist` until we put a fix in.
-
-```xml
-<key>NSAppTransportSecurity</key>
-<dict>
-	<key>NSExceptionDomains</key>
-    <dict>
-        <key>localhost</key>
-        <dict>
-            <key>NSTemporaryExceptionAllowsInsecureHTTPLoads</key>
-            <true/>
-            <key>NSTemporaryExceptionAllowsInsecureHTTPSLoads</key>
-            <false/>
-            <key>NSIncludesSubdomains</key>
-            <true/>
-            <key>NSTemporaryExceptionMinimumTLSVersion</key>
-            <string>1.0</string>
-            <key>NSTemporaryExceptionRequiresForwardSecrecy</key>
-            <false/>
-        </dict>
-    </dict>
-</dict>
-```
