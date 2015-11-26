@@ -277,7 +277,7 @@ Polymer({
       };
       console.log(attachments);
     }
-    $.ajax({
+    return $.ajax({
         url: myApp.api + "cards/" + cardId,
         type: 'PUT',
         contentType: 'application/json',
@@ -310,7 +310,7 @@ Polymer({
   contactChangedHandler: function(e) {
     console.log("*** Contact changed ***");
     // Note: we could just reload all contacts like `this._reloadContacts();`
-    // But if the user made a selection then the selected indexes may not match 
+    // But if the user made a selection then the selected indexes may not match
     // up after reloading as we are doing a sort by username.
     // But we can just append a new contact to bottom of select options
     // without sorting and any user selection will remain in tact.

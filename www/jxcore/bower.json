@@ -22,9 +22,11 @@
   },
   "resolutions": {
     "font-roboto": "1.0.0"
+  },
+  "devDependencies": {
+    "bower": "*",
+    "install": "~1.0.4",
+    "web-component-tester": "Polymer/web-component-tester#~3.4.0",
+    "PubSubJS": "pubsub-js#~1.5.3"
   }
 }
-
-        
-        
-        

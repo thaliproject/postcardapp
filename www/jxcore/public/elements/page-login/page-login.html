@@ -12,7 +12,7 @@
     </div>
   </form>
   <aside id="placeholder" class="fit layout vertical center-center">
-    <h1>loading&hellip;</h1>
+    <h1>Loading</h1>
   </aside>
 </template>
 
@@ -66,7 +66,7 @@ Polymer({
   },
   _getDeviceIdentity: function() {
     console.log("getting device identity");
-    $.ajax({
+    return $.ajax({
       timeout: 1000,
       context: this,
       url: myApp.webview + 'DeviceIdentity',
@@ -76,7 +76,6 @@ Polymer({
         alert("Error. Couldn't get device identity!" + errorThrown);
       },
       success: function(data) {
-        console.log("data");
         if(data && data.deviceIdentity) {
           // retain device identity as urlsafe value
           myApp.deviceIdentity = URLSafeBase64.encode(data.deviceIdentity);
@@ -91,7 +90,7 @@ Polymer({
   },
   _findme: function(deviceIdentity) {
     var contactId = addressBookId(deviceIdentity);
-    $.ajax({
+    return $.ajax({
       timeout: 1000,
       context: this,
       url: myApp._api + 'me/' + contactId,

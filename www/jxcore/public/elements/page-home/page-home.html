@@ -192,9 +192,6 @@ Polymer({
 
   // iron-ajax response
   _onCardsReceived: function () {
-      console.log("_onResponseReceived");
-      console.log(this.listData);
-
       if( !this.listData || !this.listData.rows ) {
         alert("Error. Failed to get any data."); // Reset app
         return;

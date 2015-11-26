@@ -27,7 +27,7 @@ myApp.deviceIdentity = "";
 // Setup debug mode once Polymer template is bound
 myApp.addEventListener('dom-change', function() {
 	// developer mode
-	if ( isFunction(appDev()) ) {
+	if ( typeof appDev !== 'undefined' && isFunction(appDev()) ) {
 		console.log("Config debug: " + IS_DEBUG + " MockMobile: " + IS_MOCKMOBILE);
 		appDev(); // defined in 'app_dev.js'
 	}
@@ -45,7 +45,10 @@ myApp.addEventListener('dom-change', function() {
 		console.log("*** client received card changes ***");
 		console.log(data);
 		var event = new CustomEvent('card-changed', { 'detail': data });
-		document.querySelector('page-home').dispatchEvent(event);
+		var target = document.querySelector('page-home');
+		if (target) {
+			target.dispatchEvent(event);
+		}
 	});
 
 	// Listen for contact saved event
@@ -59,7 +62,10 @@ myApp.addEventListener('dom-change', function() {
 			return;
 		}
 		var event = new CustomEvent('contact-changed', { 'detail': data });
-		document.querySelector(selectedPage).dispatchEvent(event);
+		var target = document.querySelector(selectedPage);
+		if (target) {
+			target.dispatchEvent(event);
+		}
 	});
 
 	// log jxcore events
