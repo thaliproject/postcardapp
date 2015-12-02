@@ -1,0 +1,44 @@
+<link rel="import" href="/bower_components/polymer/polymer.html">
+<link rel="import" href="/bower_components/neon-animation/neon-animatable-behavior.html">
+<link rel="import" href="/elements/behaviors/modal-pages.html">
+
+<dom-module id="page-start">
+
+<template>
+	<main class="fit layout vertical center-center">
+		<h1>Ready?</h1>
+    <p>Ask other party to start scanning now.</p>
+    <paper-button raised class="accent" on-click="modalNext">Start Scanning</paper-button>
+    <div class="gutter"></div>
+    <p class="diminished">Your username is &ldquo;<span>[[username]]</span>&rdquo;</p>
+	</main>
+</template>
+
+<script>
+'use strict';
+Polymer({
+  is: "page-start",
+  behaviors: [
+      Polymer.NeonAnimatableBehavior,
+      PageBehaviors.ModalPages,
+    ],
+  properties: {
+  	username: {
+      type: String,
+      value: ""
+    }
+  },
+  setup : function() {
+  	console.log(this.localName + ' setup');
+  	this.username = myApp.username;
+  },
+  start : function() {
+  	console.log(this.localName + ' start');
+  },
+  stop : function() {
+  	console.log(this.localName + ' stop');
+  }
+
+});
+</script>
+</dom-module>

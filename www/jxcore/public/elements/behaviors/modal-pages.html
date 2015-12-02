@@ -1,0 +1,34 @@
+<script>
+'use strict';
+var PageBehaviors = PageBehaviors || {}; // namespace
+
+/*
+ * Common methods for modal pages
+ */
+
+PageBehaviors.ModalPages = {
+
+	/* fires event to `neon-animated-pages` container's listeners */
+
+	modalNextFire: function(object) {
+  	this.fire('next', object);
+  },
+
+	modalNext: function() {
+  	this.fire('next');
+  },
+
+  modalPrev: function() {
+  	this.fire('prev');
+  },
+
+  modalClose: function() {
+  	this.fire('close');
+  },
+
+  isSelected: function() {
+    return this.classList.contains("iron-selected");
+  }
+
+};
+</script>

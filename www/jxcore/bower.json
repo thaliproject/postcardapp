@@ -1,0 +1,32 @@
+{
+  "name": "PostCardApp",
+  "version": "1.0.0",
+  "license": "MIT",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "iron-elements": "PolymerElements/iron-elements#1.0.4",
+    "paper-elements": "PolymerElements/paper-elements#1.0.5",
+    "neon-animation": "PolymerElements/neon-animation#1.0.7",
+    "font-roboto": "PolymerElements/font-roboto-local#1.0.0",
+    "page.js": "1.6.3",
+    "jquery": "2.1.4",
+    "moment": "2.10.6",
+    "node-uuid": "1.4.3",
+    "underscore": "1.8.3"
+  },
+  "resolutions": {
+    "font-roboto": "1.0.0"
+  },
+  "devDependencies": {
+    "bower": "*",
+    "install": "~1.0.4",
+    "web-component-tester": "Polymer/web-component-tester#~3.4.0",
+    "PubSubJS": "pubsub-js#~1.5.3"
+  }
+}

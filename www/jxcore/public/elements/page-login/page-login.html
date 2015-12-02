@@ -1,0 +1,154 @@
+<link rel="import" href="/bower_components/polymer/polymer.html">
+<link rel="import" href="/elements/behaviors/multi-platform.html">
+
+<dom-module id="page-login">
+
+<template>
+  <form is="iron-form" id="form-login" method="POST" action="/_api/login" class="inset" hidden>
+    <paper-input name="username" label="Username" bind-value="{{username::input}}" error-message="{{error_username}}" prevent-invalid-input allowed-pattern="[A-Za-z0-9_\.]" required></paper-input>
+    <input is="iron-input" name="deviceIdentity" bind-value="{{deviceIdentity::input}}" type="hidden" />
+    <div class="alignCenter">
+      <paper-button class="accent" raised on-click="submitForm">Save</paper-button>
+    </div>
+  </form>
+  <aside id="placeholder" class="fit layout vertical center-center">
+    <h1>Loading</h1>
+  </aside>
+</template>
+
+<script>
+'use strict';
+Polymer({
+  is: "page-login",
+  behaviors: [
+      PageBehaviors.MultiPlatform
+    ],
+  properties: {
+    username: {
+      type: String,
+      value: ""
+    },
+    error_username: {
+      type: String,
+      value: "Please enter a username."
+    },
+    deviceIdentity: {
+      type: String,
+      value: ""
+    }
+  },
+  listeners: {
+    'iron-form-invalid': '_formInvalid',
+    'iron-form-submit': '_formSubmit',
+    'iron-form-response': '_formResponse',
+    'iron-form-error': '_formError'
+  },
+  created: function() {
+    console.log(this.localName + ' was created');
+  },
+  ready: function() {
+    console.log(this.localName + ' ready');
+    this._getDeviceIdentity();
+  },
+  attached: function() {
+    console.log(this.localName + ' was attached');
+  },
+  detached: function() {
+    console.log(this.localName + ' was detached');
+  },
+  viewWillAppear: function() {
+    console.log(this.localName + " viewWillAppear");
+  },
+  viewWillDisappear: function() {
+    console.log(this.localName + " viewWillDisappear");
+    this.querySelector("aside").removeAttribute("hidden");
+    this.querySelector("form").setAttribute("hidden", true);
+  },
+  _getDeviceIdentity: function() {
+    console.log("getting device identity");
+    return $.ajax({
+      timeout: 1000,
+      context: this,
+      url: myApp.webview + 'DeviceIdentity',
+      type: 'GET',
+      dataType: 'json',
+      error: function(jqXHR, textStatus, errorThrown) {
+        alert("Error. Couldn't get device identity!" + errorThrown);
+      },
+      success: function(data) {
+        if(data && data.deviceIdentity) {
+          // retain device identity as urlsafe value
+          myApp.deviceIdentity = URLSafeBase64.encode(data.deviceIdentity);
+          this.set("deviceIdentity", myApp.deviceIdentity); // update user form input with urlsafe value
+      		console.log("Found Device Identity: " + data.deviceIdentity + " urlsafe:" + this.deviceIdentity);
+          this._findme( this.deviceIdentity );
+        } else {
+          alert("Error. Device identity was not the expected data format.");
+        }
+      }
+    });
+  },
+  _findme: function(deviceIdentity) {
+    var contactId = addressBookId(deviceIdentity);
+    return $.ajax({
+      timeout: 1000,
+      context: this,
+      url: myApp._api + 'me/' + contactId,
+      type: 'GET',
+      dataType: 'json',
+      error: function(jqXHR, textStatus, errorThrown) {
+        console.log("Login unable to find me: " + contactId);
+        this._login();
+      },
+      success: function(data, textStatus, jqXHR) {
+        if(data.username && data.username.length>0) {
+          // found 'me' and user record
+          console.log("Hello, " + data.username);
+          // retain app user session data
+          myApp.username = data.username;
+          getURL("home"); // found 'me' record - no need to login
+        } else {
+          console.log("No user record found - login");
+          this._login();
+        }
+      }
+    });
+  },
+  _login: function() {
+    console.log("show login form");
+    this.querySelector("aside").setAttribute("hidden", true);
+    this.querySelector("form").removeAttribute("hidden");
+    this.shouldFocus( this.querySelector("input") );
+  },
+  submitForm: function(event) {
+    console.log('submit form');
+    document.getElementById('form-login').submit();
+  },
+  _formInvalid: function(e) {
+    // notify user what went wrong on client
+    console.log('Form invalid');
+  },
+  _formSubmit: function(e) {
+    console.log("Form was submitted");
+  },
+  _formResponse: function(e) {
+    console.log("Server Response");
+    // check server response
+    if(e.detail && e.detail.user) {
+      console.log("save username: " + e.detail.user + " _id:" + e.detail._id);
+      myApp.username = e.detail.user;
+      getURL("home");
+    } else {
+      var user = this.username.trim();
+      console.log("Warning - unable to verify response data. Using user name: " + user);
+      myApp.username = user;
+      getURL("home");
+    }
+  },
+  _formError: function(e) {
+    // handle what went wrong on server
+    console.log("Form Error:", e.detail);
+  }
+});
+</script>
+</dom-module>

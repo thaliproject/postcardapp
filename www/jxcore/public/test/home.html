@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width">
+  <title>Elements Test Runner</title>
+  <script src="/bower_components/webcomponentsjs/webcomponents.min.js"></script>
+  <link  href="/bower_components/polymer/polymer.html" rel="import">
+  <script src="/bower_components/web-component-tester/browser.js"></script>
+  <script src="/bower_components/test-fixture/test-fixture-mocha.js"></script>
+  <link  href="/bower_components/test-fixture/test-fixture.html" rel="import">
+  <script src="/bower_components/PubSubJS/src/pubsub.js"></script>
+  <link  href="/elements/elements.html" rel="import">
+
+  <!-- Required head scripts -->
+  <script src="/bower_components/jquery/dist/jquery.js"></script>
+  <script src="/bower_components/underscore/underscore.js"></script>
+  <script src="/bower_components/moment/moment.js"></script>
+
+  <!-- Import the element to test -->
+  <link  href="/elements/page-home/page-home.html" rel="import">
+</head>
+<body id="my-app">
+
+<test-fixture id="page">
+  <template>
+    <page-home></page-home>
+  </template>
+</test-fixture>
+
+<script>
+// Tests for postcards
+suite('Postcards', function() {
+  var page;
+
+  setup(function(){
+    page = fixture('page');
+  });
+
+  teardown(function(done) {
+    flush(done);
+  });
+
+  test('Address book data', function(done) {
+    // get address book data
+    page.contactChangedHandler();
+    // spy on iron-ajax received event
+    var spy = sinon.spy(page._onContactsReceived);
+    var mySubscriber = function(msg, result) {
+      console.log("Callback", msg);
+      // Wait for data bindings to stamp out new DOM asynchronously
+      flush(function() {
+        var isSuccess = false;
+        var data = page.get('addressBook');
+        console.log("Data", data);
+        if (data && data.total_rows >= 0) {
+          console.log("Contacts data ok");
+          isSuccess = true;
+        }
+        assert.isTrue(isSuccess);
+        done();
+      });
+    }
+    var msg = 'onContactsReceived';
+    PubSub.subscribe(msg, mySubscriber);
+    PubSub.publish(msg, spy);
+  });
+
+  test('Postcards data', function(done) {
+    // get postcard data
+    page._reloadData();
+    // spy on iron-ajax received event
+    var spy = sinon.spy(page._onCardsReceived);
+    var mySubscriber = function(msg, result) {
+      console.log("Callback", msg);
+      // Wait for data bindings to stamp out new DOM asynchronously
+      flush(function() {
+        var isSuccess = false;
+        var data = page.get('listData');
+        console.log("Data", data);
+        if (data && data.total_rows >= 0) {
+          console.log("Cards data ok");
+          isSuccess = true;
+        }
+        assert.isTrue(isSuccess);
+        done();
+      });
+    }
+    var msg = 'onCardsReceived';
+    PubSub.subscribe(msg, mySubscriber);
+    PubSub.publish(msg, spy);
+  });
+
+});
+</script>
+
+<!-- Required body scripts -->
+<script src="/socket.io/socket.io.js"></script>
+<script>
+var socket = io.connect("http://localhost:5000");
+</script>
+<script src="/scripts/app.js"></script>
+</body>
+</html>
