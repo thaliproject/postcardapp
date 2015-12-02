@@ -6,9 +6,7 @@ module.exports = function(context) {
       gulpfile = path.join(__dirname, 'gulpfile');
   require(gulpfile);
 
-  if (gulp.tasks.default) {
-    gulp.start('cordova:build').once('task_stop', function(){
-      console.log(process.cwd(), 'gulp task done');
-    });
-  }
+  gulp.start('cordova:build').once('task_stop', function(){
+    console.log(process.cwd(), 'gulp task done');
+  });
 }
