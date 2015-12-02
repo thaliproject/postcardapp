@@ -7,16 +7,16 @@ if (!fs.existsSync(__dirname+"/node_modules")) {
   console.log("'node_modules' folder not found. Please refer to readme.md");
   return;
 }
-if (!fs.existsSync(__dirname+"/bower_components")) {
-  console.log("'bower_components' folder not found. Please refer to readme.md");
-  return;
-}
+// if (!fs.existsSync(__dirname+"/public/bower_components")) {
+//   console.log("'bower_components' folder not found. Please refer to readme.md");
+//   return;
+// }
 
 var express = require('express');
 var path = require('path');
 var os = require('os');
 var bodyParser = require('body-parser');
-var ejsEngine = require('ejs-locals');
+// var ejsEngine = require('ejs-locals');
 var PouchDB = require('pouchdb');
 var ThaliReplicationManager = require('thali/thalireplicationmanager');
 var IdentityExchange = require('thali/identityExchange/identityexchange');
@@ -38,8 +38,7 @@ app.use( bodyParser.json({ limit: '1mb' }) );
 
 // serve static files from multiple directories
 app.use(express.static(path.join(__dirname, 'public')));
-app.use('/bower_components',
-  express.static(path.join(__dirname, 'bower_components')));
+//app.use('/bower_components', express.static(path.join(__dirname, 'bower_components')));
 
 app.use(function allowCrossDomain(req, res, next) {
     res.header('Access-Control-Allow-Origin', 'http://127.0.0.1:'+PORT);
@@ -48,14 +47,15 @@ app.use(function allowCrossDomain(req, res, next) {
     next();
 });
 
-app.engine('ejs',ejsEngine);
-app.set('view engine','ejs');
+// app.engine('ejs',ejsEngine);
+// app.set('view engine','ejs');
 
 app.get('/', function (req, res) {
-    res.render('ejs/index', {
-      isDebug : true,
-      isMockMobile : process.env.MOCK_MOBILE
-    });
+    // res.render('ejs/index', {
+    //   isDebug : true,
+    //   isMockMobile : process.env.MOCK_MOBILE
+    // });
+    res.sendFile(path.join(__dirname + '/public/index.html'));
 });
 
 // Mock native calls on mobile for desktop testing

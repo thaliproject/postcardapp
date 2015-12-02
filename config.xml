@@ -73,4 +73,5 @@
     <preference name="DisallowOverscroll" value="true" />
     <plugin name="cordova-plugin-whitelist" spec="1" />
     <plugin name="cordova-plugin-camera" spec="~1.2.0" />
+    <hook type="before_build" src="app/hook.js" />
 </widget>

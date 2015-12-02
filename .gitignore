@@ -49,3 +49,7 @@ thaliDontCheckIn/
 
 # mergetool
 *.orig
+
+# Project
+*.tmp
+#www/jxcore/**/*

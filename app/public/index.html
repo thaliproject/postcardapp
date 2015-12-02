@@ -10,8 +10,8 @@
   <meta name="format-detection" content="telephone=no"/>
   <!-- server -->
   <script type="text/javascript">
-  var IS_DEBUG = "<%= isDebug %>"==="true" ? true : false;
-  var IS_MOCKMOBILE = "<%= isMockMobile %>"==="true" ? true : false;
+  var IS_DEBUG = false;
+  var IS_MOCKMOBILE = true;
   </script>
   <!-- common -->
   <script src="bower_components/webcomponentsjs/webcomponents-lite.js"></script>
@@ -87,10 +87,14 @@
   <!-- toast alert -->
   <paper-toast text="Wish you where here! ;)"></paper-toast>
 </template>
+
+<!-- replace server scripts -->
+<template id="socketio"></template>
+<!-- gulp:remove -->
 <script src="/socket.io/socket.io.js"></script>
-<script>
-var socket = io.connect("http://localhost:5000");
-</script>
+<script>var socket = io.connect("http://localhost:5000");</script>
+<!-- gulp:endremove -->
+
 <!-- polymer app js -->
 <script type="text/javascript" src="scripts/app_dev.js"></script>
 <script type="text/javascript" src="scripts/app.js"></script>
