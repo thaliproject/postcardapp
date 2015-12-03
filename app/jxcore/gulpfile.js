@@ -1,6 +1,7 @@
 'use strict';
 
 var path = require('path'),
+    fs = require('fs'),
     gulp = require ('gulp'),
     dest = require('gulp-dest'),
     rename = require("gulp-rename"),
@@ -12,11 +13,11 @@ var path = require('path'),
     tap = require('gulp-tap'),
     del = require('del');
 
-// default paths (from script dir) for `gulp build`
+// default paths (from gulpfile.js dir) for `gulp build`
 var paths = {
   base: '.',
   src: '',
-  build: '../www/jxcore/',
+  build: '../../www/jxcore/',
 };
 
 // The default task (called when you run `gulp`)
@@ -27,22 +28,51 @@ gulp.task('cordova:build', ['cordova:config','build'])
 // Configure working paths (from root project dir) for `cordova build`
 gulp.task('cordova:config', function(){
   paths = {
-    base: 'app/',
-    src: 'app/',
+    base: 'app/jxcore/',
+    src: 'app/jxcore/',
     build: 'www/jxcore/',
   };
   console.log("cwd:", process.cwd());
 });
 
+// One-off tasks (unless dist build dir is cleaned)
+gulp.task('copy:node_modules', function(){
+  // check if node_modules exists
+  if ( fs.existsSync(paths.build+'node_modules') ) {
+    console.log("node_modules dir already exists, skipping copy...");
+    return;
+  }
+
+  var pkg = JSON.parse(fs.readFileSync(paths.src+'package.json'));
+  console.log("Package:", pkg.name);
+
+  function getKeys(object, prefix, suffix) {
+    var keys = [];
+    for (var key in object) {
+      if (object.hasOwnProperty(key)) {
+        keys.push(prefix+key+suffix);
+      }
+    }
+    return keys;
+  }
+
+  var node_modules = getKeys(pkg.dependencies, paths.src+'node_modules/', '/**/*');
+
+  console.log("Copy dependencies", node_modules);
+  return gulp.src(node_modules,{dot:true,base:paths.base}).pipe(gulp.dest(paths.build));
+});
+
+// Repeated tasks
 gulp.task('build', function(){
   console.log(process.cwd(), "paths src:", paths.src, "build:", paths.build);
   runSequence(
-    'copy',
+    'copy:node_modules',
+    'copy:express',
     'vulcanizer'
   );
 });
 
-gulp.task('copy', function(){
+gulp.task('copy:express', function(){
   return gulp.src([
       paths.src+'app.js',
       paths.src+'routes/*'

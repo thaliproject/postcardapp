@@ -77,6 +77,14 @@ $ jx install -g cordova
 $ npm install -g bower
 ```
 
+## Install Gulp
+
+[Gulp](http://gulpjs.com/) is used to build the Postcard app source.
+
+```
+$ npm install -g gulp
+```
+
 ## Hardware
 
 You will need two (it's a peer to peer system) Android devices running at least KitKat. And no, the emulator won't work. We depend on specific radios to work and they aren't in the emulator.
@@ -88,16 +96,18 @@ git clone https://github.com/thaliproject/postcardapp.git
 
 cd postcardapp
 
-cordova platform add ios
 cordova platform add android
+cordova platform add ios
 
-cd www/jxcore
+cd app/jxcore
 jx npm install --production --autoremove "*.gz"
 bower install
-find ./bower_components -name "*.gz" -type f -delete
+find ./public/bower_components -name "*.gz" -type f -delete
+jx npm install --autoremove "*.gz"
+find ./node_modules -name "*.gz" -type f -delete
 
-cordova build ios
 cordova build android
+cordova build ios
 ```
 
 On Windows one needs to use [Git Bash](https://git-scm.com/download/win) or equivalent to run the above commands.
@@ -105,10 +115,10 @@ On Windows one needs to use [Git Bash](https://git-scm.com/download/win) or equi
 ## Running in development environment on localhost
 You will also need to copy the Thali_CordovaPlugin 'mockmobile.js' script if you want run in development mode. This allows native methods to be called on the desktop when UX testing the web app.
 ```
-cd www/jxcore
+cd app/jxcore
 jx npm install --autoremove "*.gz"
 bower install
-find ./bower_components -name "*.gz" -type f -delete
+find ./public/bower_components -name "*.gz" -type f -delete
 cp -v ../../thaliDontCheckIn/Thali_CordovaPlugin-master/test/www/jxcore/bv_tests/mockmobile.js node_modules/thali/
 jx npm run localhost
 ```
