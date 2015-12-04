@@ -39,7 +39,7 @@ gulp.task('cordova:config', function(){
 gulp.task('copy:node_modules', function(){
   // check if node_modules exists
   if ( fs.existsSync(paths.build+'node_modules') ) {
-    console.log("node_modules dir already exists, skipping copy...");
+    console.log("node_modules exists, skipping...");
     return;
   }
 
@@ -63,13 +63,17 @@ gulp.task('copy:node_modules', function(){
 });
 
 // Repeated tasks
-gulp.task('build', function(){
+gulp.task('build', function(cb){
   console.log(process.cwd(), "paths src:", paths.src, "build:", paths.build);
   runSequence(
     'copy:node_modules',
     'copy:express',
-    'vulcanizer'
-  );
+    'index:removeServerScripts',
+    'index:mobile',
+    'index:debug',
+    'index:vulcanize',
+    //'cleanWorkingFiles',
+    cb);
 });
 
 gulp.task('copy:express', function(){
@@ -81,16 +85,6 @@ gulp.task('copy:express', function(){
       base: paths.base
     })
     .pipe(gulp.dest(paths.build));
-});
-
-gulp.task('vulcanizer', function(){
-  runSequence(
-    'index:removeServerScripts',
-    'index:mobile',
-    'index:debug',
-    'index:vulcanize'
-    //'cleanWorkingFiles'
-  );
 });
 
 // workaround for vulcanize server script error finding socket.io/socket.io.js
@@ -149,4 +143,8 @@ gulp.task('cleanWorkingFiles', function(){
   ]);
 });
 
-gulp.task('clean', del.bind(null, ['.tmp', paths.build]));
+gulp.task('clean:jxcore', function(cb){
+  return del([
+    paths.build
+  ], {force: true}, cb);
+});
