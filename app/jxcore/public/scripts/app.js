@@ -24,6 +24,9 @@ myApp.manager = myApp.host + "/manager/";
 myApp.username = "";
 myApp.deviceIdentity = "";
 
+// UI defaults
+myApp.editIcon = "create";
+
 // Setup debug mode once Polymer template is bound
 myApp.addEventListener('dom-change', function() {
 	// developer mode
