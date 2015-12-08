@@ -117,16 +117,17 @@ function getURL(route, paramArray){
 }
 
 // Takes a Base64 string and removes the URL unsafe characters
+// NB: Don't replace with '-' character as it is being used as a guid delimiter.
 var URLSafeBase64 = {
   encode: function(string) {
-    // Replace '/' with '_' and remove ending '='
-    return string.replace(/\//g, '_').replace(/=+$/, '');
+    // Replace '/' with '_' , '+' with '.' and remove ending '='
+    return string.replace(/\//g, '_').replace(/\+/g, '.').replace(/=+$/, '');
   },
   decode: function(base64) {
     // Append ending '='
     base64 += new Array(5 - base64.length % 4).join('=');
-    // Replace '_' with '/'
-    return base64.replace(/\_/g, '/');
+    // Replace '_' with '/' and '.' with '+'
+    return base64.replace(/\_/g, '/').replace(/\./g, '+');
   }
 };
 
