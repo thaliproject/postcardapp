@@ -19,7 +19,7 @@
     <neon-animatable>
         <iron-list id="allPostcards" items="[[listData.rows]]" as="item" class="fit">
           <template>
-            <paper-card id="[[index]]" class="row">
+            <paper-card id="[[item.doc._id]]" class="row">
               <div class$="[[_classNames(item.doc.to,item.doc._id)]]">
                 <span class="date">[[_humanizeDate(item.doc.dateCreated)]]</span>
                 <pre>[[item.doc.text]]</pre>
@@ -36,13 +36,13 @@
       <iron-selector attr-for-selected="index" on-click="_itemSelected">
         <iron-list id="myPostcards" items="{{myCards}}" as="item" class="fit">
           <template>
-            <paper-card id="[[index]]" class="row">
+            <paper-card id="[[item.doc._id]]" class="row">
               <div class$="[[_classNames(item.doc.to,item.doc._id)]]">
                 <span class="date">[[_humanizeDate(item.doc.dateCreated)]]</span>
                 <pre>[[item.doc.text]]</pre>
                 <iron-image src="[[_getImage(item.doc)]]" sizing="cover" class$="[[_imageClass(item.doc,index)]]"></iron-image>
                 <span>[[item.doc._from]]</span>
-                <paper-fab id="[[item.doc._id]]" icon="delete" class="FAB"></paper-fab>
+                <paper-fab icon="delete" class="FAB"></paper-fab>
               </div>
             </paper-card>
           </template>
@@ -199,22 +199,19 @@ Polymer({
     if (!this._isEditMode) {
       return;
     }
-    var selectedIndex = this.getParentAttribute(e.target, 'paper-card', 'id');
+    var cardId = this.getParentAttribute(e.target, 'paper-card', 'id');
     var isDeleteClicked = this.getParentElement(e.target, "paper-fab");
     if ( isDeleteClicked ) {
-      var cardId = this.getParentAttribute(e.target, 'paper-fab', 'id');
       document.activeElement.blur(); // should dismiss iOS keyboard
-      this._deleteCard(selectedIndex, cardId); // delete selected card
-    } else {
-      if(selectedIndex!==false && selectedIndex>=0) {
-        getURL("editor/"+selectedIndex);
-      }
+      this._deleteCard(cardId); // delete selected card
+    } else if ( cardId && cardId.length >= 0 ) {
+      getURL("editor/"+cardId); // edit selected card
     }
   },
 
   // delete card
-  _deleteCard: function(index, cardId) {
-    console.log("delete index:", index, "cardId:", cardId);
+  _deleteCard: function(cardId) {
+    console.log("delete cardId:", cardId);
     $.ajax({
       url: myApp.api + "cards/" + cardId,
       type: 'DELETE'
@@ -222,7 +219,7 @@ Polymer({
       alert("Error deleting card");
     }).done( function(data) {
       if(data.ok && data.ok===true) {
-        console.log("Card deleted");
+        console.log("Card deleted:", cardId);
       } else {
         alert("Delete card data error");
       }

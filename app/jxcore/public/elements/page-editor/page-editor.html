@@ -234,21 +234,33 @@ Polymer({
     }
   },
 
-  _getCard: function(index) {
-    var doc = document.querySelector("page-home").get('listData.rows.'+index+'.doc');
-    if(doc && doc._id && doc.text) {
-      this.editText = doc.text;
-      this.editDoc = doc;
-      var filename = doc._id + '.jpg';
-      if (doc._attachments && doc._attachments[filename]) {
-        var imageData = doc._attachments[filename].data;
-        if (typeof imageData !== 'undefined') {
-          this._setCameraImageData(imageData);
+  _getCard: function(cardId) {
+    return $.ajax({
+      timeout: 1000,
+      context: this,
+      url: myApp.api + "cards/" + cardId,
+      type: 'GET',
+      dataType: 'json',
+      error: function(jqXHR, textStatus, errorThrown) {
+        alert("Error getting postcard:", errorThrown);
+      },
+      success: function(data, textStatus, jqXHR) {
+        if (data && data._id) {
+          this.editText = data.text;
+          this.editDoc = data;
+          var filename = data._id + '.jpg';
+          if (data._attachments && data._attachments[filename]) {
+            var imageData = data._attachments[filename].data;
+            if (typeof imageData !== 'undefined') {
+              this._setCameraImageData(imageData);
+            }
+          }
+        } else {
+          console.log("Error card data:", data);
+          alert("Error, unexpected card data format");
         }
       }
-    } else {
-      console.log("Error looking up doc object at index:",index);
-    }
+    });
   },
 
   // create item
