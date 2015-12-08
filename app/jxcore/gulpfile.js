@@ -11,7 +11,11 @@ var path = require('path'),
     crisper = require('gulp-crisper'),
     injectString = require('gulp-inject-string'),
     tap = require('gulp-tap'),
-    del = require('del');
+    del = require('del'),
+    uglify = require('gulp-uglify'),
+    minifyHTML = require('gulp-minify-html'),
+    minifyInline = require('gulp-minify-inline'),
+    cheerio = require('gulp-cheerio');
 
 // default paths (from gulpfile.js dir) for `gulp build`
 var paths = {
@@ -72,6 +76,8 @@ gulp.task('build', function(cb){
     'index:mobile',
     'index:debug',
     'index:vulcanize',
+    'minify:js',
+    'minify:html',
     //'cleanWorkingFiles',
     cb);
 });
@@ -93,7 +99,7 @@ gulp.task('index:removeServerScripts', function(){
       end_comment = "gulp:endremove",
       pattern = new RegExp("(\\<!--\\s" + start_comment + "\\s--\\>)(.*\\n)*(\\<!--\\s" + end_comment + "\\s--\\>)", "g");
   return gulp.src(paths.src+'public/index.html')
-    .pipe(require('gulp-tap')(function(file) {
+    .pipe(tap(function(file) {
       file.contents = new Buffer(String(file.contents).replace(pattern, ""));
     }))
     .pipe(rename({extname:'.html.tmp'}))
@@ -134,6 +140,48 @@ gulp.task('index:vulcanize', function(){
       '<script src="/socket.io/socket.io.js"></script>' +
       '<script>var socket = io.connect("http://localhost:5000");</script>'))
     //.pipe(rename({extname:'.html'}))
+    .pipe(gulp.dest(paths.build+'public'));
+});
+
+gulp.task('minify:js', function(){
+  return gulp.src(paths.build+'public/*.js')
+    .pipe(uglify({
+      mangle: true,
+    }))
+    .pipe(gulp.dest(paths.build+'public'));
+});
+
+gulp.task('minify:html', function(){
+  return gulp.src(paths.build+'public/*.html')
+    .pipe(minifyHTML({
+      empty: true,
+      cdata: true,
+      comments: false,
+      ssi: true,
+      conditionals: true,
+      spare: true,
+      quotes: true,
+      loose: false
+    }))
+    // .pipe(minifyInline({
+    //   css: {
+    //     advanced: false,
+    //     aggressiveMerging: false,
+    //     keepSpecialComments: 0,
+    //     debug: false,
+    //     mediaMerging: false,
+    //     roundingPrecision: -1,
+    //     processImport: false
+    //   }
+    // }))
+    .pipe(cheerio(function ($, file) {
+      $('style').each(function(){
+        $(this).text( $(this).text()
+          .replace(/[\t\n\r]+/g, '') // remove extra whitespace
+          .replace(/[\s]+/g, ' ') // reduce to single space
+        );
+      });
+    }))
     .pipe(gulp.dest(paths.build+'public'));
 });
 
