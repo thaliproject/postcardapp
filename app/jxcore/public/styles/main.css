@@ -253,16 +253,18 @@ textarea.postcard {
 	border-radius: 0; /* remove rounded corners on iOS */
 }
 
-paper-fab.FAB {
+paper-fab#debugButton {
 	display: block;
 	position: fixed; /* Beware: use only in non-scrolling views as fixed position doesn't play well within a iOS scroll view */
 	bottom: 40px;
 	right: 20px;
-	z-index: 1;
+	z-index: 15; /* 15 above panel */
 }
 
-paper-fab#debugButton {
-	z-index: 15; /* 15 above panel */
+paper-fab.action {
+	position: absolute;
+	right: 10px;
+	top: calc(50% - 28px);
 }
 
 .gutter {
