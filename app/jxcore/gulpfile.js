@@ -15,7 +15,8 @@ var path = require('path'),
     uglify = require('gulp-uglify'),
     minifyHTML = require('gulp-minify-html'),
     minifyInline = require('gulp-minify-inline'),
-    cheerio = require('gulp-cheerio');
+    cheerio = require('gulp-cheerio'),
+    exec = require('child_process').exec;
 
 // default paths (from gulpfile.js dir) for `gulp build`
 var paths = {
@@ -27,7 +28,7 @@ var paths = {
 // The default task (called when you run `gulp`)
 gulp.task('default', ['build']);
 
-gulp.task('cordova:build', ['cordova:config','build'])
+gulp.task('cordova:build', ['cordova:config','build']);
 
 // Configure working paths (from root project dir) for `cordova build`
 gulp.task('cordova:config', function(){
@@ -37,6 +38,7 @@ gulp.task('cordova:config', function(){
     build: 'www/jxcore/',
   };
   console.log("cwd:", process.cwd());
+  return;
 });
 
 // One-off tasks (unless dist build dir is cleaned)
@@ -68,6 +70,12 @@ gulp.task('copy:node_modules', function(){
 
 // Repeated tasks
 gulp.task('build', function(cb){
+  // check if 'thali.jx' exists
+  if ( fs.existsSync(paths.build+'thali.jx') ) {
+    console.log("Building with 'thali.jx' archive found in jxcore build dir.");
+    console.log("Note: Use 'gulp clean' and 'gulp build' to update.");
+    return;
+  }
   console.log(process.cwd(), "paths src:", paths.src, "build:", paths.build);
   runSequence(
     'copy:node_modules',
@@ -191,8 +199,64 @@ gulp.task('cleanWorkingFiles', function(){
   ]);
 });
 
-gulp.task('clean:jxcore', function(cb){
+gulp.task('clean', function(cb){
+  if ( !fs.existsSync(paths.build) ) {
+    console.log("Error: jxcore build dir not found:", paths.build);
+    return;
+  }
   return del([
     paths.build
   ], {force: true}, cb);
+});
+
+// archive jxcore build dir for distribution
+gulp.task('package', function(cb){
+  runSequence(
+    'jx:package',
+    'jx:clean',
+    cb);
+});
+
+// run jx package
+gulp.task('jx:package', function(cb){
+  // check if 'node_modules' exists
+  if ( !fs.existsSync(paths.build+'node_modules') ) {
+    console.log("Error: 'node_modules' not found in build dir:", paths.build);
+    console.log("Try 'gulp clean' and 'gulp build' first.");
+    return;
+  }
+  // check if 'app.js' exists in jxcore build dir
+  var appjs = paths.build+'app.js';
+  if ( !fs.existsSync(appjs) ) {
+    console.log("Error: 'app.js' not found in jxcore build dir:", appjs);
+    return;
+  }
+  // -slim docs,examples,src,test,tests
+  return exec('cd '+paths.build+' && \
+      jx package app.js "thali" && \
+      echo "var thali = require(\'./thali.jx\');" > app.js',
+    {maxBuffer: 1024 * 5000},
+    function (err, stdout, stderr) {
+      //console.log(stdout);
+      console.log(stderr);
+      cb(err);
+    });
+});
+
+// clean up after jx package
+gulp.task('jx:clean', function(cb){
+  var removables = [
+    paths.build+'node_modules',
+    paths.build+'public',
+    paths.build+'routes',
+    paths.build+'thali.jxp'
+  ];
+  var i = removables.length;
+  while (i--) {
+    if ( !fs.existsSync(removables[i]) ) {
+      console.log("Error: removable dir not found:", removables[i]);
+      return;
+    }
+  }
+  return del(removables, {force: true}, cb);
 });

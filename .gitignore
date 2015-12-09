@@ -53,3 +53,7 @@ thaliDontCheckIn/
 # Project
 *.tmp
 www/jxcore/**/*
+
+# JXcore
+*.jx
+*.jxp
