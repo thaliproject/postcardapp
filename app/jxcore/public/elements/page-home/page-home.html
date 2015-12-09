@@ -80,6 +80,7 @@ Polymer({
       computed: 'filterMyCards(listData.*)',
       notify: true
     },
+    _rows: [],
     addButton: Object,
     editButton: Object,
     _isEditMode: false,
@@ -134,7 +135,6 @@ Polymer({
   },
   activate: function() {
     console.log(this.localName + " activate... active status:" + this._isActivated);
-
     this.addButton = document.querySelector("#addButton");
     this.editButton = document.querySelector("#editButton");
 
@@ -147,6 +147,7 @@ Polymer({
     this.deactivateButtons([this.addButton, this.editButton]);
   },
 
+  // changed tab view
   _tabChanged: function(e) {
     if (this.selected === 1) {
       myApp.editIcon = "visibility"; // read only view icon
@@ -244,18 +245,34 @@ Polymer({
       // append _sender propery with verified contacts
       this._appendDisplayProperties();
 
-      // sort records by date created
-      this.set('listData.rows', _.sortBy(this.listData.rows, function(o){
-        return -o.doc.dateCreated;
-      }));
+      this._sortMyCards();
 
       this._isLoaded = true;
       this._updateUserView();
   },
 
+  // sort records by date created
+  _sortMyCards: function() {
+    console.log("Sorting cards by date created");
+    this.set('listData.rows', _.sortBy(this.listData.rows, function(o){
+      return -o.doc.dateCreated;
+    }));
+  },
+
   // list only my cards (using cloned rows)
-  filterMyCards: function(listData) {
-    var rows = [];
+  // NB: this gets fired for every change on listData but we don't need to update for every changeRecord.
+  // changeRecord cases: added +, deleted -, updated ^
+  // + => rows.splices, rows.length, rows
+  // - => rows.splices, rows.length
+  // ^ => rows.#i.doc
+  filterMyCards: function(changeRecord) {
+    var pathRows = 'listData.rows';
+    var pathArray = changeRecord.path.split('.');
+    if ( changeRecord.path.substring(0,pathRows.length) !== pathRows || pathArray.indexOf('length') !== -1 ) {
+      //console.log("skip:", changeRecord.path, changeRecord.path !== 'listData.rows', pathArray.indexOf('length'), pathArray.indexOf('doc') );
+      return this._rows;
+    }
+    this._rows = []; //var rows = [];
     // Clone object to remove data bindings on the rows array
     var clonedRows = JSON.parse(JSON.stringify( this.get('listData.rows') ));
     var i = clonedRows.length; // listData.rows.length;
@@ -264,11 +281,11 @@ Polymer({
       var cardId = card.doc._id;
       var authorId = cardId.substring(cardId.lastIndexOf('-')+1);
       if (myApp.deviceIdentity === authorId) {
-        rows.unshift(card);
+        this._rows.unshift(card); //rows.unshift(card);
       }
     }
-    console.log("Filter my cards:", rows.length);
-    return rows;
+    console.log("Filter my cards:", this._rows.length, changeRecord);
+    return this._rows; //rows;
   },
 
   // toogle edit mode
@@ -429,6 +446,7 @@ Polymer({
       this._updateUserView();
     }
     if (result>0) {
+      this._sortMyCards(); // all added cards should be organised by date added
       return true;
     }
     return false;
