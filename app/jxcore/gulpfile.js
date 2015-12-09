@@ -72,14 +72,15 @@ gulp.task('copy:node_modules', function(){
 gulp.task('build', function(cb){
   // check if 'thali.jx' exists
   if ( fs.existsSync(paths.build+'thali.jx') ) {
-    console.log("Building with 'thali.jx' archive found in jxcore build dir.");
-    console.log("Note: Use 'gulp clean' and 'gulp build' to update.");
+    console.log("Building with 'thali.jx' archive found in jxcore dir.");
+    console.log("Note: Use 'gulp clean' and 'gulp build' to rebuild.");
     return;
   }
   console.log(process.cwd(), "paths src:", paths.src, "build:", paths.build);
   runSequence(
     'copy:node_modules',
     'copy:express',
+    'copy:assets',
     'index:removeServerScripts',
     'index:mobile',
     'index:debug',
@@ -94,6 +95,17 @@ gulp.task('copy:express', function(){
   return gulp.src([
       paths.src+'app.js',
       paths.src+'routes/*'
+    ],{
+      dot: true,
+      base: paths.base
+    })
+    .pipe(gulp.dest(paths.build));
+});
+
+gulp.task('copy:assets', function(){
+  return gulp.src([
+      paths.src+'public/favicon.ico',
+      paths.src+'public/bower_components/font-roboto/RobotoTTF/*'
     ],{
       dot: true,
       base: paths.base
