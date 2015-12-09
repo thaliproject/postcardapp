@@ -9,7 +9,7 @@
 <template>
   <iron-ajax url="/_api/contacts" last-response="{{addressBook}}" on-response="_onContactsReceived" id="contacts"></iron-ajax>
   <iron-ajax url="/api/cards" last-response="{{listData}}" on-response="_onCardsReceived" id="postcards"></iron-ajax>
-  <paper-tabs selected="{{selected}}" hidden>
+  <paper-tabs selected="{{selected}}" noink no-slide hidden>
     <paper-tab>All Postcards</paper-tab>
     <paper-tab>My Postcards</paper-tab>
   </paper-tabs>
