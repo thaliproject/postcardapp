@@ -25,7 +25,7 @@ myApp.username = "";
 myApp.deviceIdentity = "";
 
 // UI defaults
-myApp.editIcon = "create";
+myApp.editButtonText = "Edit";
 
 // Setup debug mode once Polymer template is bound
 myApp.addEventListener('dom-change', function() {

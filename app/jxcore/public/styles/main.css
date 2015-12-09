@@ -489,3 +489,14 @@ paper-badge.icon {
 paper-card.paper-card-0[elevation="1"] {
 	box-shadow: none;
 }
+
+/* button */
+button {
+	cursor: pointer;
+	background: none;
+	border: none;
+	outline: none;
+	font-size: 16px;
+	color: white;
+	padding: 10px;
+}

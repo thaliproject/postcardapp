@@ -59,15 +59,15 @@
     <paper-toolbar id="mainToolbar">
       <div id="leftToolbarButtons">
           <paper-icon-button id="backButton" icon="arrow-back" hidden></paper-icon-button>
+          <paper-icon-button id="addButton" icon="add-circle" hidden></paper-icon-button>
           <paper-icon-button id="discoverButton" icon="social:group-add" hidden></paper-icon-button>
         </div>
       <!-- Application name -->
       <div id="appName">{{title}}</div>
       <!-- Toolbar icons -->
       <div id="rightToolbarButtons">
-        <paper-icon-button id="editButton" icon="[[editIcon]]" hidden></paper-icon-button>
-        <paper-icon-button id="addButton" icon="add-circle" hidden></paper-icon-button>
-        <paper-icon-button id="saveButton" icon="done" hidden></paper-icon-button>
+        <button id="editButton" hidden>[[editButtonText]]</button>
+        <button id="saveButton" hidden>Save</button>
       </div>
     </paper-toolbar>
     <!-- end top bar -->
