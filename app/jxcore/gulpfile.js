@@ -79,6 +79,7 @@ gulp.task('build', function(cb){
   console.log(process.cwd(), "paths src:", paths.src, "build:", paths.build);
   runSequence(
     'copy:node_modules',
+    // 'trim:node_modules',
     'copy:express',
     'copy:assets',
     'index:removeServerScripts',
@@ -87,7 +88,7 @@ gulp.task('build', function(cb){
     'index:vulcanize',
     'minify:js',
     'minify:html',
-    //'cleanWorkingFiles',
+    // 'clean:tmp',
     cb);
 });
 
@@ -205,7 +206,8 @@ gulp.task('minify:html', function(){
     .pipe(gulp.dest(paths.build+'public'));
 });
 
-gulp.task('cleanWorkingFiles', function(){
+// clean tmp working files
+gulp.task('clean:tmp', function(){
   return del([
     paths.src+'public/**/*.tmp'
   ]);
@@ -219,6 +221,36 @@ gulp.task('clean', function(cb){
   return del([
     paths.build
   ], {force: true}, cb);
+});
+
+// trim node_modules folder of unnecessary files
+gulp.task('trim:node_modules', function () {
+  var node_modules = paths.build+'node_modules/';
+  if ( !fs.existsSync(node_modules) ) {
+    console.log("Error: node_modules dir not found:", node_modules);
+    return;
+  }
+  var removables = [
+    node_modules+'**/component.json',
+    node_modules+'**/bower.json',
+    node_modules+'**/pouchdb/docs/**/*',
+    node_modules+'**/test/*',
+    node_modules+'**/tests/*',
+    node_modules+'**/examples/*',
+    node_modules+'**/*.gif',
+    node_modules+'**/*.jpg',
+    node_modules+'**/*.png',
+    node_modules+'**/*.md',
+    node_modules+'**/*.css',
+    node_modules+'**/*.html'
+  ];
+  return del(removables, {
+    force: true,
+    // dryRun: true
+  })
+  .then( function(paths) {
+    console.log('Files and folders that would be deleted:\n', paths.join('\n'));
+  });
 });
 
 // archive jxcore build dir for distribution
