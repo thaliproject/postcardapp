@@ -10,12 +10,12 @@
     <content src="index.html" />
     <access origin="*" />
     <allow-intent href="http://*/*" />
-    <allow-navigation href="http://localhost:5000/*" />
     <allow-intent href="https://*/*" />
     <allow-intent href="tel:*" />
     <allow-intent href="sms:*" />
     <allow-intent href="mailto:*" />
     <allow-intent href="geo:*" />
+    <allow-navigation href="http://localhost:5000/*" />
     <platform name="android">
         <allow-intent href="market:*" />
         <icon density="ldpi" src="assets/android/res/drawable-ldpi/icon.png" />
@@ -38,12 +38,15 @@
         <preference name="EnableViewportScale" value="false" />
         <preference name="KeyboardDisplayRequiresUserAction" value="false" />
         <preference name="SuppressesIncrementalRendering" value="true" />
+        <feature name="CDVWKWebViewEngine">
+            <param name="ios-package" value="CDVWKWebViewEngine" />
+        </feature>
+        <preference name="CordovaWebViewEngine" value="CDVWKWebViewEngine" />
         <feature name="StatusBar">
             <param name="ios-package" onload="true" value="CDVStatusBar" />
         </feature>
         <preference name="StatusBarOverlaysWebview" value="true" />
         <preference name="StatusBarStyle" value="lightcontent" />
-        <preference name="StatusBarBackgroundColor" value="#000000" />
         <icon height="180" src="assets/ios/Resources/icons/icon-60@3x.png" width="180" />
         <icon height="60" src="assets/ios/Resources/icons/icon-60.png" width="60" />
         <icon height="120" src="assets/ios/Resources/icons/icon-60@2x.png" width="120" />
@@ -71,7 +74,9 @@
         <splash height="1242" src="assets/ios/Resources/splash/Default-Landscape-736h.png" width="2208" />
     </platform>
     <preference name="DisallowOverscroll" value="true" />
-    <plugin name="cordova-plugin-whitelist" spec="1" />
+    <hook src="app/jxcore/hook.js" type="before_build" />
+    <plugin name="cordova-plugin-whitelist" spec="~1.2.0" />
+    <plugin name="cordova-plugin-wkwebview-engine" spec="~1.0.0" />
+    <plugin name="cordova-plugin-statusbar" spec="~2.0.0" />
     <plugin name="cordova-plugin-camera" spec="~1.2.0" />
-    <hook type="before_build" src="app/jxcore/hook.js" />
 </widget>
