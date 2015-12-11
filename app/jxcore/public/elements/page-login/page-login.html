@@ -35,7 +35,9 @@ Polymer({
     deviceIdentity: {
       type: String,
       value: ""
-    }
+    },
+    _isStarted: false,
+    _hasLoggedIn: false,
   },
   listeners: {
     'iron-form-invalid': '_formInvalid',
@@ -48,7 +50,7 @@ Polymer({
   },
   ready: function() {
     console.log(this.localName + ' ready');
-    this._getDeviceIdentity();
+    this.start();
   },
   attached: function() {
     console.log(this.localName + ' was attached');
@@ -58,11 +60,20 @@ Polymer({
   },
   viewWillAppear: function() {
     console.log(this.localName + " viewWillAppear");
+    this.start();
   },
   viewWillDisappear: function() {
     console.log(this.localName + " viewWillDisappear");
-    this.querySelector("aside").removeAttribute("hidden");
-    this.querySelector("form").setAttribute("hidden", true);
+    //this.querySelector("aside").removeAttribute("hidden");
+    //this.querySelector("form").setAttribute("hidden", true);
+    this._isStarted = false;
+  },
+  start: function() {
+    if (!this._isStarted) {
+      console.log("Start login");
+      this._isStarted = true;
+      this._getDeviceIdentity();
+    }
   },
   _getDeviceIdentity: function() {
     console.log("getting device identity");
@@ -101,12 +112,18 @@ Polymer({
         this._login();
       },
       success: function(data, textStatus, jqXHR) {
-        if(data.username && data.username.length>0) {
+        if ( !this._hasLoggedIn ) {
           // found 'me' and user record
           console.log("Hello, " + data.username);
           // retain app user session data
           myApp.username = data.username;
+          this._hasLoggedIn = true;
           getURL("home"); // found 'me' record - no need to login
+        } else if (data.username && data.username.length>0) {
+          // edit username
+          console.log("Edit username:", data.username);
+          this.querySelector('paper-input[name="username"]').set('value', data.username);
+          this._login();
         } else {
           console.log("No user record found - login");
           this._login();

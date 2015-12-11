@@ -11,6 +11,7 @@
     <paper-button raised class="accent" on-click="modalNext">Start Scanning</paper-button>
     <div class="gutter"></div>
     <p class="diminished">Your username is &ldquo;<span>[[username]]</span>&rdquo;</p>
+		<button on-click="onChangeUsername">Change username</button>
 	</main>
 </template>
 
@@ -25,19 +26,28 @@ Polymer({
   properties: {
   	username: {
       type: String,
-      value: ""
+			value: ""
     }
   },
   setup : function() {
   	console.log(this.localName + ' setup');
-  	this.username = myApp.username;
   },
+	refresh : function() {
+		console.log('Refresh binding values');
+		this.set('username', myApp.username);
+	},
   start : function() {
   	console.log(this.localName + ' start');
   },
   stop : function() {
   	console.log(this.localName + ' stop');
-  }
+  },
+
+	onChangeUsername : function() {
+		console.log("change username");
+		this.modalClose(); // dismiss modal when done
+		getURL("login");
+	}
 
 });
 </script>

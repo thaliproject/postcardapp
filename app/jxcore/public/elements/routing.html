@@ -1,7 +1,7 @@
 <script src="/bower_components/page.js/page.js"></script>
 
 <script>
-// When polymer-ready configure client-side routing using page.js 
+// When polymer-ready configure client-side routing using page.js
 window.addEventListener('WebComponentsReady', function(e) {
 	console.log("polymer-ready #!");
 	// polymer pages
@@ -13,7 +13,7 @@ window.addEventListener('WebComponentsReady', function(e) {
 
 	function hasSession() {
 		console.log("session username:" + myApp.username);
-		if (myApp.username != "" && myApp.username.length > 0) {
+		if (myApp.username && myApp.username.length > 0) {
 			return true;
 		} else {
 			return false;
@@ -71,7 +71,7 @@ window.addEventListener('WebComponentsReady', function(e) {
 			login(); // redirect to login
 		}
 	}
-	
+
 	var editor = function(ctx) {
 		if (hasSession()) {
 			var id = "new";
@@ -84,7 +84,7 @@ window.addEventListener('WebComponentsReady', function(e) {
 				console.log("--editor-new--");
 			}
 			notifyLastPage(pageEditor);
-			
+
 			// trigger Polymer event (handles case when a page is visited directly)
 			if (pageEditor && isFunction(pageEditor.viewWillAppear)) {
 				console.log("--fire viewWillAppear: " + id);
@@ -99,14 +99,14 @@ window.addEventListener('WebComponentsReady', function(e) {
 			login(); // redirect to login
 		}
 	}
-	
-	// Define page.js routes 
+
+	// Define page.js routes
 	page('/', home);
 	page('/home', home);
 	page('/login', login);
 	page('/editor', editor);
 	page('/editor/:id', editor);
-	
+
 	// Configure to use hashbang #!/ URLs (instead of history API)
 	page({ hashbang: true });
 

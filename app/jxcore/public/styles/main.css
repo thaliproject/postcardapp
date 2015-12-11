@@ -499,6 +499,10 @@ button {
 	border: none;
 	outline: none;
 	font-size: 16px;
-	color: white;
+	color: #3f51b5;
 	padding: 10px;
+}
+
+paper-toolbar button {
+	color: white;
 }

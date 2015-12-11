@@ -7,7 +7,7 @@
 <dom-module id="page-save">
 
 <template>
-  <form is="iron-form" class="inset" action="?" hidden>
+  <form is="iron-form" class="inset" hidden>
     <paper-input name="username" label="Username" bind-value="{{verifiedItem.petName::input}" prevent-invalid-input allowed-pattern="[A-Za-z0-9_\.]" always-float-label error-message="{{errorUsername}}" required></paper-input>
     <!-- hidden fields -->
     <input is="iron-input" name="_peerPublicKeyHash" bind-value="{{verifiedItem.publicKeyHash::input}}" type="hidden" />
@@ -62,7 +62,7 @@ Polymer({
   },
   start : function() {
   	console.log(this.localName + ' start');
-    this._checkUsernameAvailable();
+    this._checkUsernameAvailable(this.verifiedItem.petName);
   },
   stop : function() {
     console.log(this.localName + ' stop');
@@ -76,21 +76,35 @@ Polymer({
   /* form */
 
   _onSubmitForm: function() {
-    var isSuccess = true;
-    this.querySelector('form').submit();
+    //this.querySelector('form').submit();
+    var formData = {
+      detail : {
+        username : this._getPetNameInput(),
+        _peerPublicKeyHash : this.verifiedItem.publicKeyHash,
+        _peerDeviceId : this.verifiedItem.peerDeviceId,
+        _peerFriendlyName : this.verifiedItem.peerFriendlyName,
+      }
+    };
+    console.log("submit:", formData);
+    this._formSubmit( formData );
   },
 
-  _checkUsernameAvailable: function() {
-    // TODO check if username is unique...
-    var suggestedPetName = this.verifiedItem.petName;
+  _getPetNameInput: function() {
+    return this.querySelector('input[name="username"]').value;
+  },
+  _setPetNameInput: function(value) {
+    this.querySelector('input[name="username"]').value = value;
+  },
 
-    var input = this.querySelector('input[name="username"]');
-    if(input) {
-      input.value = suggestedPetName;
-      this.autoFocus(input); // UX send focus to textarea
-    }
-
+  // TODO check if username is unique...
+  _checkUsernameAvailable: function(petName) {
+    // show form
     this.showOnlySelector('form');
+    console.log("check username is unique:", petName );
+    // Update input bindings
+    this._setPetNameInput( petName );
+    // UX send focus to input field
+    this.autoFocus( this.querySelector('input[name="username"]') );
   },
 
   _formInvalid: function(e) {
@@ -98,7 +112,7 @@ Polymer({
     console.log('Form invalid');
   },
   _formSubmit: function(e) {
-    console.log("Form was submitted");
+    console.log("Form submit");
     //console.log(e.detail);
     var urlsafePublicKeyHash = URLSafeBase64.encode(e.detail._peerPublicKeyHash);
     log("PK# " + e.detail._peerPublicKeyHash +" -> "+ urlsafePublicKeyHash);

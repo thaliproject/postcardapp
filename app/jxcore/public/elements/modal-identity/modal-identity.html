@@ -129,6 +129,7 @@ Polymer({
 
   _setState: function() {
     this._gotoPageAtIndex(0); // reset page
+    this.querySelector("#start").refresh(); // refresh view
   },
 
   _resetState: function() {
