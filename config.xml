@@ -74,7 +74,7 @@
         <splash height="1242" src="assets/ios/Resources/splash/Default-Landscape-736h.png" width="2208" />
     </platform>
     <preference name="DisallowOverscroll" value="true" />
-    <hook src="app/jxcore/hook.js" type="before_build" />
+    <hook src="app/jxcore/hook.js" type="before_prepare" />
     <plugin name="cordova-plugin-whitelist" spec="~1.2.0" />
     <plugin name="cordova-plugin-wkwebview-engine" spec="~1.0.0" />
     <plugin name="cordova-plugin-statusbar" spec="~2.0.0" />

@@ -5,6 +5,7 @@
   "main": "app.js",
   "dependencies": {
     "body-parser": "^1.13.1",
+    "compression": "^1.6.0",
     "express": "^4.13.0",
     "express-pouchdb": "^0.14.2",
     "leveldown": "1.4.1",
