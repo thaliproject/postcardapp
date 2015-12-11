@@ -58,8 +58,8 @@ myApp.addEventListener('dom-change', function() {
 	socket.on("contactChanged", function (data) {
 		console.log("*** client received contact changes ***");
 		console.log(data);
-		var selectedPage = document.querySelector("iron-pages .iron-selected").nodeName;
-		console.log("selectedPage:" + selectedPage);
+		var selectedPage = document.querySelector("#pages > .iron-selected").nodeName;
+		console.log("notify selectedPage:", selectedPage);
 		if(!selectedPage){
 			console.log("Error, could not get selected page");
 			return;

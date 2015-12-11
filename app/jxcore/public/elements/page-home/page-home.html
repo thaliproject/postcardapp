@@ -85,6 +85,7 @@ Polymer({
     editButton: Object,
     _isEditMode: false,
     _isLoaded: false,
+    _isAddressBookRequested: false,
     addressBook: {
       type: Object,
       notify: true
@@ -122,7 +123,7 @@ Polymer({
     if(myApp.discoverButton) {
       myApp.discoverButton.removeAttribute("hidden");
     }
-    this.querySelector("#contacts").generateRequest(); // iron-ajax
+    this._requestContacts();
     if (this._isLoaded) {
       this._updateUserView(); // shows edit button (if needed) when back pressed
     }
@@ -458,11 +459,19 @@ Polymer({
 
   // refresh all postcards if contact changed
   contactChangedHandler: function(e) {
-    console.log("Refresh contacts");
-    this.querySelector("#contacts").generateRequest(); // iron-ajax
+    console.log("Contact changed - request contacts");
+    this._requestContacts();
   },
 
   // contacts
+  _requestContacts : function() {
+    if ( !this._isAddressBookRequested ) {
+      this._isAddressBookRequested = true;
+      console.log("Contacts requested");
+      this.querySelector("#contacts").generateRequest(); // iron-ajax
+    }
+  },
+
   _onContactsReceived : function() {
     // save contacts to separate arrays for quicker calc with binding properties
     var i = this.get('addressBook.rows').length;
@@ -484,6 +493,7 @@ Polymer({
     } else {
       this._appendDisplayProperties(); // update existing postcard displays
     }
+    this._isAddressBookRequested = false;
   },
 
   // appends all postcard rows doc object with display properties
