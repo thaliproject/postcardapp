@@ -4,6 +4,7 @@ var path = require('path'),
     fs = require('fs'),
     gulp = require ('gulp'),
     dest = require('gulp-dest'),
+    file = require('gulp-file'),
     rename = require("gulp-rename"),
     runSequence = require('run-sequence'),
     replace = require('gulp-replace'),
@@ -39,6 +40,18 @@ gulp.task('cordova:config', function(){
   };
   console.log("cwd:", process.cwd());
   return;
+});
+
+// Create semaphore file to show gulp build tasks are completed
+gulp.task('cordova:semaphore', function(){
+  var pkg = JSON.parse(fs.readFileSync(paths.src+'package.json'));
+  var str = 'Build version: '+pkg.version;
+  console.log(str);
+  return file('version.txt',str,{src:true}).pipe(gulp.dest(paths.build));
+});
+
+gulp.task('cordova:clean', function(cb){
+  return del(paths.build+'version.txt', {force: true}, cb);
 });
 
 // One-off tasks (unless dist build dir is cleaned)
@@ -78,6 +91,7 @@ gulp.task('build', function(cb){
   }
   console.log(process.cwd(), "paths src:", paths.src, "build:", paths.build);
   runSequence(
+    'cordova:clean',
     'copy:node_modules',
     // 'trim:node_modules',
     'copy:express',
@@ -89,6 +103,7 @@ gulp.task('build', function(cb){
     'minify:js',
     'minify:html',
     // 'clean:tmp',
+    'cordova:semaphore',
     cb);
 });
 
