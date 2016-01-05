@@ -96,8 +96,8 @@ git clone https://github.com/thaliproject/postcardapp.git
 
 cd postcardapp
 
-cordova platform add android
-cordova platform add ios
+cordova platform add android@5.0.0
+cordova platform add ios@4.0.1
 
 cd app/jxcore
 jx npm install --production --autoremove "*.gz"

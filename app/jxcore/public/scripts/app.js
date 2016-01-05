@@ -168,11 +168,13 @@ window.addEventListener('message', receiveMessage, false);
 
 // Handle cross origin message
 function receiveMessage(event) {
-	console.log('iframe received message');
+	console.log('iframe received message from:', event.origin);
 
-  if (event.origin !== "file://") {
-    console.log("Access denied :[");
-    return;
+	if (event.origin === "null" && event.data) {
+		console.log("Allow WKWebView message event data");
+	} else if (event.origin !== "file://") {
+		console.log("Access denied :[");
+	  return;
   }
 
 	if (event.data.error) {

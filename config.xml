@@ -38,6 +38,7 @@
         <preference name="EnableViewportScale" value="false" />
         <preference name="KeyboardDisplayRequiresUserAction" value="false" />
         <preference name="SuppressesIncrementalRendering" value="true" />
+        <preference name="DisallowOverscroll" value="true" />
         <feature name="CDVWKWebViewEngine">
             <param name="ios-package" value="CDVWKWebViewEngine" />
         </feature>
@@ -73,10 +74,8 @@
         <splash height="2208" src="assets/ios/Resources/splash/Default-736h.png" width="1242" />
         <splash height="1242" src="assets/ios/Resources/splash/Default-Landscape-736h.png" width="2208" />
     </platform>
-    <preference name="DisallowOverscroll" value="true" />
     <hook src="app/jxcore/hook.js" type="before_build" />
-    <plugin name="cordova-plugin-whitelist" spec="~1.2.0" />
-    <plugin name="cordova-plugin-wkwebview-engine" spec="~1.0.0" />
     <plugin name="cordova-plugin-statusbar" spec="~2.0.0" />
-    <plugin name="cordova-plugin-camera" spec="~1.2.0" />
+    <plugin name="cordova-plugin-camera" spec="~2.0.0" />
+    <plugin name="cordova-plugin-wkwebview-engine" spec="~1.0.1" />
 </widget>

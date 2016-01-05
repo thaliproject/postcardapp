@@ -95,11 +95,11 @@ function getPicture() {
 function cameraSuccess(imageData) {
   console.log("cameraSuccess");
   // post message back to iframe
-  contentWindow.postMessage( {image:imageData}, HOST);
+  contentWindow.postMessage( {image:imageData}, "*"); // HOST
 }
 
 function cameraFail(message) {
   console.log("cameraFail");
   // post message back to iframe
-  contentWindow.postMessage( {error:message}, HOST);
+  contentWindow.postMessage( {error:message}, "*"); // HOST
 }

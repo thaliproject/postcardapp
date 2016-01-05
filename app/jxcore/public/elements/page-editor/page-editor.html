@@ -169,8 +169,9 @@ Polymer({
       navigator.camera.getPicture( this._cameraSuccess.bind(this), this._cameraError.bind(this) );
       return;
     }
-    // Mobile targetOrigin is 'file://'
-    parent.postMessage('navigator.camera.getPicture', 'file://');
+    console.log("Trigger camera");
+    // NB: using "*" so no origin check is made.
+    parent.postMessage('navigator.camera.getPicture', "*");
   },
   _cameraSuccess: function(imageData) {
     console.log("Camera imageData loaded");
