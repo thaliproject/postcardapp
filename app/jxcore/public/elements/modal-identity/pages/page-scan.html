@@ -8,14 +8,14 @@
 
 <template>
 	<iron-selector attr-for-selected="index" on-click="_onItemSelected" hidden>
-    <iron-list items="{{listItems}}" as="item" class="fit">
+    <iron-list items="{{listItems}}" as="item" class="fit enclosure-list">
       <template>
-        <paper-material id="{{index}}" class="row">
+        <div id="{{index}}" class="row row-fixedheight">
           <div class="fit layout horizontal center">
-            <p class="truncate flex">[[item.peerFriendlyName]]</p>
+            <p class="indent truncate flex">[[item.peerFriendlyName]]</p>
             <iron-icon icon="chevron-right"></iron-icon>
           </div>
-        </paper-material>
+        </div>
       </template>
     </iron-list>
   </iron-selector>
@@ -84,9 +84,9 @@ Polymer({
   /* scan */
 
   _onItemSelected: function(e) {
-    var selectedIndex = this.getParentAttribute(e.target, 'paper-material', 'id');
+    var selectedIndex = this.getParentAttribute(e.target, '.row', 'id');
     if (selectedIndex!==false && selectedIndex>=0) {
-      var selectedItem = this.listItems[selectedIndex]; //this.listItems.peers[selectedIndex];
+      var selectedItem = this.listItems[selectedIndex];
       // stop scanning once selected
       this._stopTask();
       // person selected to pair with

@@ -205,6 +205,10 @@ iron-image.styledImage {
 .row p {
 	font-size: 24px;
 	/* padding: 0 10px; */
+}
+
+/* edit input inline (multiline text in a single line) */ 
+.edit-inline {
 	word-wrap: break-word; /* prevent horizontal scroll here - break long single line strings */
 	white-space: pre-wrap; /* make pre text wrap */
 }
@@ -390,9 +394,17 @@ modal-identity {
 }
 
 /* row style */
-paper-material.row {
+.row-fixedheight {
 	width: 100%;
 	height: 80px;
+}
+
+.row-fixedheight > div {
+	border-bottom: 1px solid #ccc;
+}
+
+.indent {
+	margin-left: 10px;
 }
 
 /* iron-list row divider */
@@ -505,4 +517,19 @@ button {
 
 paper-toolbar button {
 	color: white;
+}
+
+/* desktop */
+.enclosure,
+.enclosure-list .row > div {
+	max-width: 800px;
+	margin: 0 auto;
+}
+
+@media (min-width: 800px) {
+	#allPostcards,
+	#myPostcards {
+		padding: 10px;
+		padding-top: 20px;
+	}
 }

@@ -17,7 +17,7 @@
   <neon-animated-pages selected="{{selected}}" class="fit" entry-animation="scale-up-animation" exit-animation="fade-out-animation" on-iron-select="_tabChanged">
     <!-- view all postcards (read only) -->
     <neon-animatable>
-        <iron-list id="allPostcards" items="[[listData.rows]]" as="item" class="fit">
+        <iron-list id="allPostcards" items="[[listData.rows]]" as="item" class="fit enclosure-list">
           <template>
             <paper-card id="[[item.doc._id]]" class="row">
               <div class$="[[_classNames(item.doc.to,item.doc._id)]]">
@@ -34,7 +34,7 @@
     <!-- edit my postcards -->
     <neon-animatable>
       <iron-selector attr-for-selected="index" on-click="_itemSelected">
-        <iron-list id="myPostcards" items="{{myCards}}" as="item" class="fit">
+        <iron-list id="myPostcards" items="{{myCards}}" as="item" class="fit enclosure">
           <template>
             <paper-card id="[[item.doc._id]]" class="row">
               <div class$="[[_classNames(item.doc.to,item.doc._id)]]">

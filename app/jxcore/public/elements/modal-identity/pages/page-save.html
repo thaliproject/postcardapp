@@ -7,7 +7,7 @@
 <dom-module id="page-save">
 
 <template>
-  <form is="iron-form" class="inset" hidden>
+  <form is="iron-form" class="inset enclosure" hidden>
     <paper-input name="username" label="Username" bind-value="{{verifiedItem.petName::input}" prevent-invalid-input allowed-pattern="[A-Za-z0-9_\.]" always-float-label error-message="{{errorUsername}}" required></paper-input>
     <!-- hidden fields -->
     <input is="iron-input" name="_peerPublicKeyHash" bind-value="{{verifiedItem.publicKeyHash::input}}" type="hidden" />
