@@ -85,6 +85,7 @@ function getPicture() {
     quality: 80,
     targetWidth: 1080,
     targetHeight: 720,
+    encodingType: 'JPEG',
     correctOrientation: true,
     saveToPhotoAlbum: false,
     allowEdit: false,

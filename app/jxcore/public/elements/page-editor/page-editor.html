@@ -164,18 +164,18 @@ Polymer({
   // but the origin of iframe running JXcore Express app is http://localhost
   // Cordova functions are therefore triggered using Cross Origin Messaging.
   _cameraButtonHandler: function(e) {
-    // Desktop
-    if (IS_MOCKMOBILE) {
-      navigator.camera.getPicture( this._cameraSuccess.bind(this), this._cameraError.bind(this) );
-      return;
-    }
-    console.log("Trigger camera");
-    // NB: using "*" so no origin check is made.
-    parent.postMessage('navigator.camera.getPicture', "*");
+    var options = {
+      quality: 80,
+      targetWidth: 1080,
+      targetHeight: 720
+    }; // 1080 720
+    navigator.camera.getPicture( this._cameraSuccess.bind(this), this._cameraError.bind(this), options );
   },
   _cameraSuccess: function(imageData) {
-    console.log("Camera imageData loaded");
-    this._setCameraImageData(imageData);
+    console.log("Camera success", imageData.length, imageData.substr(0,32)+"...");
+    // NB: Strip image tag so it can be saved as PouchDB image attachment
+    var blobData = imageData.replace(/data:image\/jpeg;base64,/, '');
+    this._setCameraImageData(blobData);
   },
   _cameraError: function(message) {
     // alert() warpped in setTimeout because of iOS image picker quirk
@@ -202,6 +202,7 @@ Polymer({
 
   getImageSource: function(imageData) {
     if (typeof imageData !== 'undefined') {
+      // NB: insert the base64 image tag for displaying PouchDB image attachments
       return "data:image/jpeg;base64," + imageData;
     }
     return "data:image/gif;base64," +

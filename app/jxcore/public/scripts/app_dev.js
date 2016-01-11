@@ -28,9 +28,6 @@ function appDev() {
 			log("Welcome to Postcard");
 		}
 	}
-  if (IS_MOCKMOBILE) {
-    mockCamera();
-  }
 }
 
 // drop-in logging function for debug mode
@@ -158,44 +155,4 @@ function destroyAddresses() {
 			alert("Restart app");
 		}
 	});
-}
-
-// -----------------------------------------------------------------------------
-// Cordova localhost mock functions
-// -----------------------------------------------------------------------------
-
-// Cordova Camera mock for desktop
-function mockCamera() {
-	console.log("*** Mock Cordova Camera ***");
-  navigator.camera = {
-    getPicture : function(onSuccess, onFail, options) {
-      localFileInput(onSuccess, onFail, options);
-    }
-  };
-}
-
-var imageInput;
-function localFileInput(onSuccess, onFail, options) {
-	// create file input without appending to DOM
-	if (typeof imageInput === "undefined") {
-		console.log("Create image file input");
-		imageInput = document.createElement('input');
-		imageInput.setAttribute('type', 'file');
-		imageInput.setAttribute('accept', 'image/jpeg'); // 'image/*'
-		imageInput.onchange = function() {
-			var file = imageInput.files[0];
-			var reader = new FileReader();
-			reader.readAsDataURL(file);
-			reader.onloadend = function () {
-				var encodedData = reader.result.replace(/data:image\/jpeg;base64,/, '');
-				return onSuccess(encodedData);
-			};
-			reader.onerror = function() {
-				return onFail("Error reading image.");
-			};
-		};
-	}
-	// open file browser
-	console.log("Attach image/jpeg");
-	imageInput.click();
 }
