@@ -9,7 +9,8 @@ function postcardRoutes (db) {
 
     db.allDocs({
       include_docs: true,
-      attachments: true
+      attachments: true,
+      binary: false
     }).then(function (docs) {
       res.status(200).json(docs);
     }).catch(function (err) {
@@ -21,7 +22,7 @@ function postcardRoutes (db) {
   router.route('/cards/:cardId')
   .get(function (req,res) {
     var id = req.params.cardId;
-    db.get(id, {attachments: true})
+    db.get(id, {attachments: true, binary: false})
     .then(function (doc) {
       res.status(200).json(doc);
     })

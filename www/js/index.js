@@ -73,24 +73,29 @@ function receiveMessage(event) {
     return;
   }
 
-  if (event.data === 'navigator.camera.getPicture') {
-    getPicture();
+  var msg = event.data;
+  if (msg.action === 'navigator.camera.getPicture') {
+    getPicture(msg.options);
   }
 }
 
-function getPicture() {
-  console.log("getPicture");
-  // returns image as base64 encoded string
-  navigator.camera.getPicture( cameraSuccess, cameraFail, {
-    quality: 80,
-    targetWidth: 1080,
-    targetHeight: 720,
-    encodingType: 'JPEG',
+function getPicture(options) {
+  var quality = (options.quality || 80),
+      targetWidth = (options.targetWidth || 1080),
+      targetHeight = (options.targetHeight || 720);
+  var cameraOptions = {
+    quality: quality,
+    targetWidth: targetWidth,
+    targetHeight: targetHeight,
+    encodingType: Camera.EncodingType.JPEG,
     correctOrientation: true,
     saveToPhotoAlbum: false,
     allowEdit: false,
     destinationType: Camera.DestinationType.DATA_URL
-  });
+  };
+  console.log("getPicture", options, cameraOptions);
+  // DATA_URL returns image as base64 encoded string
+  navigator.camera.getPicture( cameraSuccess, cameraFail, cameraOptions);
 }
 
 function cameraSuccess(imageData) {

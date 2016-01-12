@@ -2,6 +2,7 @@
 <link rel="import" href="/elements/behaviors/button-listeners.html">
 <link rel="import" href="/elements/behaviors/multi-platform.html">
 <link rel="import" href="/elements/behaviors/ui-helper.html">
+<link rel="import" href="/elements/behaviors/image-helper.html">
 
 <dom-module id="page-editor">
 
@@ -39,7 +40,8 @@ Polymer({
   behaviors: [
       PageBehaviors.ButtonListeners,
       PageBehaviors.MultiPlatform,
-      PageBehaviors.UIHelper
+      PageBehaviors.UIHelper,
+      PageBehaviors.ImageHelper
     ],
   properties: {
     editText: {
@@ -174,8 +176,8 @@ Polymer({
   _cameraSuccess: function(imageData) {
     console.log("Camera success", imageData.length, imageData.substr(0,32)+"...");
     // NB: Strip image tag so it can be saved as PouchDB image attachment
-    var blobData = imageData.replace(/data:image\/jpeg;base64,/, '');
-    this._setCameraImageData(blobData);
+    var attachmentData = imageData.replace(/data:image\/jpeg;base64,/, '');
+    this._setCameraImageData( attachmentData ); // imageData
   },
   _cameraError: function(message) {
     // alert() warpped in setTimeout because of iOS image picker quirk
@@ -204,6 +206,7 @@ Polymer({
     if (typeof imageData !== 'undefined') {
       // NB: insert the base64 image tag for displaying PouchDB image attachments
       return "data:image/jpeg;base64," + imageData;
+      //return this.imageDataToImageSource(imageData);
     }
     return "data:image/gif;base64," +
       "R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7";
@@ -216,6 +219,10 @@ Polymer({
 
   resetImageSource: function() {
     this.cameraImageData = this.pixelData; // reset to 1px spacer image
+    // remove image file input attachments (if any)
+    if (imageInput) {
+      imageInput.value = null; // reset input file
+    }
     this._updateButtonsWithPhoto(false);
   },
 

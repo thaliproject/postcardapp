@@ -199,20 +199,27 @@ function receiveMessage(event) {
 // Proxy methods for Cordova functions and HTML5 method replacement
 // -----------------------------------------------------------------------------
 
-// Where better use HTML5 capture as replacement for Cordova Camera
+// Use HTML5 capture as replacement for Cordova Camera on desktop
 function proxyCordovaCamera() {
-	// HTML5 capture method
-	console.log("*** HTML5 Camera Capture ***");
-  navigator.camera = {
-    getPicture : function(onSuccess, onFail, options) {
-      localFileInput(onSuccess, onFail, options);
-    }
-  };
-	// Cordova method
-	//console.log("*** Cordova Camera ***");
-	//parent.postMessage('navigator.camera.getPicture', "*"); // NB: using "*" so no origin check is made.
+	navigator.camera = {
+		getPicture : function(onSuccess, onFail, options) {
+			if (!IS_MOCKMOBILE) {
+				// Trigger Cordova for mobile using cross document messaging
+				// NB: using "*" so no origin check is made.
+				var msg = {
+					action: 'navigator.camera.getPicture',
+					options: options
+				}
+				parent.postMessage(msg, "*");
+			} else {
+				console.log("*** HTML5 Camera Capture ***");
+				localFileInput(onSuccess, onFail, options);
+			}
+		}
+	};
 }
 
+// HTML5 capture method
 var imageInput, imageCanvas; // hidden DOM elements
 function localFileInput(onSuccess, onFail, options) {
 	// create file input without appending to DOM
@@ -223,13 +230,14 @@ function localFileInput(onSuccess, onFail, options) {
 		imageInput.setAttribute('type', 'file');
 		imageInput.setAttribute('accept', 'image/jpeg'); // 'image/*'
 		imageInput.setAttribute('capture', 'camera'); // HTML5 capture
+		imageInput.setAttribute("id", "imageInput");
 		imageInput.onchange = function() {
 			if (!imageInput.files || !imageInput.files[0]) {
 				return;
 			}
 			var file = imageInput.files[0];
 			var reader = new FileReader();
-			reader.readAsDataURL(file);
+			reader.readAsDataURL(file); // base64 encoded string
 			reader.onloadend = function(e) {
 				console.log("reader.result:", reader.result.length, reader.result.substr(0,32)+"...", options);
 				if (options && options.targetWidth>0 && options.targetHeight>0) {
@@ -273,7 +281,7 @@ function processImageOptions(imageData, onSuccess, onFail, options) {
 			var r = imageWidth / imageHeight;
 			var width = imageWidth;
 	  	var height = imageHeight;
-			var quality = options.quality/100 || 0.7;
+			var quality = (options.quality/100 || 0.8);
 			var scale = 1;
 
 			// scale down if source is larger than target dimensions
@@ -355,22 +363,21 @@ function processImageOptions(imageData, onSuccess, onFail, options) {
 
 			// apply scale
 			if (scale < 1) {
-				console.log("Apply downscale", scale);
+				console.log("Apply scale-down", scale);
 				ctx.scale(scale, scale);
 			}
 			// finally, draw image
 			ctx.drawImage(image, 0, 0);
 
 			var processedImageData = imageCanvas.toDataURL("image/jpeg", quality);
+			console.log("Canvas data", processedImageData.length, processedImageData.substr(0,32)+"...");
 
-			// clean up
+			// clear resources
 			ctx.restore();
-			ctx.clearRect(0, 0, width, height);
+			ctx.clearRect(0, 0, w, h);
 			image = null;
 
-			//console.log("Canvas data", processedImageData.length, processedImageData.substr(0,32)+"...");
 		  return onSuccess( processedImageData );
-
     });
   };
 	image.onerror = function() {
