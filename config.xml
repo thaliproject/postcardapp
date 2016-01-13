@@ -52,8 +52,8 @@
             <param name="ios-package" onload="true" value="CDVStatusBar" />
         </feature>
         <preference name="StatusBarOverlaysWebview" value="true" />
-        <preference name="StatusBarStyle" value="lightcontent" />
-        <preference name="TopActivityIndicator" value="white" />
+        <preference name="StatusBarStyle" value="default" />
+        <preference name="TopActivityIndicator" value="gray" />
         <preference name="target-device" value="universal" />
         <icon height="180" src="assets/ios/Resources/icons/icon-60@3x.png" width="180" />
         <icon height="60" src="assets/ios/Resources/icons/icon-60.png" width="60" />
@@ -86,7 +86,6 @@
     <preference name="windows-target-version" value="10.0" />
     <hook src="app/jxcore/hook.js" type="before_build" />
     <plugin name="cordova-plugin-whitelist" spec="~1.2.0" />
-    <plugin name="cordova-plugin-statusbar" spec="~2.0.0" />
     <plugin name="cordova-plugin-camera" spec="~2.0.0" />
     <plugin name="cordova-plugin-wkwebview-engine" spec="~1.0.1" />
     <plugin name="cordova-plugin-keyboard" spec="~1.1.3" />

@@ -1,24 +1,81 @@
-<style is="custom-theme">
+<style is="custom-style">
 
-	/* these are tweaks to Polymer elements */
-	
-	iron-autogrow-textarea.tweaked {
-		border: 0; /* 1px black outline doesn't look good */
-		bottom: 9px; /* I seem to get a horrible v-scrollbar if I don't adjust this :( */
-		width: 100%; /* sometimes it won't fill to use full width? */
+/* app material styles */
+
+:root {
+	--dark-primary-color:       #616161;
+	--default-primary-color:    #9E9E9E;
+	--light-primary-color:      #F5F5F5;
+	--text-primary-color:       #212121;
+	--accent-color:             #FF4081;
+	--primary-background-color: #F5F5F5;
+	--primary-text-color:       #212121;
+	--secondary-text-color:     #727272;
+	--disabled-text-color:      #BDBDBD;
+	--divider-color:            #DDDDDD;
+
+	/* Components */
+
+	/* paper-drawer-panel */
+	--drawer-menu-color:           #ffffff;
+	--drawer-border-color:         1px solid #ccc;
+	--drawer-toolbar-border-color: 1px solid rgba(0, 0, 0, 0.22);
+
+	/* paper-menu */
+	--paper-menu-background-color: #fff;
+	--menu-link-color:             #111111;
+
+	/* paper-input */
+	--paper-input-container-invalid-color: var(--accent-color);
+	--paper-input-container-underline: {
+		background: var(--divider-color);
+	}
+	--paper-input-container-underline-focus: {
+		background: var(--divider-color);
 	}
 
-	iron-autogrow-textarea.tweaked #textarea {
-		box-sizing: border-box;
-		padding: 20px; /* if box-sizing is supported then add padding to give space 
-		around editable text */
-		padding-right: 40px; /* needs more padding on rhs */
-		word-wrap: break-word; /* break long single line strings */
+	/* toolbar */
+	--paper-toolbar-background: var(--light-primary-color);
+	--paper-toolbar-color: var(--primary-text-color); /* title text color */
+
+	/* fab */
+	--paper-fab-background: var(--accent-color);
+	--paper-fab-iron-icon: {
+		color: white;
 	}
 
-	.gridview {
-		@apply(--layout-horizontal);
-		@apply(--layout-wrap);
+	/* paper-icon */
+	--paper-icon-button: {
+		color: var(--accent-color);
 	}
-	
+
+	/* paper-button */
+	--paper-button: {
+		background-color: var(--accent-color);
+		color: white;
+	}
+
+}
+
+/* custom styles */
+paper-toolbar#mainToolbar button {
+	color: var(--accent-color); /* Button text color */
+}
+
+/* these are tweaks to Polymer elements */
+
+iron-autogrow-textarea.tweaked {
+	border: 0; /* 1px black outline doesn't look good */
+	bottom: 9px; /* I seem to get a horrible v-scrollbar if I don't adjust this */
+	width: 100%; /* sometimes it won't fill to use full width? */
+}
+
+iron-autogrow-textarea.tweaked #textarea {
+	box-sizing: border-box;
+	padding: 20px; /* if box-sizing is supported then add padding to give space
+	around editable text */
+	padding-right: 40px; /* needs more padding on rhs */
+	word-wrap: break-word; /* break long single line strings */
+}
+
 </style>

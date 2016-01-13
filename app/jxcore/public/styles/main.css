@@ -102,7 +102,7 @@ body {
 	top: 0;
 	width: 100%;
 	height: 56px; /* calc */
-	background: #F34383;
+	background: #FF4081;
 }
 
 #debugConsoleLog header h1 {
@@ -118,13 +118,17 @@ body {
 	bottom: 0;
 	width: 100%;
 	height: 64px; /* calc */
-	background: #F34383;
+	background: #FF4081;
 	text-align: center;
 	color: white;
 }
 
 #debugConsoleLog aside paper-icon-button {
 	margin: 10px; /* button spacing */
+}
+
+#debugConsoleLog paper-icon-button iron-icon {
+	color: white;
 }
 
 /* minimal margin for input text and labels */
@@ -142,18 +146,18 @@ body {
 }
 
 /* solid color for paper-button */
-.accent {
+paper-button.accent {
 	background-color: #3E51B5;
 	color: #fff;
 }
 
-.accent-warn {
-	background-color: #F34383;
+paper-button.accent-warn {
+	background-color: #FF4081;
 	color: #fff;
 }
 
-.accent-default {
-	background-color: #2BD52D;
+paper-button.accent-ok {
+	background-color: #33CC99;
 	color: #fff;
 }
 
@@ -207,7 +211,7 @@ iron-image.styledImage {
 	/* padding: 0 10px; */
 }
 
-/* edit input inline (multiline text in a single line) */ 
+/* edit input inline (multiline text in a single line) */
 .edit-inline {
 	word-wrap: break-word; /* prevent horizontal scroll here - break long single line strings */
 	white-space: pre-wrap; /* make pre text wrap */
@@ -260,8 +264,8 @@ textarea.postcard {
 paper-fab#debugButton {
 	display: block;
 	position: fixed; /* Beware: use only in non-scrolling views as fixed position doesn't play well within a iOS scroll view */
-	bottom: 40px;
-	right: 20px;
+	bottom: 30px;
+	right: 30px;
 	z-index: 15; /* 15 above panel */
 }
 
@@ -323,7 +327,7 @@ select.fill {
 	appearance: none;
 	-webkit-appearance: none;
 	-moz-appearance: none;
-	color: #3E51B5;
+	/*color: #FF4081;*/
 }
 
 .photoBox, #cameraImage {
@@ -448,7 +452,7 @@ paper-badge.icon {
 */
 
 .badge {
-	background-color: #F34383;
+	background-color: #FF4081;
     width: 18px;
     height: 18px;
     border-radius: 9px;
@@ -511,8 +515,8 @@ button {
 	border: none;
 	outline: none;
 	font-size: 16px;
-	color: #3f51b5;
 	padding: 10px;
+	color: #FF4081;
 }
 
 paper-toolbar button {

@@ -34,7 +34,7 @@
     <!-- edit my postcards -->
     <neon-animatable>
       <iron-selector attr-for-selected="index" on-click="_itemSelected">
-        <iron-list id="myPostcards" items="{{myCards}}" as="item" class="fit enclosure">
+        <iron-list id="myPostcards" items="{{myCards}}" as="item" class="fit enclosure-list">
           <template>
             <paper-card id="[[item.doc._id]]" class="row">
               <div class$="[[_classNames(item.doc.to,item.doc._id)]]">

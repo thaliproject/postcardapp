@@ -14,7 +14,7 @@ var path = require('path'),
     tap = require('gulp-tap'),
     del = require('del'),
     uglify = require('gulp-uglify'),
-    minifyHTML = require('gulp-minify-html'),
+    htmlmin = require('gulp-html-minifier'),
     minifyInline = require('gulp-minify-inline'),
     cheerio = require('gulp-cheerio'),
     exec = require('child_process').exec;
@@ -189,15 +189,16 @@ gulp.task('minify:js', function(){
 
 gulp.task('minify:html', function(){
   return gulp.src(paths.build+'public/*.html')
-    .pipe(minifyHTML({
-      empty: true,
-      cdata: true,
-      comments: false,
-      ssi: true,
-      conditionals: true,
-      spare: true,
-      quotes: true,
-      loose: false
+    .pipe(htmlmin({
+      //minifyCSS: true,
+      //minifyJS: true,
+      collapseWhitespace: true,
+      collapseInlineTagWhitespace: true,
+      removeComments: true,
+      removeCommentsFromCDATA: true,
+      caseSensitive: true,
+      customAttrAssign: [/\$=/],
+      //customAttrSurround: [],
     }))
     // .pipe(minifyInline({
     //   css: {
@@ -210,14 +211,14 @@ gulp.task('minify:html', function(){
     //     processImport: false
     //   }
     // }))
-    .pipe(cheerio(function ($, file) {
-      $('style').each(function(){
-        $(this).text( $(this).text()
-          .replace(/[\t\n\r]+/g, '') // remove extra whitespace
-          .replace(/[\s]+/g, ' ') // reduce to single space
-        );
-      });
-    }))
+    // .pipe(cheerio(function ($, file) {
+    //   $('style').each(function(){
+    //     $(this).text( $(this).text()
+    //       .replace(/[\t\n\r]+/g, '') // remove extra whitespace
+    //       .replace(/[\s]+/g, ' ') // reduce to single space
+    //     );
+    //   });
+    // }))
     .pipe(gulp.dest(paths.build+'public'));
 });
 

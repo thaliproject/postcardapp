@@ -10,9 +10,10 @@
     "tests"
   ],
   "dependencies": {
-    "iron-elements": "PolymerElements/iron-elements#1.0.5",
-    "paper-elements": "PolymerElements/paper-elements#1.0.6",
-    "neon-animation": "PolymerElements/neon-animation#1.0.8",
+    "polymer": "Polymer/polymer#~1.2.3",
+    "iron-elements": "PolymerElements/iron-elements#~1.0.7",
+    "paper-elements": "PolymerElements/paper-elements#~1.0.7",
+    "neon-animation": "PolymerElements/neon-animation#~1.0.9",
     "font-roboto": "PolymerElements/font-roboto-local#1.0.0",
     "page.js": "1.6.4",
     "jquery": "2.1.4",
@@ -20,7 +21,8 @@
     "node-uuid": "1.4.3",
     "underscore": "1.8.3",
     "exif-js": "~2.1.1",
-    "base64toblob": "~0.0.1"
+    "base64toblob": "~0.0.1",
+    "neon-elements": "PolymerElements/neon-elements#~1.0.0"
   },
   "resolutions": {
     "font-roboto": "1.0.0"
