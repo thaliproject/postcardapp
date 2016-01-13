@@ -21,10 +21,11 @@
           <template>
             <paper-card id="[[item.doc._id]]" class="row">
               <div class$="[[_classNames(item.doc.to,item.doc._id)]]">
-                <span class="date">[[_humanizeDate(item.doc.dateCreated)]]</span>
-                <pre>[[item.doc.text]]</pre>
                 <iron-image src="[[_getImage(item.doc)]]" sizing="cover" class$="[[_imageClass(item.doc,index)]]"></iron-image>
-                <span>[[item.doc._from]]</span>
+                <pre>[[item.doc.text]]</pre>
+                <span class="from">[[item.doc._from]]</span>
+                <span class="date">[[_humanizeDate(item.doc.dateCreated)]]</span>
+                <div class="cb"></div>
               </div>
             </paper-card>
           </template>
@@ -38,10 +39,11 @@
           <template>
             <paper-card id="[[item.doc._id]]" class="row">
               <div class$="[[_classNames(item.doc.to,item.doc._id)]]">
-                <span class="date">[[_humanizeDate(item.doc.dateCreated)]]</span>
-                <pre>[[item.doc.text]]</pre>
                 <iron-image src="[[_getImage(item.doc)]]" sizing="cover" class$="[[_imageClass(item.doc,index)]]"></iron-image>
-                <span>[[item.doc._from]]</span>
+                <pre>[[item.doc.text]]</pre>
+                <span class="from">[[item.doc._from]]</span>
+                <span class="date">[[_humanizeDate(item.doc.dateCreated)]]</span>
+                <div class="cb"></div>
                 <paper-fab icon="delete" class="action"></paper-fab>
               </div>
             </paper-card>

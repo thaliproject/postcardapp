@@ -6,7 +6,7 @@
 var myApp = document.querySelector('#my-app');
 
 // myApp defaults
-myApp.title = "Postcards";
+myApp.title = "Postcard";
 // default route
 myApp.route = "home"; // NB: redirects to 'login' if no app.username
 // origin

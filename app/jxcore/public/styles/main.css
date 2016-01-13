@@ -161,11 +161,24 @@ paper-button.accent-ok {
 	color: #fff;
 }
 
+/* postcards background */
+neon-animated-pages,
+iron-list,
+paper-card.row {
+	background: #EEE;
+}
+
+/* edit postcards background */
+iron-list#myPostcards,
+iron-list#myPostcards paper-card.row {
+	background: #FF4081;
+}
 
 /* iron-list row */
 paper-card.row {
 	width: 100%;
 	padding-bottom: 20px;
+	border-radius: 0;
 }
 
 iron-image.styledImage {
@@ -195,13 +208,22 @@ iron-image.styledImage {
 
 /* row theme */
 .postcard {
-	background-color: #ffffcc;
+	background-color: white; /* card bg */
 	color: #333;
 }
 
 /* iOS 8.4 drop-shadow */
 .postcard {
-	box-shadow: 0px 10px 10px #AAA;
+	box-shadow: 0px 5px 6px rgba(0,0,0,0.3);
+}
+
+/* override to allow edge to edge width images */
+paper-card.row .card-content {
+	padding: 16px 0;
+}
+
+paper-card.row iron-image {
+	margin: -16px 0 16px;
 }
 
 /* row text format */
@@ -217,33 +239,56 @@ iron-image.styledImage {
 	white-space: pre-wrap; /* make pre text wrap */
 }
 
-/* row date */
+/* message caption */
+.postcard pre {
+	padding: 0 16px;
+	margin: 0;
+	color: #212121;
+	white-space: pre-wrap; /* wrap pre text */
+}
+
+/* row span text */
 .postcard span {
 	display: block;
 	font-size: 12px;
-	color: #ccbbaa;
+	color: #727272;
+}
+
+.postcard span.from,
+.postcard span.date {
+	display: block;
+	padding: 16px;
+	padding-bottom: 0;
+}
+
+.postcard span.from {
+	float: left;
 }
 
 .postcard span.date {
 	float: right;
 }
 
+div.cb {
+	clear: both;
+}
+
 /* highlight postcards sent to user */
 .you {
-	background-color: #ffbbdd;
+	/*background-color: #ffbbdd;*/
 }
 
 .you span {
-	color: #ff88dd;
+	color: #FF4081;
 }
 
 /* highlight postcards created by user */
 .me {
-	background-color: #cceeff;
+	/*background-color: #cceeff;*/
 }
 
 .me span {
-	color: #bbccff;
+	color: #2D44D5;
 }
 
 
@@ -259,6 +304,7 @@ textarea.postcard {
 	padding: 10px; /* if box-sizing is supported then add padding to give space around editable text */
 	padding-top: 20px; /* give some extra space for iOS device status bar */
 	border-radius: 0; /* remove rounded corners on iOS */
+	background-color: #CCC;
 }
 
 paper-fab#debugButton {
@@ -347,13 +393,14 @@ select.fill {
 	width: calc(100% - 80px);
 	position: absolute;
 	top: 0;
-	left: 80px;
+	left: 0; /* 80px */
 }
 #attachPhoto {
 	width: 80px;
 	position: absolute;
 	top: 0;
-	left: 0px;
+	/*left: 0px;*/
+	right: 0;
 	background: white;
 }
 
@@ -526,14 +573,33 @@ paper-toolbar button {
 /* desktop */
 .enclosure,
 .enclosure-list .row > div {
-	max-width: 800px;
+	max-width: 1024px;
 	margin: 0 auto;
 }
 
-@media (min-width: 800px) {
+@media (min-width: 1024px) {
 	#allPostcards,
 	#myPostcards {
 		padding: 10px;
 		padding-top: 20px;
 	}
+
+	paper-card.row .card-content {
+		padding: 16px;
+	}
+
+	paper-card.row iron-image {
+		margin: 0;
+	}
+
+	.postcard pre {
+		padding: 0;
+		padding-bottom: 16px;
+	}
+
+	.postcard span.from,
+	.postcard span.date {
+		padding: 0;
+	}
+
 }
