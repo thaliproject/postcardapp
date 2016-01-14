@@ -4,6 +4,8 @@
 <link rel="import" href="/elements/behaviors/path-components.html">
 <link rel="import" href="/elements/behaviors/multi-platform.html">
 
+<link rel="import" href="/bower_components/iron-resizable-behavior/iron-resizable-behavior.html">
+
 <dom-module id="page-home">
 
 <template>
@@ -69,7 +71,8 @@ Polymer({
       PageBehaviors.ButtonListeners,
       PageBehaviors.TreeTraversing,
       PageBehaviors.PathComponents,
-      PageBehaviors.MultiPlatform
+      PageBehaviors.MultiPlatform,
+      Polymer.IronResizableBehavior
     ],
   properties: {
     selected: 0,
@@ -99,11 +102,13 @@ Polymer({
     identities: {
       type: Array,
       value: []
-    }
+    },
+    _isRedrawing: false
   },
   listeners: {
     'card-changed': 'cardChangedHandler',
-    'contact-changed': 'contactChangedHandler'
+    'contact-changed': 'contactChangedHandler',
+    'iron-resize': '_resizeHandler'
   },
   created: function() {
     console.log(this.localName + ' was created');
@@ -524,6 +529,27 @@ Polymer({
     }
     // append doc _from property
     doc._from = from;
+  },
+
+  // on window resize we need to redraw the visible iron-list as the row item's height changes
+  _resizeHandler : function(e) {
+    if ( !this._isRedrawing ) {
+      this._redrawList();
+    }
+  },
+
+  // fire iron-resize event to force iron-list to redraw visible row items
+  _redrawList : function() {
+    var list = document.querySelector("page-home.iron-selected neon-animatable.iron-selected iron-list");
+    if (list) {
+      this._isRedrawing = true;
+      console.log("Redraw list", list.id);
+      list.fire('iron-resize');
+      // NB: redrawing the iron-list has the side effect of triggering iron-resize event so adding timeout to prevent unwanted callbacks.
+      setTimeout(function(){
+        this._isRedrawing = false;
+      }.bind(this), 100)
+    }
   }
 
 });

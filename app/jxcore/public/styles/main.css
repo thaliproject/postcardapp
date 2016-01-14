@@ -245,6 +245,7 @@ paper-card.row iron-image {
 	margin: 0;
 	color: #212121;
 	white-space: pre-wrap; /* wrap pre text */
+	word-wrap: break-word; /* soft-wrap long words */
 }
 
 /* row span text */
