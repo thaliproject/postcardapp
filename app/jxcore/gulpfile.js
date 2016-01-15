@@ -98,7 +98,7 @@ gulp.task('build', function(cb){
     'copy:assets',
     'index:removeServerScripts',
     'index:mobile',
-    'index:debug',
+    //'index:debug',
     'index:vulcanize',
     'minify:js',
     'minify:html',
@@ -193,12 +193,10 @@ gulp.task('minify:html', function(){
       //minifyCSS: true,
       //minifyJS: true,
       collapseWhitespace: true,
-      collapseInlineTagWhitespace: true,
       removeComments: true,
       removeCommentsFromCDATA: true,
       caseSensitive: true,
       customAttrAssign: [/\$=/],
-      //customAttrSurround: [],
     }))
     // .pipe(minifyInline({
     //   css: {

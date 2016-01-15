@@ -169,13 +169,13 @@ Polymer({
   },
   _classNames: function(toArray, cardId) {
     var baseStyle = "card-content postcard";
-     // style postcards addressed to you
-    if ( toArray.indexOf('addressbook-'+myApp.deviceIdentity) >= 0 ) {
-      return baseStyle + " you";
-    }
     // style postcards created by you
     if ( myApp.deviceIdentity === cardId.substring(cardId.lastIndexOf('-')+1) ) {
       return baseStyle + " me";
+    }
+     // style postcards addressed to you
+    if ( toArray.indexOf('addressbook-'+myApp.deviceIdentity) >= 0 ) {
+      return baseStyle + " you";
     }
     return baseStyle;
   },

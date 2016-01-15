@@ -275,21 +275,13 @@ div.cb {
 }
 
 /* highlight postcards sent to user */
-.you {
-	/*background-color: #ffbbdd;*/
-}
-
 .you span {
-	color: #FF4081;
+	color: #2D44D5; /* highlight */
 }
 
 /* highlight postcards created by user */
-.me {
-	/*background-color: #cceeff;*/
-}
-
 .me span {
-	color: #2D44D5;
+	color: #FF4081; /* accent */
 }
 
 
