@@ -15,16 +15,17 @@ PageBehaviors.MultiPlatform = {
 
 	// triggers input.focus() if not focused already. (Sometimes if an input has already received autofocus it can result in disabling soft-keyboard text entry on iOS.)
 	shouldFocus : function(input) {
-		if ( !input.hasFocus() ) {
+		if ( this._isiOS() ) {
+			return; // WebView bug in iOS preventing text input after focus
+		}
+		if ( input.name !== document.activeElement.name || input.id !== document.activeElement.id ) {
 			this._focus(input, 0);
-		} else {
-			console.log(document.activeElement, "has focus", input);
 		}
 	},
 
 	_focus : function(input, delay) {
 		setTimeout(function() {
-			console.log("focus");
+			console.log("focus:", (input.name || input.id) );
 			input.focus();
 		}, delay);
 	},

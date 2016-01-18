@@ -135,7 +135,7 @@ Polymer({
     console.log("show login form");
     this.querySelector("aside").setAttribute("hidden", true);
     this.querySelector("form").removeAttribute("hidden");
-    this.shouldFocus( this.querySelector("input[name='username']") );
+    this.shouldFocus( this.querySelector('paper-input[name="username"]') );
   },
   submitForm: function(event) {
     console.log('submit form');

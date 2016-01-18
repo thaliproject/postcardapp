@@ -29,7 +29,7 @@
     </paper-material>
 
     <!-- message -->
-    <textarea id="textbox" class="postcard flex" value="{{editText::input}}" placeholder="Message" autofocus></textarea>
+    <textarea id="textbox" class="postcard flex" value="{{editText::input}}" placeholder="Message"></textarea>
   </main>
 </template>
 
@@ -101,13 +101,13 @@ Polymer({
       myApp.title = "New Postcard";
       this.isEdit = false;
       this.editText = "";
-      //this.autoFocus(this.textBox); // UX send autofocus to textarea
+      this.autoFocus(this.textBox); // UX send autofocus to textarea
     } else {
       // edit message
       myApp.title = "Edit Postcard";
       this.isEdit = true;
       this._getCard(id);
-      //this.shouldFocus(this.textBox); // UX send autofocus to textarea
+      this.autoFocus(this.textBox); // UX send autofocus to textarea
     }
     this._reloadContacts(); // reload contacts
   },
