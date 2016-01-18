@@ -8,19 +8,17 @@ var PageBehaviors = PageBehaviors || {}; // namespace
 
 PageBehaviors.MultiPlatform = {
 
-	_isWKWebViewEnabled : true, // Set to true if Cordova WKWebView is enabled
-
 	// triggers input.focus() with a timeout
 	autoFocus : function(input) {
 		this._focus(input, 0);
 	},
 
-	// triggers input.focus() on everything except on iOS UIWebView. Sometimes if an input has already received autofocus it can result in disabling soft-keyboard text entry.
+	// triggers input.focus() if not focused already. (Sometimes if an input has already received autofocus it can result in disabling soft-keyboard text entry on iOS.)
 	shouldFocus : function(input) {
-		if ( !this._isiOSUIWebView() ) {
+		if ( !input.hasFocus() ) {
 			this._focus(input, 0);
 		} else {
-			console.log("iOS UIWebView shouldFocus disabled");
+			console.log(document.activeElement, "has focus", input);
 		}
 	},
 
@@ -31,22 +29,8 @@ PageBehaviors.MultiPlatform = {
 		}, delay);
 	},
 
-	// hack for iOS to prevent scrolling view up when soft keyboard pops up in UIWebView
-	shouldFocusWithoutScrollUp : function(e) {
-		if ( this._isiOSUIWebView() ) {
-			console.log("iOS UIWebView shouldFocusWithoutScrollUp");
-			e.target.style.webkitTransform = 'translate3d(0px,-10000px,0)';
-			webkitRequestAnimationFrame(function() { this.style.webkitTransform = ''; }.bind(e.target));
-		}
-	},
-
 	_isiOS : function() {
 		return navigator.userAgent.match(/iPhone|iPad|iPod/i);
-	},
-
-	// Only iOS 9+ supports WKWebView, older versions of iOS will fallback to UIWebView
-	_isiOSUIWebView : function() {
-		return (this._isiOS() && !(this._isWKWebViewEnabled && this._iOSVersion()>=9) );
 	},
 
 	_iOSVersion : function() {
