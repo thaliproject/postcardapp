@@ -30,7 +30,7 @@ function addressBookRoutes (db) {
         doc.username = username;
         db.put(doc)
         .then(function () {
-          res.send(JSON.stringify({ user: username }));
+          res.send(JSON.stringify({ username: username }));
         })
         .catch(function (err) {
           res.send(JSON.stringify({ error: err }));
@@ -51,7 +51,7 @@ function addressBookRoutes (db) {
           dateCreated: Math.floor((new Date()).getTime() / 1000)
         })
         .then(function () {
-          res.send(JSON.stringify({ user: username }));
+          res.send(JSON.stringify({ username: username }));
         })
         .catch(function (err) {
           res.send(JSON.stringify({ error: err }));
@@ -128,7 +128,7 @@ function addressBookRoutes (db) {
     });
   })
   .delete(function (req, res) {
-    
+
     // Race condition, so let's drop 404s if we get them
     db.get(req.params.contactId, function (err, doc) {
       if (err && err.status === 404) {

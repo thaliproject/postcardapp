@@ -10,6 +10,7 @@
 <link rel="import" href="/elements/modal-identity/pages/page-scan.html">
 <link rel="import" href="/elements/modal-identity/pages/page-pair.html">
 <link rel="import" href="/elements/modal-identity/pages/page-save.html">
+<link rel="import" href="/elements/modal-identity/pages/page-user.html">
 
 <dom-module id="modal-identity">
 
@@ -60,6 +61,9 @@
       <!-- slide page: save user contact -->
       <page-save id="save" data-title="Save contact"></page-save>
 
+      <!-- slide page: change username -->
+      <page-user id="user" data-title="Change name"></page-user>
+
     </neon-animated-pages>
 
   </paper-header-panel>
@@ -87,6 +91,7 @@ Polymer({
     'neon-animation-finish': '_onNeonAnimationFinish',
     'next': '_onNextHandler',
     'prev': '_onBackHandler',
+    'page': '_onPageHandler',
     'close': '_onCloseHandler',
     'notification': '_onNotificationHandler'
   },
@@ -129,7 +134,7 @@ Polymer({
 
   _setState: function() {
     this._gotoPageAtIndex(0); // reset page
-    this.querySelector("#start").refresh(); // refresh view
+    this.querySelector("#start").refresh(); // refresh view after being hidden
   },
 
   _resetState: function() {
@@ -146,6 +151,10 @@ Polymer({
   },
 
   _onBackHandler: function(e) {
+    if(this.selectedPage === 'user'){
+      this._gotoPageAtIndex(0);
+      return;
+    }
     this._prev();
   },
 
@@ -156,6 +165,13 @@ Polymer({
       this.bindingObject = null;
     }
     this._next();
+  },
+
+  _onPageHandler: function(e) {
+    console.log(e);
+    if (e && e.detail) {
+      this._gotoPage(e.detail);
+    }
   },
 
   /* page methods */

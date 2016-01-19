@@ -57,3 +57,6 @@ www/jxcore/**/*
 # JXcore
 *.jx
 *.jxp
+
+# Generated
+/info.txt

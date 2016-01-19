@@ -38,6 +38,7 @@ Polymer({
 	},
   start : function() {
   	console.log(this.localName + ' start');
+		this.refresh();
   },
   stop : function() {
   	console.log(this.localName + ' stop');
@@ -45,8 +46,9 @@ Polymer({
 
 	onChangeUsername : function() {
 		console.log("change username");
-		this.modalClose(); // dismiss modal when done
-		getURL("login");
+		//this.modalClose(); // dismiss modal when done
+		//getURL("login");
+		this.modalPage("user");
 	}
 
 });

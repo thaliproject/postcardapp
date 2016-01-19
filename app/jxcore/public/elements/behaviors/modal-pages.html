@@ -10,6 +10,10 @@ PageBehaviors.ModalPages = {
 
 	/* fires event to `neon-animated-pages` container's listeners */
 
+	modalPage: function(pageName) {
+  	this.fire('page', pageName);
+  },
+
 	modalNextFire: function(object) {
   	this.fire('next', object);
   },

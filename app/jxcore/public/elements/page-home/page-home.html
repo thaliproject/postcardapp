@@ -253,6 +253,7 @@ Polymer({
       // append _sender propery with verified contacts
       this._appendDisplayProperties();
 
+      // sort cards
       this._sortMyCards();
 
       this._isLoaded = true;
@@ -274,26 +275,29 @@ Polymer({
   // - => rows.splices, rows.length
   // ^ => rows.#i.doc
   filterMyCards: function(changeRecord) {
-    var pathRows = 'listData.rows';
     var pathArray = changeRecord.path.split('.');
-    if ( changeRecord.path.substring(0,pathRows.length) !== pathRows || pathArray.indexOf('length') !== -1 ) {
+    if ( changeRecord.path === 'listData' || changeRecord.path === 'listData.rows' || pathArray.indexOf('length') !== -1 || changeRecord.path.substr(-5) === '_from' ) {
       //console.log("skip:", changeRecord.path, changeRecord.path !== 'listData.rows', pathArray.indexOf('length'), pathArray.indexOf('doc') );
       return this._rows;
     }
-    this._rows = []; //var rows = [];
+    this._rows = [];
     // Clone object to remove data bindings on the rows array
     var clonedRows = JSON.parse(JSON.stringify( this.get('listData.rows') ));
-    var i = clonedRows.length; // listData.rows.length;
+    var i = clonedRows.length;
     while(i--){
-      var card = clonedRows[i]; //this.get('listData.rows.'+i);
+      var card = clonedRows[i];
       var cardId = card.doc._id;
       var authorId = cardId.substring(cardId.lastIndexOf('-')+1);
       if (myApp.deviceIdentity === authorId) {
-        this._rows.unshift(card); //rows.unshift(card);
+        this._rows.unshift(card);
       }
     }
-    console.log("Filter my cards:", this._rows.length, changeRecord);
-    return this._rows; //rows;
+    console.log("Filtered my cards:", this._rows.length, changeRecord);
+    // sort my cards
+    this.set('_rows', _.sortBy(this._rows, function(o){
+      return -o.doc.dateCreated;
+    }));
+    return this._rows;
   },
 
   // toogle edit mode
@@ -511,9 +515,12 @@ Polymer({
     var i=0, len=this.listData.rows.length;
     console.log("appending display properties on rows: " + len);
     while (i<len) {
-      this._appendDoc( this.get('listData.rows.'+i+'.doc') );
+      var doc = this._appendDoc( this.get('listData.rows.'+i+'.doc') );
+      this.set('listData.rows.'+i+'.doc._from', doc._from); // update _from binding
       i++;
     }
+    // Also filter my cards with updated properties
+    this.set('listData.lastUpdated', new Date().getTime());
   },
 
   // adds properties to 'doc' for display purposes only
@@ -529,6 +536,7 @@ Polymer({
     }
     // append doc _from property
     doc._from = from;
+    return doc;
   },
 
   // on window resize we need to redraw the visible iron-list as the row item's height changes

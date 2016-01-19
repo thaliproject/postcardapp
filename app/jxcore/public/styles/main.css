@@ -563,6 +563,11 @@ paper-toolbar button {
 	color: white;
 }
 
+/* adjustments */
+.mt {
+	margin-top: 20px;
+}
+
 /* desktop */
 .enclosure,
 .enclosure-list .row > div {
