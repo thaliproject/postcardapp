@@ -81,7 +81,8 @@
     </platform>
     <preference name="windows-target-version" value="10.0" />
     <hook src="app/jxcore/hook.js" type="before_build" />
-    <plugin name="cordova-plugin-whitelist" spec="~1.2.0" />
-    <plugin name="cordova-plugin-camera" spec="~2.0.0" />
+    <plugin name="cordova-plugin-whitelist" spec="~1.2.1" />
+    <plugin name="cordova-plugin-camera" spec="~2.1.0" />
     <plugin name="cordova-plugin-keyboard" spec="~1.1.3" />
+    <plugin name="cordova-plugin-statusbar" spec="~2.1.0" />
 </widget>
