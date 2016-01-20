@@ -85,7 +85,7 @@ Polymer({
           this.querySelector('paper-input[name="username"]').set('value', data.username); //this.set('username', data.username);
           this._username(data.username);
         } else {
-          console.log("No user record found - login");
+          console.log("No user record found - login"); // 404 missing
           this._login();
         }
       }
@@ -97,6 +97,7 @@ Polymer({
     this.fire('deviceIdentity', deviceIdentity);
   },
   _username: function(username) {
+    this.shouldFocus( this.querySelector("paper-input") );
     this.fire('username', username);
   },
   _login: function() {
