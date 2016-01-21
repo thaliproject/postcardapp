@@ -82,7 +82,7 @@ Polymer({
         if (data.username && data.username.length>0) {
           // edit username
           console.log("Found username:", data.username);
-          this.querySelector('paper-input[name="username"]').set('value', data.username); //this.set('username', data.username);
+          this.querySelector('paper-input[name="username"]').value = data.username; //this.set('username', data.username);
           this._username(data.username);
         } else {
           console.log("No user record found - login"); // 404 missing

@@ -43,7 +43,7 @@ suite('Postcards', function() {
 
   test('Address book data', function(done) {
     // get address book data
-    page.contactChangedHandler();
+    page._requestContacts();
     // spy on iron-ajax received event
     var spy = sinon.spy(page._onContactsReceived);
     var mySubscriber = function(msg, result) {
@@ -76,20 +76,36 @@ suite('Postcards', function() {
       // Wait for data bindings to stamp out new DOM asynchronously
       flush(function() {
         var isSuccess = false;
-        var data = page.get('listData');
-        console.log("Data", data);
-        if (data && data.total_rows >= 0) {
-          console.log("Cards data ok");
-          isSuccess = true;
-        }
-        assert.isTrue(isSuccess);
-        done();
+        //var data = page.get('listData');
+        // NB: sometimes if there are large image attachments the listData maybe undefined
+        waitUntilPagePropertyDefined('listData', function(data){
+          console.log("Data", data);
+          if (data && data.total_rows >= 0) {
+            console.log("Cards data ok");
+            isSuccess = true;
+          }
+          assert.isTrue(isSuccess);
+          done();
+        });
       });
     }
     var msg = 'onCardsReceived';
     PubSub.subscribe(msg, mySubscriber);
     PubSub.publish(msg, spy);
   });
+
+  // helper function to wait on Polymer property to be defined
+  function waitUntilPagePropertyDefined(dataPath, cb) {
+    var data = page.get(dataPath);
+    if (typeof data !== 'undefined') {
+      cb(data); // data ok, callback
+    } else {
+      console.log("...waiting for data path:", dataPath);
+      setTimeout( function(){
+        waitUntilPagePropertyDefined(dataPath,cb);
+      }, 200 );
+    }
+  }
 
 });
 </script>
