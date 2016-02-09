@@ -46,7 +46,7 @@ gulp.task('cordova:config', function(){
 gulp.task('cordova:semaphore', function(){
   var pkg = JSON.parse(fs.readFileSync(paths.src+'package.json'));
   var str = 'Build version: '+pkg.version;
-  console.log(str);
+  //console.log(str);
   return file('version.txt',str,{src:true}).pipe(gulp.dest(paths.build));
 });
 
@@ -100,6 +100,7 @@ gulp.task('build', function(cb){
     'index:mobile',
     //'index:debug',
     'index:vulcanize',
+    'index:injectCordovaScript',
     'minify:js',
     'minify:html',
     // 'clean:tmp',
@@ -129,6 +130,19 @@ gulp.task('copy:assets', function(){
     .pipe(gulp.dest(paths.build));
 });
 
+// set app config vars
+gulp.task('index:mobile', function(){
+  return gulp.src(paths.src+'public/index.html.tmp')
+    .pipe(replace(/(var\sIS_MOCKMOBILE\s=\s)(true)/g, '$1false'))
+    .pipe(gulp.dest(paths.src+'public'));
+});
+
+gulp.task('index:debug', function(){
+  return gulp.src(paths.src+'public/index.html.tmp')
+    .pipe(replace(/(var\sIS_DEBUG\s=\s)(.*)/g, '$1true'))
+    .pipe(gulp.dest(paths.src+'public'));
+});
+
 // workaround for vulcanize server script error finding socket.io/socket.io.js
 gulp.task('index:removeServerScripts', function(){
   var start_comment = "gulp:remove",
@@ -139,18 +153,6 @@ gulp.task('index:removeServerScripts', function(){
       file.contents = new Buffer(String(file.contents).replace(pattern, ""));
     }))
     .pipe(rename({extname:'.html.tmp'}))
-    .pipe(gulp.dest(paths.src+'public'));
-});
-
-gulp.task('index:mobile', function(){
-  return gulp.src(paths.src+'public/index.html.tmp')
-    .pipe(replace(/(var\sIS_MOCKMOBILE\s=\s)(true)/g, '$1false'))
-    .pipe(gulp.dest(paths.src+'public'));
-});
-
-gulp.task('index:debug', function(){
-  return gulp.src(paths.src+'public/index.html.tmp')
-    .pipe(replace(/(var\sIS_DEBUG\s=\s)(.*)/g, '$1true'))
     .pipe(gulp.dest(paths.src+'public'));
 });
 
@@ -176,6 +178,15 @@ gulp.task('index:vulcanize', function(){
       '<script src="/socket.io/socket.io.js"></script>' +
       '<script>var socket = io.connect("http://localhost:5000");</script>'))
     //.pipe(rename({extname:'.html'}))
+    .pipe(gulp.dest(paths.build+'public'));
+});
+
+// inject cordova script
+gulp.task('index:injectCordovaScript', function(){
+  return gulp.src(paths.build+'public/index.html')
+    .pipe(replace(
+      '<meta data-script="cordova.js">',
+      '<script type="text/javascript" charset="utf-8" src="cordova.js"></script>'))
     .pipe(gulp.dest(paths.build+'public'));
 });
 
@@ -219,6 +230,64 @@ gulp.task('minify:html', function(){
     // }))
     .pipe(gulp.dest(paths.build+'public'));
 });
+
+// Copy Cordova javascript and plugin source into the JXcore app's 'public' dir
+gulp.task('cordova:android', ['cordova:config','build:android']);
+gulp.task('cordova:ios', ['cordova:config','build:ios']);
+
+gulp.task('build:android', function(cb){
+  return runSequence(
+    'cordova:clean',
+    'cordova:cleanCordovaScripts',
+    'cordova:androidCopyCordovaScripts',
+    'cordova:semaphore',
+    cb);
+});
+
+gulp.task('build:ios', function(cb){
+  return runSequence(
+    'cordova:clean',
+    'cordova:cleanCordovaScripts',
+    'cordova:iosCopyCordovaScripts',
+    'cordova:semaphore',
+    cb);
+});
+
+// remove platform specific Cordova source before building
+gulp.task('cordova:cleanCordovaScripts', function(cb){
+  console.log("Clean Cordova platform source:", paths.build);
+  var removables = [
+      paths.build+'public/cordova.js',
+      paths.build+'public/cordova_plugins.js',
+      paths.build+'public/plugins/**/*',
+      paths.build+'public/cordova-js-src/**/*'
+    ];
+  return del(removables, {force: true}, cb);
+});
+
+gulp.task('cordova:androidCopyCordovaScripts', function(cb){
+  return copyCordovaScripts(cb,'platforms/android/assets/www/');
+});
+
+gulp.task('cordova:iosCopyCordovaScripts', function(cb){
+  return copyCordovaScripts(cb,'platforms/ios/www/');
+});
+
+var copyCordovaScripts = function(cb, path) {
+  console.log("copy Cordova scripts and plugins from:", path);
+  // NB: Cordova source paths may not exist during initial 'cordova platform add ...'
+  return gulp.src([
+      path+'cordova.js',
+      path+'cordova_plugins.js',
+      path+'plugins/**/*',
+      path+'cordova-js-src/**/*'
+    ],
+    {
+      dot: true,
+      base: path
+    })
+    .pipe(gulp.dest(paths.build+'public'), cb);
+};
 
 // clean tmp working files
 gulp.task('clean:tmp', function(){

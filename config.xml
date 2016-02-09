@@ -15,7 +15,7 @@
     <allow-intent href="sms:*" />
     <allow-intent href="mailto:*" />
     <allow-intent href="geo:*" />
-    <allow-navigation href="http://localhost:5000/*" />
+    <allow-navigation href="http:*" />
     <platform name="android">
         <allow-intent href="market:*" />
         <icon density="ldpi" src="assets/android/res/drawable-ldpi/icon.png" />
@@ -67,7 +67,6 @@
         <icon height="87" src="assets/ios/Resources/icons/icon-small@3x.png" width="87" />
         <icon height="50" src="assets/ios/Resources/icons/icon-50.png" width="50" />
         <icon height="100" src="assets/ios/Resources/icons/icon-50@2x.png" width="100" />
-        <!-- <icon height="167" src="assets/ios/Resources/icons/icon-ipadpro@2x.png" width="167" /> -->
         <splash height="480" src="assets/ios/Resources/splash/Default~iphone.png" width="320" />
         <splash height="960" src="assets/ios/Resources/splash/Default@2x~iphone.png" width="640" />
         <splash height="1024" src="assets/ios/Resources/splash/Default-Portrait~ipad.png" width="768" />
@@ -81,6 +80,7 @@
     </platform>
     <preference name="windows-target-version" value="10.0" />
     <hook src="app/jxcore/hook.js" type="before_build" />
+    <hook src="app/jxcore/hook.js" type="after_prepare" />
     <plugin name="cordova-plugin-whitelist" spec="~1.2.1" />
     <plugin name="cordova-plugin-camera" spec="~2.1.0" />
     <plugin name="cordova-plugin-keyboard" spec="~1.1.3" />

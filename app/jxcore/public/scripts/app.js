@@ -195,29 +195,27 @@ function receiveMessage(event) {
 // Proxy methods for Cordova functions and HTML5 method replacement
 // -----------------------------------------------------------------------------
 
+if (IS_MOCKMOBILE) {
+	console.log("*** Mock Cordova Camera options ***");
+	var Camera = {
+		EncodingType : 'image/jpeg',
+		DestinationType : 'data'
+	};
+}
+
 // Use HTML5 capture as replacement for Cordova Camera on desktop
 function proxyCordovaCamera() {
-	navigator.camera = {
-		getPicture : function(onSuccess, onFail, options) {
-			if (!IS_MOCKMOBILE) {
-				// Trigger Cordova for mobile using cross document messaging
-				// NB: using "*" so no origin check is made.
-				var msg = {
-					action: 'navigator.camera.getPicture',
-					options: options
-				}
-				parent.postMessage(msg, "*");
-			} else {
-				console.log("*** HTML5 Camera Capture ***");
-				localFileInput(onSuccess, onFail, options);
-			}
-		}
-	};
+	if (IS_MOCKMOBILE) {
+		console.log("*** HTML5 Camera Capture ***");
+		navigator.camera = {
+			getPicture : localFileInput
+		};
+	}
 }
 
 // HTML5 capture method
 var imageInput, imageCanvas; // hidden DOM elements
-function localFileInput(onSuccess, onFail, options) {
+var localFileInput = function(onSuccess, onFail, options) {
 	// create file input without appending to DOM
 	if (typeof imageInput === "undefined") {
 		console.log("Create image file input");

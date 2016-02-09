@@ -169,8 +169,13 @@ Polymer({
     var options = {
       quality: 80,
       targetWidth: 1080,
-      targetHeight: 720
-    }; // 1080 720
+      targetHeight: 720,
+      encodingType: Camera.EncodingType.JPEG,
+      correctOrientation: true,
+      saveToPhotoAlbum: false,
+      allowEdit: false,
+      destinationType: Camera.DestinationType.DATA_URL
+    };
     navigator.camera.getPicture( this._cameraSuccess.bind(this), this._cameraError.bind(this), options );
   },
   _cameraSuccess: function(imageData) {

@@ -106,7 +106,10 @@ find ./public/bower_components -name "*.gz" -type f -delete
 jx npm install --autoremove "*.gz"
 find ./node_modules -name "*.gz" -type f -delete
 
+cordova prepare android
 cordova build android
+
+cordova prepare ios
 cordova build ios
 ```
 

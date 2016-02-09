@@ -4,6 +4,7 @@
 // constants
 var HOST = "http://localhost:5000";
 
+var isJXcoreReady = false;
 var inter = setInterval(function() {
   if (typeof jxcore === 'undefined') {
     return;
@@ -29,7 +30,8 @@ var inter = setInterval(function() {
 }, 5);
 
 function jxcore_ready() {
-  document.getElementById('appFrame').src = HOST;
+  isJXcoreReady = true;
+  //document.getElementById('appFrame').src = HOST;
 }
 
 function registerCordovaFunctions() {
@@ -51,6 +53,17 @@ function onDeviceReady() {
   isCordovaReady = true;
 	console.log("Cordova deviceready");
 }
+
+var inter2 = setInterval(function(){
+  if (!isCordovaReady || !isJXcoreReady) {
+    return;
+  }
+
+  clearInterval(inter2);
+
+  console.log("Cordova and JXCore are both ready. Redirect to:", HOST);
+  window.location.href = HOST;
+}, 5);
 
 // Listen for messages posted from iframe
 window.addEventListener('message', receiveMessage, false);
