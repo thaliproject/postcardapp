@@ -17,6 +17,7 @@
     <allow-intent href="geo:*" />
     <allow-navigation href="http:*" />
     <platform name="android">
+        <preference name="android-minSdkVersion" value="16" />
         <allow-intent href="market:*" />
         <icon density="ldpi" src="assets/android/res/drawable-ldpi/icon.png" />
         <icon density="mdpi" src="assets/android/res/drawable-mdpi/icon.png" />
