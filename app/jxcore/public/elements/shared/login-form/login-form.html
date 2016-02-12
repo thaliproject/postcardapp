@@ -8,7 +8,7 @@
     <paper-input name="username" label="Username" bind-value="{{username::input}}" error-message="{{error_username}}" prevent-invalid-input allowed-pattern="[A-Za-z0-9_\.]" required></paper-input>
     <input is="iron-input" name="deviceIdentity" bind-value="{{deviceIdentity::input}}" type="hidden" />
     <div class="alignCenter mt">
-      <paper-button raised on-click="submitForm">Save</paper-button>
+      <paper-button id="submit" raised on-click="submitForm">Save</paper-button>
     </div>
   </form>
 </template>
