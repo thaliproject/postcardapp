@@ -21,18 +21,6 @@ exports.iosDevice = {
   autoAcceptAlerts: true,
 };
 
-exports.androidEmulator = {
-  app: path.resolve(__dirname, '../../platforms/android/build/outputs/apk/android-debug.apk'),
-  fullReset: true,
-  autoWebview: true,
-  platformName: 'Android',
-  platformVersion: '5.1.1',
-  deviceName: 'emulator-5554',
-  avd: 'Nexus',
-  avdArgs: '-no-boot-anim -noskin',
-  noSign: false,
-};
-
 exports.androidDevice = {
   app: path.resolve(__dirname, '../../platforms/android/build/outputs/apk/android-debug.apk'),
   fullReset: true,
@@ -40,4 +28,5 @@ exports.androidDevice = {
   platformName: 'Android',
   platformVersion: '5.0.2',
   deviceName: 'XT1072',
+  noSign: false,
 };

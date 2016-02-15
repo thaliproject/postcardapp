@@ -68,11 +68,6 @@ describe("PostcardApp", function () {
   });
 
   // Tests
-  it("should contain html title", function() {
-    return driver
-      .title().should.eventually.equal('App');
-  });
-
   it("should redirect to jxcore express app 'http://localhost'", function () {
     return driver
       .waitForElementByCss("div", asserters.isDisplayed, defaults.wait.long)
