@@ -93,6 +93,12 @@ cordova build ios --device
 ```  
 *This should build the Postcard app in 'platforms/ios/build/device' directory.*  
 
+### Install Webkit Debug Proxy
+Use [homebrew](http://brew.sh/) to install [Webkit Debug Proxy](https://github.com/google/ios-webkit-debug-proxy) on Mac:
+```
+brew install ios-webkit-debug-proxy
+```
+
 ## Running tests on iOS device
 1. The iOS device will need to be setup as a developer device as well as **UIAutomation** enabled in *Settings > Developer*.  
 2. Find iOS device's name, UDID and iOS version:  
@@ -113,11 +119,11 @@ cordova build ios --device
     appium
     ```
 
-5. Run tests for iOS device using iOS device's name, UDID and iOS version:  
+5. Run tests for iOS device using iOS device's UDID, name and iOS version:  
 
     ```
     cd ./test
-    mocha postcardapp.js --cap=iosDevice --deviceName="iPhone 5s" --udid="YOUR_IOS_DEVICE_UDID" --platformVersion="9.2"
+    mocha postcardapp.js --cap=iosDevice --udid="YOUR_IOS_DEVICE_UDID" --deviceName="iPhone 6" --platformVersion="9.2.1"
     ```
 
 # Appium server troubleshooting
@@ -125,13 +131,13 @@ cordova build ios --device
 ### Android device
 - Appium error `unknown error: Chrome version must be >= 43.0.2357.0`  
 Solution: The [Android WebView]( https://play.google.com/store/apps/details?id=com.google.android.webview) needs updated. Open *Settings > Apps > All > Android System WebView* to check the version.
-- Tests can't run if the screen locks.
+- Tests can't run if the screen locks.  
 Workaround: Temporarily turn off screen lock when testing - open *Settings > Security > Screen Lock* and select *None*.
 
 ### iOS device
 - Appium error `Command failed: /bin/sh -c ideviceinstaller`  
 Solution: If you get an ApplicationVerificationFailed error with 'ideviceinstaller' then make sure the app builds in Xcode and deploys to your device. Then rebuild for iOS device using `cordova build ios --device`
-- Tests can't run if the screen locks.
+- Tests can't run if the screen locks.  
 Workaround: Temporarily turn off or increase Auto-Lock time when testing - open *Settings > General > Auto-Lock* and set to *5 Minutes* or *Never*.
 
 If you experience any other issues the official [Appium troubleshooting ](http://appium.io/slate/en/1.4/?javascript#troubleshooting-appium) docs may come in handy.

@@ -13,12 +13,11 @@ module.exports = function(context) {
 
   // default gulp task with cordova build hook
   var gulpTask = 'cordova:build';
-  if (context.hook === 'after_prepare' ){
+  if (context.hook === 'after_prepare'){
     if (context.opts.platforms.length === 1){
-      gulpTask = 'cordova:'+context.opts.platforms[0];
+      gulpTask = 'cordova:'+context.opts.platforms[0]; // build single platform
     } else if (context.opts.platforms.length>1) {
-      // warn when using 'cordova build' as this command targets mutiple platforms (android,ios) and you can't copy specific cordova platform plugins into build with this multi-platform hook.
-      console.warn("Warning: Please run 'cordova build ios' or 'cordova build android' after");
+      gulpTask = 'cordova:xplatform'; // build multiple platforms (android,ios)
     }
   }
   console.log("start gulp task:", gulpTask);
@@ -30,7 +29,7 @@ module.exports = function(context) {
     // Note: Using a workaround to check for gulp script is completed using a semaphore file as 'task_stop' event fires after first task and not after all tasks have been completed.
     var inter = setInterval(function(){
       if ( fs.existsSync(semaphoreFile) ) {
-        console.log(gulpTask, "should be completed.");
+        console.log(gulpTask, "task should be completed.");
         clearInterval(inter);
         fs.unlinkSync(semaphoreFile);
         deferral.resolve();

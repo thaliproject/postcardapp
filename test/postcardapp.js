@@ -1,7 +1,11 @@
 "use strict";
 
-require("./helpers/setup");
+if (!require('fs').existsSync(__dirname+"/node_modules")) {
+  console.log("'node_modules' folder not found. Please refer to readme.md");
+  return;
+}
 
+require("./helpers/setup");
 var wd = require("wd"),
     fs = require('fs'),
     path = require('path'),
@@ -30,6 +34,25 @@ describe("PostcardApp", function () {
     return _.clone(caps.androidEmulator);
   }
 
+  // workaround method to find webview context as 'autoWebview' is not finding webview context following Cordova 6 update
+  function switchContextToWebview(driver) {
+    return driver
+      .sleep(defaults.wait.splashscreen)
+      .contexts()
+      .then( function(contexts){
+        if(contexts.length<2) {
+          console.error("Could not find webview in contexts:", contexts);
+          throw new Error("Stopping tests as webview context was not found.");
+          return driver.quit();
+        }
+        var webviewContext = _.find(contexts, function(context){
+          return context.indexOf('WEBVIEW') !== -1;
+        });
+        console.log('webview context:', webviewContext);
+        return driver.context(webviewContext).setAsyncScriptTimeout(defaults.timeout.app);
+      });
+  }
+
   before(function () {
     var serverConfig = serverConfigs.local;
 
@@ -54,7 +77,7 @@ describe("PostcardApp", function () {
     // init driver with capabilities
     driver = driver.init(cap);
 
-    return driver;
+    return switchContextToWebview(driver);
   });
 
   after(function () {
@@ -70,6 +93,7 @@ describe("PostcardApp", function () {
   // Tests
   it("should redirect to jxcore express app 'http://localhost'", function () {
     return driver
+      .waitForConditionInBrowser("document.querySelectorAll('div').length > 0", defaults.timeout.app)
       .waitForElementByCss("div", asserters.isDisplayed, defaults.wait.long)
       .safeEval('window.location.href').should.eventually.contain('http://localhost:');
   });

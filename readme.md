@@ -52,12 +52,12 @@ set PATH=%PATH%;%ANDROID_HOME%\tools;%ANDROID_HOME%\platform-tools
 Follow the instructions at [http://jxcore.com/downloads/](http://jxcore.com/downloads/). Their download page is a little confusing so please pay attention to the section at the top that says in a tiny little font 'Installation'. When you're done, check that the installation worked:
 ```
 $ jx -jxv
-v 0.3.0.7
+v 0.3.1.0
 ```
 
 ## Install Apache Cordova
 
-Ensure that Apache Cordova is installed globally by using JXcore's `jx install` command.
+Ensure that Apache Cordova 6 is installed globally by using JXcore's `jx install` command.
 
 Mac/Linux:
 ```
@@ -94,22 +94,21 @@ You will need two (it's a peer to peer system) Android devices running at least 
 ```shell
 git clone https://github.com/thaliproject/postcardapp.git
 
-cd postcardapp
-
-cordova platform add android
-cordova platform add ios
-
-cd app/jxcore
+cd postcardapp/app/jxcore
 jx npm install --production --autoremove "*.gz"
+
+# update JXcore Mobile to 0.1.1
+jxc install --force
+
+jx npm install
+find ./node_modules -name "*.gz" -type f -delete
 bower install
 find ./public/bower_components -name "*.gz" -type f -delete
-jx npm install --autoremove "*.gz"
-find ./node_modules -name "*.gz" -type f -delete
 
-cordova prepare android
+cordova platform add android
 cordova build android
 
-cordova prepare ios
+cordova platform add ios
 cordova build ios
 ```
 
@@ -118,11 +117,13 @@ On Windows one needs to use [Git Bash](https://git-scm.com/download/win) or equi
 ## Running in development environment on localhost
 You will also need to copy the Thali_CordovaPlugin 'mockmobile.js' script if you want run in development mode. This allows native methods to be called on the desktop when UX testing the web app.
 ```
-cd app/jxcore
-jx npm install --autoremove "*.gz"
+cd postcardapp/app/jxcore
+jx npm install
+find ./node_modules -name "*.gz" -type f -delete
 bower install
 find ./public/bower_components -name "*.gz" -type f -delete
-cp -v ../../thaliDontCheckIn/Thali_CordovaPlugin-master/test/www/jxcore/bv_tests/mockmobile.js node_modules/thali/
+
+cp -v ../../thaliDontCheckIn/Thali_CordovaPlugin-npmv2.1.0/test/www/jxcore/bv_tests/mockmobile.js node_modules/thali/
 jx npm run localhost
 ```
 

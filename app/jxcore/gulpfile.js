@@ -232,13 +232,22 @@ gulp.task('minify:html', function(){
 });
 
 // Copy Cordova javascript and plugin source into the JXcore app's 'public' dir
+gulp.task('cordova:xplatform', ['cordova:config','build:xplatform']);
 gulp.task('cordova:android', ['cordova:config','build:android']);
 gulp.task('cordova:ios', ['cordova:config','build:ios']);
+
+gulp.task('build:xplatform', function(cb){
+  return runSequence(
+    'cordova:clean',
+    'cordova:androidCopyCordovaScripts',
+    'cordova:iosCopyCordovaScripts',
+    'cordova:semaphore',
+    cb);
+});
 
 gulp.task('build:android', function(cb){
   return runSequence(
     'cordova:clean',
-    'cordova:cleanCordovaScripts',
     'cordova:androidCopyCordovaScripts',
     'cordova:semaphore',
     cb);
@@ -247,46 +256,38 @@ gulp.task('build:android', function(cb){
 gulp.task('build:ios', function(cb){
   return runSequence(
     'cordova:clean',
-    'cordova:cleanCordovaScripts',
     'cordova:iosCopyCordovaScripts',
     'cordova:semaphore',
     cb);
 });
 
-// remove platform specific Cordova source before building
-gulp.task('cordova:cleanCordovaScripts', function(cb){
-  console.log("Clean Cordova platform source:", paths.build);
-  var removables = [
-      paths.build+'public/cordova.js',
-      paths.build+'public/cordova_plugins.js',
-      paths.build+'public/plugins/**/*',
-      paths.build+'public/cordova-js-src/**/*'
-    ];
-  return del(removables, {force: true}, cb);
-});
-
 gulp.task('cordova:androidCopyCordovaScripts', function(cb){
-  return copyCordovaScripts(cb,'platforms/android/assets/www/');
+  return copyCordovaScripts(cb,
+    'platforms/android/platform_www/',
+    'platforms/android/assets/www/');
 });
 
 gulp.task('cordova:iosCopyCordovaScripts', function(cb){
-  return copyCordovaScripts(cb,'platforms/ios/www/');
+  return copyCordovaScripts(cb,
+    'platforms/ios/platform_www/',
+    'platforms/ios/www/');
 });
 
-var copyCordovaScripts = function(cb, path) {
-  console.log("copy Cordova scripts and plugins from:", path);
+var copyCordovaScripts = function(cb, platform_www, www) {
+  var dest = www+'jxcore/public';
+  console.log("copy Cordova scripts and plugins from:", platform_www);
   // NB: Cordova source paths may not exist during initial 'cordova platform add ...'
   return gulp.src([
-      path+'cordova.js',
-      path+'cordova_plugins.js',
-      path+'plugins/**/*',
-      path+'cordova-js-src/**/*'
+      platform_www+'cordova.js',
+      platform_www+'cordova_plugins.js',
+      platform_www+'plugins/**/*',
+      platform_www+'cordova-js-src/**/*'
     ],
     {
       dot: true,
-      base: path
+      base: platform_www
     })
-    .pipe(gulp.dest(paths.build+'public'), cb);
+    .pipe(gulp.dest(dest), cb);
 };
 
 // clean tmp working files
