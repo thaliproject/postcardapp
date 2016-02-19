@@ -98,6 +98,7 @@ Use [homebrew](http://brew.sh/) to install [Webkit Debug Proxy](https://github.c
 ```
 brew install ios-webkit-debug-proxy
 ```
+NB: If you run into problems then try installing the [recommended fork of Webkit Debug Proxy](https://github.com/appium/appium/blob/master/docs/en/advanced-concepts/ios-webkit-debug-proxy.md)
 
 ## Running tests on iOS device
 1. The iOS device will need to be setup as a developer device as well as **UIAutomation** enabled in *Settings > Developer*.  
@@ -110,7 +111,7 @@ brew install ios-webkit-debug-proxy
 3. Start webkit proxy using iOS device's UDID:  
 
     ```
-    ios_webkit_debug_proxy -c YOUR_IOS_DEVICE_UDID:27753-27754 -d
+    ios_webkit_debug_proxy -c YOUR_IOS_DEVICE_UDID:27753 -d
     ```
 
 4. Start Appium server (if not already running):  
@@ -131,13 +132,28 @@ brew install ios-webkit-debug-proxy
 ### Android device
 - Appium error `unknown error: Chrome version must be >= 43.0.2357.0`  
 Solution: The [Android WebView]( https://play.google.com/store/apps/details?id=com.google.android.webview) needs updated. Open *Settings > Apps > All > Android System WebView* to check the version.
+- Appium error `FATAL ERROR: invalid table size Allocation failed - process out of memory`  
+Solution: This happens with the 1.5.0-beta14 version of Appium. Uninstall beta and install Appium release:  
+```
+npm uninstall -g appium
+npm install -g  appium@1.4.16
+```  
 - Tests can't run if the screen locks.  
 Workaround: Temporarily turn off screen lock when testing - open *Settings > Security > Screen Lock* and select *None*.
+
+### iOS simulator
+- Running 'postcardapp.js' test exits with error message `Killed: 9` after 'POST /session' with desired capabilities.  
+Solution: Install the latest version of Appium  
+```
+npm install -g  appium@1.5.0-beta14
+```
 
 ### iOS device
 - Appium error `Command failed: /bin/sh -c ideviceinstaller`  
 Solution: If you get an ApplicationVerificationFailed error with 'ideviceinstaller' then make sure the app builds in Xcode and deploys to your device. Then rebuild for iOS device using `cordova build ios --device`
 - Tests can't run if the screen locks.  
 Workaround: Temporarily turn off or increase Auto-Lock time when testing - open *Settings > General > Auto-Lock* and set to *5 Minutes* or *Never*.
+
+
 
 If you experience any other issues the official [Appium troubleshooting ](http://appium.io/slate/en/1.4/?javascript#troubleshooting-appium) docs may come in handy.

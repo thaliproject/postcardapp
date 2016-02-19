@@ -8,17 +8,18 @@ exports.iosSimulator = {
   platformVersion: '9.2',
   deviceName: 'iPhone 5s',
   autoAcceptAlerts: true,
+  nativeInstrumentsLib: true,
 };
 
 exports.iosDevice = {
   app: path.resolve(__dirname, '../../platforms/ios/build/device/PostCardApp.app'),
-  bundleId: 'org.thaliproject.postcardapp',
   fullReset: true,
   autoWebview: false,
   platformName: 'iOS',
   platformVersion: '9.2.1',
   deviceName: 'iPhone 6',
   autoAcceptAlerts: true,
+  nativeInstrumentsLib: true,
 };
 
 exports.androidDevice = {

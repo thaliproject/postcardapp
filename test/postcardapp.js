@@ -37,6 +37,7 @@ describe("PostcardApp", function () {
   // workaround method to find webview context as 'autoWebview' is not finding webview context following Cordova 6 update
   function switchContextToWebview(driver) {
     return driver
+      .setImplicitWaitTimeout(defaults.wait.long)
       .sleep(defaults.wait.splashscreen)
       .contexts()
       .then( function(contexts){
@@ -93,9 +94,8 @@ describe("PostcardApp", function () {
   // Tests
   it("should redirect to jxcore express app 'http://localhost'", function () {
     return driver
-      .waitForConditionInBrowser("document.querySelectorAll('div').length > 0", defaults.timeout.app)
-      .waitForElementByCss("div", asserters.isDisplayed, defaults.wait.long)
-      .safeEval('window.location.href').should.eventually.contain('http://localhost:');
+      .waitForElementByCss("div", asserters.isDisplayed, defaults.timeout.app)
+      .eval('window.location.href').should.eventually.contain('http://localhost:');
   });
 
   it("should contain a header element", function() {
@@ -214,7 +214,7 @@ describe("PostcardApp", function () {
     return driver
       .waitForElementByCss('#editButton', asserters.isDisplayed, defaults.wait.short)
       .click()
-      .safeEval('document.querySelector(\'#myPostcards .row paper-fab[icon="delete"]\').click()')
+      .eval('document.querySelector(\'#myPostcards .row paper-fab[icon="delete"]\').click()')
       .sleep(defaults.wait.long)
       .waitForElementByCss('#myPostcards', asserters.isDisplayed, defaults.wait.short)
       .text().should.eventually.not.contain(defaults.message2);
@@ -223,7 +223,7 @@ describe("PostcardApp", function () {
   it("should be one postcard remaining after delete", function() {
     return driver
       .waitForElementByCss('#myPostcards', asserters.isDisplayed, defaults.wait.short)
-      .safeEval('document.querySelectorAll("#myPostcards .row:not([hidden])").length')
+      .eval('document.querySelectorAll("#myPostcards .row:not([hidden])").length')
       .should.eventually.equal(1);
   });
 

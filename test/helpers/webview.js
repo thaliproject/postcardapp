@@ -47,15 +47,15 @@ module.exports = {
   shouldLoadPostcardWithMessage: function(driver, message){
     return driver
       .waitForElementByCss("#textbox", asserters.isDisplayed, defaults.wait.short)
-      .waitForConditionInBrowser('document.querySelector("#textbox").value.length > 0', defaults.wait.long)
-      .safeEval('document.querySelector("#textbox").value')
+      //.waitForConditionInBrowser('document.querySelector("#textbox").value.length > 0', defaults.wait.long)
+      .eval('document.querySelector("#textbox").value')
       .should.eventually.contain(message);
   },
 
   shouldCountPostcardsWithNumber: function(driver, total){
     return driver
       .waitForElementByCss('#allPostcards', asserters.isDisplayed, defaults.wait.short)
-      .safeEval('document.querySelectorAll("#allPostcards .row:not([hidden])").length')
+      .eval('document.querySelectorAll("#allPostcards .row:not([hidden])").length')
       .should.eventually.equal(total);
   },
 
@@ -64,7 +64,7 @@ module.exports = {
       .waitForElementByCss('#editButton', asserters.isDisplayed, defaults.wait.short)
       .click()
       .waitForElementByCss('#myPostcards', asserters.isDisplayed, defaults.wait.short)
-      .safeEval('document.querySelectorAll("#myPostcards .row:not([hidden])").length')
+      .eval('document.querySelectorAll("#myPostcards .row:not([hidden])").length')
       .should.eventually.equal(total);
   },
 
