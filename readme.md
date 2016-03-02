@@ -4,7 +4,7 @@ Postcard App Demo with the following features
 
 2. Sync the cards from other devices over http
 
-![alt text](https://cloud.githubusercontent.com/assets/1880480/10515480/95a32aa6-734b-11e5-972e-d934763b93e9.gif "Postcard app demo")
+[![Watch Postcard app demo](http://img.youtube.com/vi/Mf_lsnrX8_4/0.jpg)](https://www.youtube.com/watch?v=Mf_lsnrX8_4&feature=youtu.be&list=PLmDFwvVc9vQ9zuDS4b3HhWWhhmPiuiUqn)
 
 This is intended as a sample project illustrating how to use the [Thali Project](http://www.thaliproject.org) APIs.
 

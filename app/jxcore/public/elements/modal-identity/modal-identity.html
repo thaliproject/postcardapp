@@ -22,29 +22,9 @@
       </div>
       <div id="appName">[[title]]</div>
       <div id="rightToolbarButtons">
-        <div id="notifications" on-click="_onReadNotifications" class="ghost">
-          <paper-icon-button id="notificationsButton" icon="social:notifications"></paper-icon-button>
-          <div class="badge">[[listNotifications.unread]]</div>
-        </div>
         <paper-icon-button id="closeButton" icon="close" on-click="_onCloseHandler"></paper-icon-button>
       </div>
     </paper-toolbar>
-
-    <!-- notifications panel -->
-    <section id="notificationsPanel" class="fit" hidden>
-      <article class="fit vertical layout center-center">
-        <h1>Nothing to see here!</h1>
-      </article>
-      <iron-list items="{{listNotifications.rows}}" as="item" class="fit" hidden>
-        <template>
-          <paper-material id="{{index}}" class="row">
-            <div class="fit layout horizontal center">
-              <p>[[item.message]]</p>
-            </div>
-          </paper-material>
-        </template>
-      </iron-list>
-    </section>
 
     <!-- sliding 'neon-animatable' pages -->
   	<neon-animated-pages class="fit" selected="{{selectedPage}}" attr-for-selected="id"  on-iron-select="_pageChanged" on-neon-animation-finish="_pageDidAnimate" entry-animation="slide-from-right-animation" exit-animation="slide-left-animation">
@@ -92,8 +72,7 @@ Polymer({
     'next': '_onNextHandler',
     'prev': '_onBackHandler',
     'page': '_onPageHandler',
-    'close': '_onCloseHandler',
-    'notification': '_onNotificationHandler'
+    'close': '_onCloseHandler'
   },
 
   properties: {
@@ -112,19 +91,6 @@ Polymer({
     bindingObject: {
       type: Object
     },
-
-    toastText : {
-      type: String,
-      value: ""
-    },
-    listNotifications : {
-      type: Object,
-      notify: true,
-      value: {
-        rows: [],
-        unread: 0
-      }
-    },
   },
 
   ready: function() {
@@ -139,7 +105,6 @@ Polymer({
 
   _resetState: function() {
     this._stop();
-    this.hideSelector("#notificationsPanel");
     this.set('lastPage', null);
     this.set('bindingObject', null);
   },
@@ -195,9 +160,6 @@ Polymer({
   _pageChanged: function(e) {
     console.log("#" + this.lastPage + " -> selectedPage: #" + this.selectedPage);
     this.set('title', this._getSelectedPageTitle()); // update page title
-
-    // hide notifications panel
-    this.hideSelector("#notificationsPanel");
 
     // detect if back button is needed
     if(this.selectedPage && this._getPageIndex(this.selectedPage) > 0) {
@@ -263,57 +225,6 @@ Polymer({
       this._gotoPage( children[index].id );
     } else {
       console.log("Error, page index request out of range.");
-    }
-  },
-
-  /* notifications */
-
-  _onNotificationHandler : function(e) {
-    console.log("_onNotificationHandler");
-    var request = e.detail;
-    if (request && request.username && request.code) {
-      var message = "Verify code " + request.code + " sent from " + request.username;
-      console.log("Pairing request received");
-      this._showToastNotification(message, 5); // seconds
-    }
-  },
-
-  _showToastNotification : function(message, secs) {
-    this.set('toastText', message);
-    this._addNotification(message);
-    var toast = document.querySelector('paper-toast');
-    if( toast ){
-      console.log("*** show toast ***\n" + message);
-      toast.text = message;
-      toast.duration = secs*1000;
-      toast.show();
-    }
-  },
-
-  _addNotification : function(message) {
-    this.unshift('listNotifications.rows', {message:message,isRead:false});
-    if(this.listNotifications.unread) {
-      var unread = this.listNotifications.unread+1;
-      this.set('listNotifications.unread', unread );
-    } else {
-      this.set('listNotifications.unread', 1);
-    }
-
-    this.querySelector('#notifications').classList.remove("ghost"); // reveal notifications button
-  },
-
-  /* open notifications panel */
-
-  _onReadNotifications : function(e) {
-    this.toggleVisibility("#notificationsPanel");
-    if(this.listNotifications.rows && this.listNotifications.rows.length > 0) {
-      this.show( this.querySelector("#notificationsPanel iron-list") );
-      this.hide( this.querySelector("#notificationsPanel article") );
-      // list needs a draw call after hidden state
-      this.querySelector("#notificationsPanel iron-list").fire('resize');
-    } else {
-      this.hide( this.querySelector("#notificationsPanel iron-list") );
-      this.show( this.querySelector("#notificationsPanel article") );
     }
   },
 

@@ -240,4 +240,70 @@ describe("PostcardApp", function () {
     return webview.shouldCountPostcardsWithNumber(driver, 1);
   });
 
+  it("should handle postcard changed event", function () {
+    return driver
+      .eval("document.querySelector('page-editor')._saveCard('"+defaults.cardId1+"', '"+defaults.cardAuthor+"', '"+defaults.cardText1+"', '"+defaults.cardImage+"')")
+      .sleep(defaults.wait.short)
+      .waitForElementByCss('#allPostcards', asserters.isDisplayed, defaults.wait.long)
+      .text().should.eventually.contain(defaults.cardText1);
+  });
+
+  it("should display postcard with image", function() {
+    return driver
+      .eval('document.querySelector("#'+defaults.cardId1+' .card-content iron-image").clientHeight > 1')
+      .should.eventually.be.true;
+  });
+
+  it("should not edit someone else's postcard", function () {
+    return driver
+      .waitForElementByCss('#editButton', asserters.isDisplayed, defaults.wait.short)
+      .click()
+      .sleep(defaults.wait.short)
+      .waitForElementByCss('#myPostcards', asserters.isDisplayed, defaults.wait.short)
+      .text().should.eventually.not.contain(defaults.cardText1);
+  });
+
+  it("should select top postcard to edit", function() {
+    return webview.shouldSelectTopPostcard(driver);
+  });
+
+  it("should load top postcard message in textarea to edit", function() {
+    return webview.shouldLoadPostcardWithMessage(driver, defaults.message1);
+  });
+
+  it("should handle contact changed event", function () {
+    return driver
+      .eval("document.querySelector('page-save')._saveContact('"+defaults.contactId+"', '"+defaults.contactUsername+"', '"+defaults.contactDeviceId+"')")
+      .sleep(defaults.wait.short)
+      .waitForElementByCss('option[value="'+defaults.contactId+'"]', asserters.isDisplayed, defaults.wait.long)
+      .text().should.eventually.contain(defaults.contactUsername);
+  });
+
+  it("should select added contact", function () {
+    return driver
+      .waitForElementByCss('option[value="'+defaults.contactId+'"]', asserters.isDisplayed, defaults.wait.long)
+      .click()
+      .sleep(defaults.wait.short)
+      .eval('document.querySelector(\'option[value="'+defaults.contactId+'"]\').selected')
+      .should.eventually.be.true;
+  });
+
+  it("should save postcard addressed to contact", function() {
+    return webview.shouldSavePostcard(driver);
+  });
+
+  it("should handle additional postcard changed event", function () {
+    return driver
+      .eval("document.querySelector('page-editor')._saveCard('"+defaults.cardId2+"', '"+defaults.cardAuthor+"', '"+defaults.cardText2+"')")
+      .sleep(defaults.wait.short)
+      .waitForElementByCss('#allPostcards', asserters.isDisplayed, defaults.wait.long)
+      .text().should.eventually.contain(defaults.cardText2);
+  });
+
+  it("should display added postcard with saved.contact", function() {
+    return driver
+      .eval('document.querySelector("#'+defaults.cardId2+'").innerText')
+      .should.eventually.contain(defaults.contactUsername);
+  });
+
 });

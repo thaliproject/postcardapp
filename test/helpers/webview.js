@@ -68,6 +68,14 @@ module.exports = {
       .should.eventually.equal(total);
   },
 
+  shouldSavePostcard: function(driver){
+    return driver
+      .waitForElementByCss('#saveButton', asserters.isDisplayed, defaults.wait.short)
+      .click()
+      .waitForElementByCss('#appName', asserters.isDisplayed, defaults.wait.long)
+      .text().should.eventually.contain('Postcards');
+  },
+
   shouldSavePostcardWithUpdate: function(driver, update){
     return driver
       .waitForElementByCss("#textbox", asserters.isDisplayed, defaults.wait.short)
