@@ -324,8 +324,21 @@ Polymer({
     }
   },
 
+  _hasLoggedIn: function(){
+    if (myApp.username && myApp.username.length > 0) {
+      return true;
+    }
+    return false;
+  },
+
   // update client with card changes event detail rather than reloading all records
   cardChangedHandler: function(e) {
+    // ignore card changes until logged in
+    if (!this._hasLoggedIn()) {
+      console.log("Awaiting login");
+      return false;
+    }
+
     var id, seq, rev, revNo;
     var index = -1;
     var isDeleted = false;
