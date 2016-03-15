@@ -69,11 +69,6 @@ Polymer({
     },
     isEdit: false
   },
-  listeners: {
-    'camera-success': 'onCameraSuccess',
-    'camera-error': 'onCameraError',
-    'contact-changed': 'contactChangedHandler'
-  },
   created: function() {
     console.log(this.localName + ' was created');
   },
@@ -160,11 +155,7 @@ Polymer({
     }
   },
 
-  // Note:
-  // Cordova functions cannot be called directly from inside an iframe.
-  // On mobile the Cordova webview origin is file://
-  // but the origin of iframe running JXcore Express app is http://localhost
-  // Cordova functions are therefore triggered using Cross Origin Messaging.
+  // Cordova Camera function
   _cameraButtonHandler: function(e) {
     var options = {
       quality: 80,
@@ -211,7 +202,6 @@ Polymer({
     if (typeof imageData !== 'undefined') {
       // NB: insert the base64 image tag for displaying PouchDB image attachments
       return "data:image/jpeg;base64," + imageData;
-      //return this.imageDataToImageSource(imageData);
     }
     return "data:image/gif;base64," +
       "R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7";

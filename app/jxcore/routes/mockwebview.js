@@ -2,7 +2,7 @@
 var express = require('express');
 var faker = require('faker');
 
-// this is a mock API to start testing ajax calls from UI
+// this is a mock API for localhost development to test Identity Exchange UI
 
 function mockWebviewRoutes () {
     var api = express.Router();
@@ -23,7 +23,7 @@ function mockWebviewRoutes () {
           if (x>0) {
             console.log("lost "+x+" peers");
             while (x--) {
-              pollingData.peers.splice( Math.floor( 
+              pollingData.peers.splice( Math.floor(
                 Math.random()*pollingData.peers.length), 1);
             }
           }

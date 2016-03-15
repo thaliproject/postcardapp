@@ -1,4 +1,4 @@
-"use strict";
+'use strict';
 
 if (!require('fs').existsSync(__dirname+"/node_modules")) {
   console.log("'node_modules' folder not found. Please refer to readme.md");

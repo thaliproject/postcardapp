@@ -8,15 +8,14 @@ function addressBookRoutes (db) {
   router.route('/login').post(function(req, res) {
     res.setHeader('Content-Type', 'application/json');
     // form validation
-    if (typeof req.body.username === 'undefined' ||
-    typeof req.body.deviceIdentity === 'undefined') {
+    if (req.body.username == null || req.body.deviceIdentity == null) {
       res.status(400).json({ error: 'User identity is undefined' });
       return;
     }
     // user input validation
     var username = req.body.username.trim();
     var deviceIdentity = req.body.deviceIdentity.trim();
-    if (username.length <= 0 || deviceIdentity.length <= 0) {
+    if (username.length == 0 || deviceIdentity.length == 0) {
       res.status(400).json({ error: 'User identity is required' });
       return;
     }

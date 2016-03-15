@@ -23,16 +23,11 @@ var inter = setInterval(function() {
         alert(JSON.stringify(err));
       } else {
         log('jxcore_ready');
-        jxcore_ready();
+        isJXcoreReady = true;
       }
     });
   });
 }, 5);
-
-function jxcore_ready() {
-  isJXcoreReady = true;
-  //document.getElementById('appFrame').src = HOST;
-}
 
 function registerCordovaFunctions() {
   jxcore('log').register(log);
@@ -43,7 +38,7 @@ function log(x) {
 }
 
 // -----------------------------------------------------------------------------
-// Handle Cordova iframe events
+// Cordova redirect to localhost
 // -----------------------------------------------------------------------------
 
 // Cordova ready
@@ -64,61 +59,3 @@ var inter2 = setInterval(function(){
   console.log("Cordova and JXCore are both ready. Redirect to:", HOST);
   window.location.href = HOST;
 }, 5);
-
-// Listen for messages posted from iframe
-window.addEventListener('message', receiveMessage, false);
-
-// Handle cross orgin message
-var contentWindow;
-function receiveMessage(event) {
-  console.log('webview received message');
-
-  if (event.origin !== HOST) {
-    console.log("Access denied :(");
-    return;
-  }
-
-  // retain reference to the (iframe) window object that sent the message
-  contentWindow = event.source;
-
-  if (!isCordovaReady) {
-    console.log("Error, Cordova not ready!");
-    return;
-  }
-
-  var msg = event.data;
-  if (msg.action === 'navigator.camera.getPicture') {
-    getPicture(msg.options);
-  }
-}
-
-function getPicture(options) {
-  var quality = (options.quality || 80),
-      targetWidth = (options.targetWidth || 1080),
-      targetHeight = (options.targetHeight || 720);
-  var cameraOptions = {
-    quality: quality,
-    targetWidth: targetWidth,
-    targetHeight: targetHeight,
-    encodingType: Camera.EncodingType.JPEG,
-    correctOrientation: true,
-    saveToPhotoAlbum: false,
-    allowEdit: false,
-    destinationType: Camera.DestinationType.DATA_URL
-  };
-  console.log("getPicture", options, cameraOptions);
-  // DATA_URL returns image as base64 encoded string
-  navigator.camera.getPicture( cameraSuccess, cameraFail, cameraOptions);
-}
-
-function cameraSuccess(imageData) {
-  console.log("cameraSuccess");
-  // post message back to iframe
-  contentWindow.postMessage( {image:imageData}, "*"); // HOST
-}
-
-function cameraFail(message) {
-  console.log("cameraFail");
-  // post message back to iframe
-  contentWindow.postMessage( {error:message}, "*"); // HOST
-}

@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+'use strict'; // Cordova hook script used to trigger gulp scripts
 
 module.exports = function(context) {
   var Q = context.requireCordovaModule('q');

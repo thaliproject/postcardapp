@@ -1,4 +1,4 @@
-"use strict";
+'use strict';
 
 var asserters = require("wd").asserters,
     defaults = require("./defaults");

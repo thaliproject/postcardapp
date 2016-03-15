@@ -1,3 +1,5 @@
+'use strict';
+
 exports.configure = function (driver) {
   // See whats going on
   driver.on('status', function (info) {

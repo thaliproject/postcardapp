@@ -3,7 +3,7 @@
 var PageBehaviors = PageBehaviors || {}; // namespace
 
 /*
- * This behaviour helps to traverse dom tree. 
+ * This behaviour helps to traverse dom tree.
  */
 
 PageBehaviors.TreeTraversing = {
@@ -25,22 +25,22 @@ PageBehaviors.TreeTraversing = {
 				break;
 			case '.':
 				parentSelector = parentSelector.substr(1);
-        		matchTest = this._hasClass;
-        		break;
-        	case '[':
-        		parentSelector = parentSelector.slice(1,-1);
-        		matchTest = this._hasAttribute;
-        		break;
-        	default:
-        		parentSelector = parentSelector.toLowerCase();
-        		matchTest = this._hasTag;
-        }
+    		matchTest = this._hasClass;
+    		break;
+    	case '[':
+    		parentSelector = parentSelector.slice(1,-1);
+    		matchTest = this._hasAttribute;
+    		break;
+    	default:
+    		parentSelector = parentSelector.toLowerCase();
+    		matchTest = this._hasTag;
+    }
 		for (; element && element !== document ; element = element.parentElement) {
-        	if( matchTest(element, parentSelector) ) {
-        		return element;
-        	}
-    	}
-    	return false;
+      	if( matchTest(element, parentSelector) ) {
+      		return element;
+      	}
+  	}
+  	return false;
 	},
 
 	_hasId : function (element, selector) {

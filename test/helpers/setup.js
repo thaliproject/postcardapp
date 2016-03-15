@@ -1,3 +1,5 @@
+'use strict';
+
 var wd = require("wd");
 
 require('colors');

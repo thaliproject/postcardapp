@@ -1,5 +1,4 @@
 'use strict'; // This JavaScript file runs on JXcore
-/*jshint esnext: true */
 /*global Mobile */
 
 var fs = require('fs');
