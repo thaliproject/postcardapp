@@ -1,0 +1,174 @@
+<link rel="import" href="/bower_components/polymer/polymer.html">
+<link rel="import" href="/bower_components/neon-animation/neon-animatable-behavior.html">
+<link rel="import" href="/elements/behaviors/modal-pages.html">
+<link rel="import" href="/elements/behaviors/ui-helper.html">
+
+<dom-module id="page-pair">
+
+<template>
+  <main class="fit vertical layout center-center" hidden>
+    <h1>Ask <span>[[verifiedItem.peerFriendlyName]]</span></h1>
+    <p>Does your code match?</p>
+    <h1 class="scratch">[[verifiedItem.verificationCode]]</h1>
+    <div class="layout horizontal">
+      <paper-button class="accent-warn" on-click="_onDeclineHandler"><iron-icon icon="cancel"></iron-icon> Decline</paper-button>
+      <paper-button class="accent-ok" on-click="_onConfirmationHandler"><iron-icon icon="check-circle"></iron-icon> Confirm</paper-button>
+    </div>
+    <div class="gutter"></div>
+  </main>
+  <!-- spinner -->
+  <aside class="fit vertical layout center-center">
+    <iron-icon icon="autorenew" class="rotating"></iron-icon>
+    <p>Attempting to pair with <span>[[selectedItem.peerFriendlyName]]</span></p>
+    <div class="gutter"></div>
+  </aside>
+</template>
+
+<script>
+'use strict';
+Polymer({
+  is: "page-pair",
+  behaviors: [
+      Polymer.NeonAnimatableBehavior,
+      PageBehaviors.ModalPages,
+      PageBehaviors.UIHelper,
+    ],
+  properties: {
+    selectedItem : {
+      type: Object
+    },
+    isStarted: {
+      type: Boolean,
+      value: false
+    },
+    task: {
+      type: Object
+    },
+    verifiedItem : {
+      type: Object,
+      notify: true
+    },
+  },
+  setup : function(bindingObject) {
+    console.log(this.localName + ' setup');
+    if(bindingObject) {
+      console.log(bindingObject);
+      this.set('selectedItem', bindingObject);
+    }
+    this.set('verifiedItem', {});
+    this.hideSelector("main");
+  },
+  start : function() {
+    console.log(this.localName + ' start');
+    this._putExecuteExchange();
+  },
+  stop : function() {
+    console.log(this.localName + ' stop');
+    if(this.isStarted) {
+      console.log("Kill the exchange process!");
+      this._deleteExecuteExchange();
+    }
+    this._stopTask();
+    this._reset();
+  },
+  _stopTask : function() {
+    if(this.task) {
+      console.log("Stop exchange service");
+      clearInterval(this.task);
+      this.task = null;
+    }
+  },
+  _reset : function() {
+    this.set('selectedItem', {});
+    this.set('verifiedItem', {});
+    this._updateView();
+  },
+
+  /* pair */
+
+  _onConfirmationHandler: function(e) {
+    this.modalNextFire(this.verifiedItem);
+  },
+
+  _onDeclineHandler: function(e) {
+    this.modalPrev();
+  },
+
+  /* rest api */
+
+  _putExecuteExchange : function() {
+    var peerDeviceId = this.selectedItem.peerDeviceId;
+    console.log("ExecuteExchange peerDeviceId:" + peerDeviceId);
+    $.ajax({
+      context : this,
+      method : 'PUT',
+      url : myApp.webview + 'IdentityExchange/ExecuteExchange',
+      contentType: 'application/json',
+      data: JSON.stringify({
+        peerDeviceId: peerDeviceId
+      }),
+      timeout: 15000
+    }).fail( function( jqXHR, textStatus, errorThrown ){
+      alert("Error, could not execute exchange. " + errorThrown);
+      this.modalPrev(); // go back and try again
+    }).done( function(data, textStatus, jqXHR){
+      console.log("putIdentityExchange:" + textStatus);
+      this.isStarted = true;
+      if(!this.task && this.isSelected()) {
+        console.log("Start exchange...");
+        this.task = setInterval(this._getIdentityExchange.bind(this), 2000);
+      }
+    });
+  },
+
+  _deleteExecuteExchange : function() {
+    $.ajax({
+      context : this,
+      method : 'DELETE',
+      url : myApp.webview + 'IdentityExchange/ExecuteExchange',
+      timeout : 4000
+    }).fail( function( jqXHR, textStatus, errorThrown ){
+      alert("Error, could not delete device identity. " + errorThrown);
+    }).done( function(data, textStatus, jqXHR){
+      console.log("deleteIdentityExchange:" + textStatus);
+      this.isStarted = false;
+    });
+  },
+
+  _getIdentityExchange : function() {
+    var peerFriendlyName = this.selectedItem.peerFriendlyName;
+    console.log("ExecuteExchange name:" + peerFriendlyName);
+    this.request = $.ajax({
+      context : this,
+      method : 'GET',
+      url : myApp.webview + 'IdentityExchange/ExecuteExchange',
+      data : 'json'
+    }).fail( function( jqXHR, textStatus, errorThrown ){
+      alert("Error, could not exchange identity. " + errorThrown);
+      // go back and try again
+    }).done( function(data, textStatus, jqXHR){
+      console.log("getIdentityExchange:" + textStatus);
+      console.log(data);
+      if (data && data.status==="complete") {
+        this.isStarted = false;
+        this._stopTask();
+        data.peerFriendlyName = peerFriendlyName; // add name to item
+        this.set('verifiedItem', data); // update model
+        this.showOnlySelector('main');
+      } else {
+        console.log("exchange status: " + data.status);
+      }
+    });
+  },
+
+  _updateView: function() {
+    if ( this.verifiedItem && this.verifiedItem.status==="complete" ) {
+      this.showOnlySelector("main"); // show main view
+    } else {
+      this.showOnlySelector("aside"); // show spinner
+    }
+  },
+
+});
+</script>
+</dom-module>

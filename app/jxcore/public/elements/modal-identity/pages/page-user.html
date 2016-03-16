@@ -1,0 +1,59 @@
+<link rel="import" href="/bower_components/polymer/polymer.html">
+<link rel="import" href="/bower_components/neon-animation/neon-animatable-behavior.html">
+<link rel="import" href="/elements/behaviors/modal-pages.html">
+<link rel="import" href="/elements/behaviors/multi-platform.html">
+<link rel="import" href="/elements/shared/login-form/login-form.html">
+
+<dom-module id="page-user">
+
+<template>
+	<main class="fit layout vertical">
+		<login-form></login-form>
+	</main>
+</template>
+
+<script>
+'use strict';
+Polymer({
+  is: "page-user",
+  behaviors: [
+      Polymer.NeonAnimatableBehavior,
+      PageBehaviors.ModalPages,
+			PageBehaviors.MultiPlatform
+    ],
+	listeners: {
+		'deviceIdentity':'onDeviceIdentity',
+		'username':'onUsername',
+		'login':'onLogin',
+		'savedUsername':'onSavedUsername',
+	},
+  setup : function() {
+  	console.log(this.localName + ' setup');
+  },
+  start : function() {
+  	console.log(this.localName + ' start');
+		this.querySelector("login-form").start();
+  },
+  stop : function() {
+  	console.log(this.localName + ' stop');
+  },
+
+	// login-form element event handlers
+	onDeviceIdentity : function(e) {
+		console.log("modal deviceIdentity", e.detail);
+	},
+	onUsername : function(e) {
+		console.log("modal username", e.detail);
+	},
+	onLogin : function() {
+		alert("Error. Couldn't find login user");
+	},
+	onSavedUsername : function(e) {
+		console.log("modal saved username", e.detail);
+		myApp.username = e.detail; // update app property
+		this.modalPrev(); // return back
+	}
+
+});
+</script>
+</dom-module>

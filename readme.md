@@ -4,15 +4,13 @@ Postcard App Demo with the following features
 
 2. Sync the cards from other devices over http
 
-![alt text](https://cloud.githubusercontent.com/assets/1880480/10515480/95a32aa6-734b-11e5-972e-d934763b93e9.gif "Postcard app demo")
+[![Watch Postcard app demo](http://img.youtube.com/vi/Mf_lsnrX8_4/0.jpg)](https://www.youtube.com/watch?v=Mf_lsnrX8_4&feature=youtu.be&list=PLmDFwvVc9vQ9zuDS4b3HhWWhhmPiuiUqn)
 
 This is intended as a sample project illustrating how to use the [Thali Project](http://www.thaliproject.org) APIs.
 
 # Dependencies
 
 ## Windows Prerequisites
-
-If you are using Windows to build the Postcard App, you will need to use [node-gyp](https://github.com/TooTallNate/node-gyp) to compile [leveldown](https://github.com/Level/leveldown)
 
 The following software is required:
 - Visual Studio 2013 (note: VS 2015 doesn't appear to work yet)
@@ -54,12 +52,12 @@ set PATH=%PATH%;%ANDROID_HOME%\tools;%ANDROID_HOME%\platform-tools
 Follow the instructions at [http://jxcore.com/downloads/](http://jxcore.com/downloads/). Their download page is a little confusing so please pay attention to the section at the top that says in a tiny little font 'Installation'. When you're done, check that the installation worked:
 ```
 $ jx -jxv
-v 0.3.0.7
+v 0.3.1.0
 ```
 
 ## Install Apache Cordova
 
-Ensure that Apache Cordova is installed globally by using JXcore's `jx install` command.
+Ensure that Apache Cordova 6 is installed globally by using JXcore's `jx install` command.
 
 Mac/Linux:
 ```
@@ -79,6 +77,14 @@ $ jx install -g cordova
 $ npm install -g bower
 ```
 
+## Install Gulp
+
+[Gulp](http://gulpjs.com/) is used to build the Postcard app source.
+
+```
+$ npm install -g gulp
+```
+
 ## Hardware
 
 You will need two (it's a peer to peer system) Android devices running at least KitKat. And no, the emulator won't work. We depend on specific radios to work and they aren't in the emulator.
@@ -88,18 +94,22 @@ You will need two (it's a peer to peer system) Android devices running at least 
 ```shell
 git clone https://github.com/thaliproject/postcardapp.git
 
-cd postcardapp
+cd postcardapp/app/jxcore
+jx npm install --production --autoremove "*.gz"
+
+# update JXcore Mobile to 0.1.1
+jxc install --force
+
+jx npm install
+find ./node_modules -name "*.gz" -type f -delete
+bower install
+find ./public/bower_components -name "*.gz" -type f -delete
+
+cordova platform add android
+cordova build android
 
 cordova platform add ios
-cordova platform add android
-
-cd www/jxcore
-jx npm install --production --autoremove "*.gz"
-bower install
-find ./bower_components -name "*.gz" -type f -delete
-
 cordova build ios
-cordova build android
 ```
 
 On Windows one needs to use [Git Bash](https://git-scm.com/download/win) or equivalent to run the above commands.
@@ -107,18 +117,20 @@ On Windows one needs to use [Git Bash](https://git-scm.com/download/win) or equi
 ## Running in development environment on localhost
 You will also need to copy the Thali_CordovaPlugin 'mockmobile.js' script if you want run in development mode. This allows native methods to be called on the desktop when UX testing the web app.
 ```
-cd www/jxcore
-jx npm install --production --autoremove "*.gz"
+cd postcardapp/app/jxcore
+jx npm install
+find ./node_modules -name "*.gz" -type f -delete
 bower install
-find ./bower_components -name "*.gz" -type f -delete
-cp -v ../../thaliDontCheckIn/Thali_CordovaPlugin-master/test/www/jxcore/bv_tests/mockmobile.js node_modules/thali/
+find ./public/bower_components -name "*.gz" -type f -delete
+
+cp -v ../../thaliDontCheckIn/Thali_CordovaPlugin-npmv2.1.0/test/www/jxcore/bv_tests/mockmobile.js node_modules/thali/
 jx npm run localhost
 ```
 
 # Fun issues you are probably going to run into
 
 ## Getting Discovery Working
-First and foremost, service discovery over Wi-Fi Direct is not terribly reliable. It can take anywhere from seconds to minutes to discover another device. Yes, we are working on this (including looking at moving completely over to BLE). In the meantime something you can do to improve things is reboot your devices. But otherwise the way to know if discovery actually occured is by looking at your logcat output. See below for instructions on using logcat. In the log you are looking for something like:
+First and foremost, service discovery over Wi-Fi Direct is not terribly reliable. It can take anywhere from seconds to minutes to discover another device. Yes, we are working on this (including looking at moving completely over to BLE). In the meantime something you can do to improve things is reboot your devices. But otherwise the way to know if discovery actually occurred is by looking at your logcat output. See below for instructions on using logcat. In the log you are looking for something like:
 
 ```
 08-07 11:18:47.444    6037-6037/org.thaliproject.postcardapp I/Service searcher﹕ Added service request
@@ -140,30 +152,3 @@ And yes, we are going to make this easier. See [here](https://github.com/thalipr
 ### Using logcat
 
 The easiest way in my opinion to use logcat, especially given that there are two devices involved, is to use Android Studio and its logcat viewer. But for masochists out there you can also use logcat via adb. But you have to specify which device you want to get your logcat output from. So first run `adb devices` to get a list of your attached devices. Then issue `adb -s [id] logcat` where [id] is the device ID you got from `adb devices`.
-
-## Support for iOS 9
-
-iOS 8 is the current supported platform. But the plan is to move forward to iOS 9 once we have tested everything.
-In the meantime, if you have updated to iOS 9 you will need to add an App Transport entry to your `Info.plist` until we put a fix in.
-
-```xml
-<key>NSAppTransportSecurity</key>
-<dict>
-	<key>NSExceptionDomains</key>
-    <dict>
-        <key>localhost</key>
-        <dict>
-            <key>NSTemporaryExceptionAllowsInsecureHTTPLoads</key>
-            <true/>
-            <key>NSTemporaryExceptionAllowsInsecureHTTPSLoads</key>
-            <false/>
-            <key>NSIncludesSubdomains</key>
-            <true/>
-            <key>NSTemporaryExceptionMinimumTLSVersion</key>
-            <string>1.0</string>
-            <key>NSTemporaryExceptionRequiresForwardSecrecy</key>
-            <false/>
-        </dict>
-    </dict>
-</dict>
-```

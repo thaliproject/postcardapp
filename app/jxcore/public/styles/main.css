@@ -1,0 +1,603 @@
+/* basic reset */
+* {
+	font-family: "Roboto", "HelveticaNeue-Light", "Helvetica-Light", "Helvetica", "Arial", sans-serif;
+	font-weight: normal;
+}
+
+html,body{
+	margin: 0;
+	padding: 0;
+	height: 100%;
+	width: 100%;
+	background-color: white;
+	min-width: 320px; /* smallest screen width supported */
+	min-height: 320px; /* smallest screen height supported */
+}
+
+/* disable webkit bounce effect in the browser */
+html,body {
+    overflow: hidden;
+    -webkit-overflow-scrolling: touch;
+}
+
+/* disable iOS text selection */
+body, .noSelect {
+	-webkit-touch-callout: none;
+    -webkit-user-select: none;
+    -khtml-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+    cursor: default;
+}
+
+body {
+	-webkit-transform: translateZ(0px); /* hack for iOS8 iframe scroll issue */
+}
+
+/* iOS nav bar style */
+#appName {
+	display: block;
+	width: 120px;
+	margin-left: -60px;
+	position: absolute;
+	left: 50%;
+	top: 20px;
+	text-align: center;
+	overflow: hidden;
+	white-space: nowrap;
+	text-overflow: ellipsis;
+	background: transparent;
+	font-size: 18px;
+}
+#rightToolbarButtons {
+	position: absolute;
+	right: 10px;
+	top: 10px;
+}
+#leftToolbarButtons {
+	position: absolute;
+	left: 10px;
+	top: 10px;
+}
+
+#rightToolbarButtons paper-icon-button,
+#rightToolbarButtons>div {
+	float: left;
+}
+#leftToolbarButtons paper-icon-button,
+#leftToolbarButtons>div {
+	float: left;
+}
+
+/* debug log */
+#debugConsoleLog {
+	z-index: 14; /* higher than modal */
+	position: absolute;
+	left: 0;
+	top: 0;
+	width: 100%;
+	height: 100%;
+}
+
+#debugConsoleLog textarea {
+	position: absolute;
+	left: 0;
+	top: 56px; /* calc */
+	width: 100%;
+	height: calc( 100% - 112px ); /* calc */
+	background: black;
+	color: white;
+	margin: 0;
+	padding: 0;
+	border: 0;
+	border-radius: 0; /* remove rounded corners on iOS */
+	resize: none; /* hide resize box in firefox */
+	font-family: monospace;
+}
+
+#debugConsoleLog header {
+	position: absolute;
+	left: 0;
+	top: 0;
+	width: 100%;
+	height: 56px; /* calc */
+	background: #FF4081;
+}
+
+#debugConsoleLog header h1 {
+	text-align: center;
+	font-size: 18px;
+	color: white;
+	padding-top: 8px;
+}
+
+#debugConsoleLog aside {
+	position: absolute;
+	left: 0;
+	bottom: 0;
+	width: 100%;
+	height: 64px; /* calc */
+	background: #FF4081;
+	text-align: center;
+	color: white;
+}
+
+#debugConsoleLog aside paper-icon-button {
+	margin: 10px; /* button spacing */
+}
+
+#debugConsoleLog paper-icon-button iron-icon {
+	color: white;
+}
+
+/* minimal margin for input text and labels */
+.inset {
+	width: 100%;
+	box-sizing: border-box;
+	padding: 0 10px; /* if box-sizing is supported then add padding to give space around editable text */
+}
+
+/* wrapper to force contents to align center */
+.alignCenter {
+	display: table;
+	width: 100%;
+	text-align: center;
+}
+
+/* solid color for paper-button */
+paper-button.accent {
+	background-color: #3E51B5;
+	color: #fff;
+}
+
+paper-button.accent-warn {
+	background-color: #FF4081;
+	color: #fff;
+}
+
+paper-button.accent-ok {
+	background-color: #33CC99;
+	color: #fff;
+}
+
+/* postcards background */
+neon-animated-pages,
+iron-list,
+paper-card.row {
+	background: #EEE;
+}
+
+/* edit postcards background */
+iron-list#myPostcards,
+iron-list#myPostcards paper-card.row {
+	background: #FF4081;
+}
+
+/* iron-list row */
+paper-card.row {
+	width: 100%;
+	padding-bottom: 20px;
+	border-radius: 0;
+}
+
+iron-image.styledImage {
+	width: 100%;
+	height: 280px;
+	background-color: white;
+}
+
+/* row inline editing with paper-input */
+.inlineInput {
+	width: 100%;
+	box-sizing: border-box;
+	padding: 0 25px; /* if box-sizing is supported then add padding to give space around editable text */
+
+	position: absolute;
+	top:0;
+	left:0;
+	/*z-index: 1;*/
+}
+
+/* temp class to make inline editing not cause height rendering issues in iron-list */
+.truncate {
+	overflow: hidden;
+	white-space: nowrap;
+	text-overflow: ellipsis;
+}
+
+/* row theme */
+.postcard {
+	background-color: white; /* card bg */
+	color: #333;
+}
+
+/* iOS 8.4 drop-shadow */
+.postcard {
+	box-shadow: 0px 5px 6px rgba(0,0,0,0.3);
+}
+
+/* override to allow edge to edge width images */
+paper-card.row .card-content {
+	padding: 16px 0;
+}
+
+paper-card.row iron-image {
+	margin: -16px 0 16px;
+}
+
+/* row text format */
+.postcard h6, .postcard p, .postcard pre, textarea.postcard,
+.row p {
+	font-size: 24px;
+	/* padding: 0 10px; */
+}
+
+/* edit input inline (multiline text in a single line) */
+.edit-inline {
+	word-wrap: break-word; /* prevent horizontal scroll here - break long single line strings */
+	white-space: pre-wrap; /* make pre text wrap */
+}
+
+/* message caption */
+.postcard pre {
+	padding: 0 16px;
+	margin: 0;
+	color: #212121;
+	white-space: pre-wrap; /* wrap pre text */
+	word-wrap: break-word; /* soft-wrap long words */
+}
+
+/* row span text */
+.postcard span {
+	display: block;
+	font-size: 12px;
+	color: #727272;
+}
+
+.postcard span.from,
+.postcard span.date {
+	display: block;
+	padding: 16px;
+	padding-bottom: 0;
+}
+
+.postcard span.from {
+	float: left;
+}
+
+.postcard span.date {
+	float: right;
+}
+
+div.cb {
+	clear: both;
+}
+
+/* highlight postcards sent to user */
+.you span {
+	color: #2D44D5; /* highlight */
+}
+
+/* highlight postcards created by user */
+.me span {
+	color: #FF4081; /* accent */
+}
+
+
+/* edit text style */
+textarea.postcard {
+	width: 100%;
+	/* height: 100%; */
+	min-height: 200px;
+	border: 0;
+	resize: none; /* hide resize box in chrome */
+	margin: 0;
+	box-sizing: border-box;
+	padding: 10px; /* if box-sizing is supported then add padding to give space around editable text */
+	padding-top: 20px; /* give some extra space for iOS device status bar */
+	border-radius: 0; /* remove rounded corners on iOS */
+	background-color: #CCC;
+}
+
+paper-fab#debugButton {
+	display: block;
+	position: fixed; /* Beware: use only in non-scrolling views as fixed position doesn't play well within a iOS scroll view */
+	bottom: 30px;
+	right: 30px;
+	z-index: 15; /* 15 above panel */
+}
+
+paper-fab.action {
+	position: absolute;
+	right: 10px;
+	top: calc(50% - 28px);
+}
+
+.gutter {
+	width: 100%;
+	height: 100px;
+}
+
+/* editor */
+
+.containerBox {
+	width: 100%;
+	height: 80px;
+}
+
+.selectBox {
+	width: 100%;
+}
+
+.selectBox,
+.selectBox p.label,
+.selectBox select.fill {
+	height: 80px;
+	font-size: 18px;
+	display: block;
+	background: white;
+}
+
+p.label {
+	line-height: 80px;
+	position: absolute;
+	top: 0;
+	left: 0;
+	margin: 0;
+	padding: 0 10px;
+	box-sizing: border-box;
+	width: 50px;
+}
+
+select.fill {
+	position: absolute;
+	left: 50px; /* same as label width */
+	top: 0;
+	text-indent: 0px;
+	margin: 0;
+	padding: 0;
+	box-sizing: border-box;
+	width: calc(100% - 50px);
+	height: 100%;
+	border: 0;
+	border-radius: 0;
+	outline: none;
+	appearance: none;
+	-webkit-appearance: none;
+	-moz-appearance: none;
+	/*color: #FF4081;*/
+}
+
+.photoBox, #cameraImage {
+	width: 100%;
+	height: 80px;
+}
+
+#cameraButton, #discardPhotoButton {
+	position: absolute;
+	top: calc(50% - 28px);
+	left: calc(50% - 28px);
+}
+
+/* adjustments */
+
+#selectTo {
+	width: calc(100% - 80px);
+	position: absolute;
+	top: 0;
+	left: 0; /* 80px */
+}
+#attachPhoto {
+	width: 80px;
+	position: absolute;
+	top: 0;
+	/*left: 0px;*/
+	right: 0;
+	background: white;
+}
+
+
+/* modal page */
+
+modal-identity {
+	position: absolute;
+	left: 0;
+	top: 0;
+	margin: 0;
+	padding: 0;
+	width: 100%;
+	height: 100%;
+	background: white;
+	/* watch out for iOS max-height:0px display issue */
+	min-height: 100%;
+	max-height: 100%;
+	z-index: 13 !important;
+}
+
+/* spinner */
+@keyframes rotating {
+    from{
+        transform: rotate(0deg);
+    }
+    to{
+        transform: rotate(360deg);
+    }
+}
+@-webkit-keyframes rotating {
+    from{
+        -webkit-transform: rotate(0deg);
+    }
+    to{
+        -webkit-transform: rotate(360deg);
+    }
+}
+.rotating {
+    animation: rotating 2s linear infinite;
+    -webkit-animation: rotating 2s linear infinite;
+}
+
+/* row style */
+.row-fixedheight {
+	width: 100%;
+	height: 80px;
+}
+
+.row-fixedheight > div {
+	border-bottom: 1px solid #ccc;
+}
+
+.indent {
+	margin-left: 10px;
+}
+
+/* iron-list row divider */
+.divider {
+	width: 100%;
+	height: 1px;
+	background-color: #ddd;
+	position: absolute;
+	left: 0;
+	bottom: 0;
+}
+
+.card {
+	background: white;
+	color: #333;
+}
+
+.scratch {
+	padding: 15px;
+}
+
+.scratch, paper-toast {
+	background: #333;
+	color: white;
+}
+
+paper-toast {
+	z-index: 13; /* appear in front of modal @12 iron-list @1 */
+	width: calc(100% - 22px); /* minus left: value*2 */
+}
+
+paper-toast>span#label {
+	/*font-weight: bold;*/
+}
+
+/*
+paper-badge.icon {
+	left: 18px !important;
+	top: -2px !important;
+}
+*/
+
+.badge {
+	background-color: #FF4081;
+    width: 18px;
+    height: 18px;
+    border-radius: 9px;
+    line-height: 18px;
+    text-align: center;
+    font-size: 12px;
+    left: 21px;
+    top: 4px;
+    position: absolute;
+}
+
+#notificationsPanel {
+	/*background-color: rgba(132,159,204,0.95);*/
+	background: #849FCC;
+	color: white;
+	position: absolute;
+	top: 0;
+	left: 0;
+	z-index: 1;
+}
+
+#notificationsPanel paper-material>div {
+	background: #3E51B5;
+	color: white;
+}
+
+#notificationsPanel paper-material p {
+	font-size: 16px;
+	padding: 0 20px;
+}
+
+.center-center h1 {
+	text-align: center;
+}
+
+.diminished {
+	color: #ccc;
+}
+
+/*.disabled {
+	opacity: 0.5;
+	filter: grayscale(1);
+	-webkit-filter: grayscale(1);
+}*/
+
+.ghost {
+	visibility: hidden;
+}
+
+/* fix to hide list row footer shadow */
+.row paper-material.paper-material-0[elevation="1"],
+paper-card.paper-card-0[elevation="1"] {
+	box-shadow: none;
+}
+
+/* button */
+button {
+	cursor: pointer;
+	background: none;
+	border: none;
+	outline: none;
+	font-size: 16px;
+	padding: 10px;
+	color: #FF4081;
+}
+
+paper-toolbar button {
+	color: white;
+}
+
+/* adjustments */
+.mt {
+	margin-top: 20px;
+}
+
+/* desktop */
+.enclosure,
+.enclosure-list .row > div {
+	max-width: 1024px;
+	margin: 0 auto;
+}
+
+@media (min-width: 1024px) {
+	#allPostcards,
+	#myPostcards {
+		padding: 10px;
+		padding-top: 20px;
+	}
+
+	paper-card.row .card-content {
+		padding: 16px;
+	}
+
+	paper-card.row iron-image {
+		margin: 0;
+	}
+
+	.postcard pre {
+		padding: 0;
+		padding-bottom: 16px;
+	}
+
+	.postcard span.from,
+	.postcard span.date {
+		padding: 0;
+	}
+
+}

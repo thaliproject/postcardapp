@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width">
+  <title>Elements Test Runner</title>
+  <script src="/bower_components/webcomponentsjs/webcomponents.min.js"></script>
+  <link  href="/bower_components/polymer/polymer.html" rel="import">
+  <script src="/bower_components/web-component-tester/browser.js"></script>
+  <script src="/bower_components/test-fixture/test-fixture-mocha.js"></script>
+  <link  href="/bower_components/test-fixture/test-fixture.html" rel="import">
+  <script src="/bower_components/PubSubJS/src/pubsub.js"></script>
+
+  <!-- Required head scripts -->
+  <script src="/bower_components/jquery/dist/jquery.js"></script>
+
+  <script>
+  var IS_MOCKMOBILE = true;
+  </script>
+
+  <!-- Import the element to test -->
+  <link  href="/elements/page-login/page-login.html" rel="import">
+  <link  href="/elements/shared/login-form/login-form.html" rel="import">
+</head>
+<body id="my-app">
+
+<test-fixture id="page">
+  <template>
+    <!-- <page-login></page-login> -->
+    <login-form></login-form>
+  </template>
+</test-fixture>
+
+<script>
+// Tests for new user
+suite('New user', function() {
+  var page;
+  var deviceIdentity;
+
+  setup(function(){
+    page = fixture('page');
+  });
+
+  teardown(function(done) {
+    flush(done);
+  });
+
+  test('Get device identity', function(done) {
+    var testCallback = function(result){
+      assert.isTrue(result);
+      done();
+    };
+    var jqDeferred = page._getDeviceIdentity(); // jQuery ajax result
+    jqDeferred.done(function(data) {
+      console.log(data);
+      deviceIdentity = URLSafeBase64.encode(data.deviceIdentity);
+      testCallback(true);
+    }).fail(function(jqXHR, textStatus, errorThrown) {
+      testCallback(false);
+    });
+  });
+
+  var findMeShouldReturnNotFoundIfNewUser = function(callback) {
+    var jqDeferred = page._findme(''); // jQuery ajax result
+    jqDeferred.done(function(data) {
+      console.log(data);
+      var isFound = false;
+      if(data.username && data.username.length>0) {
+        isFound = true;
+      }
+      callback(!isFound);
+    }).fail(function(jqXHR, textStatus, errorThrown) {
+      callback(false);
+    });
+  };
+
+  test('Find me should return not_found if new user', function(done) {
+    var testCallback = function(isNotFound) {
+      assert.isTrue(isNotFound);
+      done();
+    };
+    findMeShouldReturnNotFoundIfNewUser(testCallback);
+  });
+
+  test('Should show login form if new user', function(done) {
+    var testCallback = function(isNotFound) {
+      var form = page.querySelector("form");
+      var isShowingForm = false;
+      if (form && !form.hasAttribute("hidden") && form.style.display !== "none") {
+        isShowingForm = true;
+      }
+      assert.isTrue(isNotFound && isShowingForm);
+      done();
+    };
+    findMeShouldReturnNotFoundIfNewUser(testCallback);
+  });
+
+  test('Login form should input username', function(done) {
+    var testCallback = function(isNotFound) {
+      var isInput = false;
+      var input = page.querySelector('paper-input[name="username"]');
+      if (input && !input.hasAttribute("hidden") && input.style.display !== "none") {
+        isInput = true;
+      }
+      assert.isTrue(isNotFound && isInput);
+      done();
+    };
+    findMeShouldReturnNotFoundIfNewUser(testCallback);
+  });
+
+});
+</script>
+
+<!-- Required body scripts -->
+<script src="/scripts/app.js"></script>
+</body>
+</html>

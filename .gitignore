@@ -1,6 +1,7 @@
 # Logs
 logs
 *.log
+npm-debug.log
 
 # Runtime data
 pids
@@ -27,8 +28,9 @@ build/Release
 node_modules
 bower_components
 
-# Intellij and Android
-.idea/
+# IDEs
+.idea
+.vscode
 
 # VS Code
 .settings/
@@ -46,3 +48,17 @@ thaliDontCheckIn/
 
 # Mac
 .DS_Store
+
+# mergetool
+*.orig
+
+# Project
+*.tmp
+www/jxcore/**/*
+
+# JXcore
+*.jx
+*.jxp
+
+# Generated
+/info.txt

@@ -1,0 +1,469 @@
+<link rel="import" href="/bower_components/polymer/polymer.html">
+<link rel="import" href="/elements/behaviors/button-listeners.html">
+<link rel="import" href="/elements/behaviors/multi-platform.html">
+<link rel="import" href="/elements/behaviors/ui-helper.html">
+<link rel="import" href="/elements/behaviors/image-helper.html">
+
+<dom-module id="page-editor">
+
+<template>
+  <main class="layout vertical fit">
+    <paper-material elevation="1" class="containerBox">
+      <!-- photo -->
+      <div id="attachPhoto" class="photoBox">
+        <iron-image id="cameraImage" src="[[imageSource]]" sizing="cover"></iron-image>
+        <paper-fab id="cameraButton" icon="image:photo-camera"></paper-fab>
+        <paper-fab id="discardPhotoButton" icon="cancel"></paper-fab>
+      </div>
+      <!-- select -->
+      <div id="selectTo" class="selectBox" hidden>
+        <p class="label"><strong>To</strong></p>
+        <iron-ajax url="/_api/contacts" last-response="{{listData}}" on-response="_onResponseReceived"></iron-ajax>
+        <select class="fill" multiple>
+          <!-- <option value="all">All</option> -->
+          <template is="dom-repeat" items="{{listData.rows}}" as="item" on-dom-change="_onOptionsBound">
+            <option value="[[item.doc._id]]">[[item.doc.username]]</option>
+          </template>
+        </select>
+      </div>
+    </paper-material>
+
+    <!-- message -->
+    <textarea id="textbox" class="postcard flex" value="{{editText::input}}" placeholder="Message"></textarea>
+  </main>
+</template>
+
+<script>
+'use strict';
+Polymer({
+  is: "page-editor",
+  behaviors: [
+      PageBehaviors.ButtonListeners,
+      PageBehaviors.MultiPlatform,
+      PageBehaviors.UIHelper,
+      PageBehaviors.ImageHelper
+    ],
+  properties: {
+    editText: {
+      type: String,
+      value: ""
+    },
+    backButton: Object,
+    saveButton: Object,
+    cameraButton: Object,
+    discardPhotoButton: Object,
+    cameraImageData: {
+      type: String,
+      notify: true
+    },
+    imageSource: {
+      type: String,
+      computed: 'getImageSource(cameraImageData)'
+    },
+    pixelData: "R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7",
+    textBox: Object,
+    editDoc: Object,
+    listData: {
+      type: Object,
+      notify: true
+    },
+    isEdit: false
+  },
+  created: function() {
+    console.log(this.localName + ' was created');
+  },
+  ready : function() {
+    console.log(this.localName + ' ready');
+  },
+  attached: function() {
+    console.log(this.localName + ' was attached');
+  },
+  detached: function() {
+    console.log(this.localName + ' was detached');
+  },
+  viewWillAppear: function(id) {
+    console.log(this.localName + ' viewWillAppear: ' + id);
+    this.activate();
+    if(myApp.discoverButton) {
+      myApp.discoverButton.removeAttribute("hidden");
+    }
+
+    // reset image
+    this.resetImageSource();
+
+    if(id === "new"){
+      // new message
+      myApp.title = "New Postcard";
+      this.isEdit = false;
+      this.editText = "";
+      this.autoFocus(this.textBox); // UX send autofocus to textarea
+    } else {
+      // edit message
+      myApp.title = "Edit Postcard";
+      this.isEdit = true;
+      this._getCard(id);
+      this.autoFocus(this.textBox); // UX send autofocus to textarea
+    }
+    this._reloadContacts(); // reload contacts
+  },
+  viewWillDisappear: function() {
+    console.log(this.localName + ' viewWillDisappear');
+    this.deactivate();
+    this.editDoc = null; // reset edit doc
+    this._resetView();
+    document.activeElement.blur(); // reset text input cursor
+  },
+  activate: function() {
+    console.log(this.localName + " activate... active status:" + this._isActivated);
+
+    // local scope
+    this.textBox = this.querySelector("textarea");
+    this.cameraButton = this.querySelector("#cameraButton");
+    this.discardPhotoButton = this.querySelector("#discardPhotoButton");
+
+    // document scope
+    this.backButton = document.querySelector("#backButton");
+    this.saveButton = document.querySelector("#saveButton");
+
+    var toolbarButtonArray = [this.backButton, this.saveButton, this.cameraButton, this.discardPhotoButton];
+    var toolbarFunctionArray = [this._backButtonHandler, this._saveButtonHandler.bind(this), this._cameraButtonHandler.bind(this), this._discardPhotoButtonHandler.bind(this)];
+    this.activateButtons(toolbarButtonArray, toolbarFunctionArray);
+  },
+  deactivate: function() {
+    console.log(this.localName + " deactivate... active status:" + this._isActivated);
+    this.deactivateButtons([this.backButton, this.saveButton]);
+  },
+  _backButtonHandler: function(routeDestination) {
+    console.log("<- don't save and go back to:" + routeDestination);
+    getURL("home");
+  },
+  _saveButtonHandler: function(e) {
+    if(this.editText.length == 0) {
+      console.log("Please enter a message");
+      alert("Please enter a message"); // notify user
+      this.shouldFocus(this.textBox); // UX send focus to textarea
+      return;
+    }
+
+    // go back after saving...
+    if(!this.editDoc) {
+      console.log("Save new message:" + this.editText);
+      this.createItem(this.editText, this.cameraImageData);
+    } else {
+      console.log("Save edited message:" + this.editText);
+      this.updateItem(this.editDoc._id, this.editText, this.cameraImageData);
+    }
+  },
+
+  // Cordova Camera function
+  _cameraButtonHandler: function(e) {
+    var options = {
+      quality: 80,
+      targetWidth: 1080,
+      targetHeight: 720,
+      encodingType: Camera.EncodingType.JPEG,
+      correctOrientation: true,
+      saveToPhotoAlbum: false,
+      allowEdit: false,
+      destinationType: Camera.DestinationType.DATA_URL
+    };
+    navigator.camera.getPicture( this._cameraSuccess.bind(this), this._cameraError.bind(this), options );
+  },
+  _cameraSuccess: function(imageData) {
+    console.log("Camera success", imageData.length, imageData.substr(0,32)+"...");
+    // NB: Strip image tag so it can be saved as PouchDB image attachment
+    var attachmentData = imageData.replace(/data:image\/jpeg;base64,/, '');
+    this._setCameraImageData( attachmentData ); // imageData
+  },
+  _cameraError: function(message) {
+    // alert() warpped in setTimeout because of iOS image picker quirk
+    setTimeout(function() {
+      alert('Camera error: ' + message);
+    }, 0);
+  },
+
+  // handle Camera events fired from Cordova webview
+  onCameraSuccess: function(e) {
+    console.log("onCameraSuccess event");
+    console.log(e);
+    if (e.detail) {
+      this._cameraSuccess(e.detail);
+    }
+  },
+  onCameraError: function(e) {
+    console.log("onCameraError event");
+    console.log(e);
+    if (e.detail) {
+      this._cameraError(e.detail);
+    }
+  },
+
+  getImageSource: function(imageData) {
+    if (typeof imageData !== 'undefined') {
+      // NB: insert the base64 image tag for displaying PouchDB image attachments
+      return "data:image/jpeg;base64," + imageData;
+    }
+    return "data:image/gif;base64," +
+      "R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7";
+  },
+
+  _setCameraImageData: function(imageData) {
+    this.cameraImageData = imageData;
+    this._updateButtonsWithPhoto(true);
+  },
+
+  resetImageSource: function() {
+    this.cameraImageData = this.pixelData; // reset to 1px spacer image
+    // remove image file input attachments (if any)
+    if (imageInput) {
+      imageInput.value = null; // reset input file
+    }
+    this._updateButtonsWithPhoto(false);
+  },
+
+  _discardPhotoButtonHandler: function(e) {
+    console.log("Remove photo...");
+    this.resetImageSource();
+  },
+
+  _updateButtonsWithPhoto: function(isPhotoCaptured) {
+    if(isPhotoCaptured) {
+      console.log("x Photo");
+      this.hide(this.cameraButton);
+      this.show(this.discardPhotoButton);
+    } else {
+      console.log("+ Photo");
+      this.show(this.cameraButton);
+      this.hide(this.discardPhotoButton);
+    }
+  },
+
+  _getCard: function(cardId) {
+    return $.ajax({
+      timeout: 1000,
+      context: this,
+      url: myApp.api + "cards/" + cardId,
+      type: 'GET',
+      dataType: 'json',
+      error: function(jqXHR, textStatus, errorThrown) {
+        alert("Error getting postcard:", errorThrown);
+      },
+      success: function(data, textStatus, jqXHR) {
+        if (data && data._id) {
+          this.editText = data.text;
+          this.editDoc = data;
+          var filename = data._id + '.jpg';
+          if (data._attachments && data._attachments[filename]) {
+            var imageData = data._attachments[filename].data;
+            if (typeof imageData !== 'undefined') {
+              this._setCameraImageData(imageData);
+            }
+          }
+        } else {
+          console.log("Error card data:", data);
+          alert("Error, unexpected card data format");
+        }
+      }
+    });
+  },
+
+  // create item
+  createItem: function(text, imageData) {
+    var cardId = generatePostcardId(); //generateUUID();
+    console.log("+ Create item:" + text + " id:"+ cardId);
+    this._saveCard(cardId, myApp.username, text, imageData);
+  },
+  // update item
+  updateItem: function(cardId, text, imageData) {
+    console.log("+ Edit item:" + text + " id:"+ cardId);
+    this._saveCard(cardId, myApp.username, text, imageData);
+  },
+  // note: any changes to data will need updated in the api.js
+  _saveCard: function(cardId, author, text, imageData) {
+    var toArray = this._getSelectedContacts();
+    console.log("=> Save item:" + text + " id:"+ cardId + " by:"+ author + " to:" + toArray.length);
+    console.log(toArray);
+    var attachments;
+    if ( imageData && imageData.length > 64 ) {
+      var filename = cardId + '.jpg'; // using postcard id as image filename
+      attachments = {};
+      attachments[filename] = {
+        content_type: 'image/jpeg',
+        data: imageData
+      };
+      console.log(attachments);
+    }
+    return $.ajax({
+        url: myApp.api + "cards/" + cardId,
+        type: 'PUT',
+        contentType: 'application/json',
+        data: JSON.stringify({
+          from: author,
+          text: text,
+          to: toArray,
+          attachments: attachments
+        }),
+        dataType: 'json',
+        error: function(jqXHR, textStatus, errorThrown) {
+          console.log('@ error in save Card ' + JSON.stringify(jqXHR) + ' ' + textStatus + ' ' + errorThrown);
+          alert("Error saving card");
+        },
+        success: function(data, textStatus, jqXHR) {
+          console.log("@ saved Card - " + textStatus);
+          console.log(data);
+          // if 'ok' update client UI else alert user with error
+          if(data.ok && data.ok===true) {
+            console.log("OK",textStatus);
+            getURL("home"); // go back once doc and attachments are saved and ready
+          } else {
+            alert("Save card error");
+          }
+        }
+    });
+  },
+
+  // refresh if contact changed
+  contactChangedHandler: function(e) {
+    console.log("*** Contact changed ***");
+    // Note: we could just reload all contacts like `this._reloadContacts();`
+    // But if the user made a selection then the selected indexes may not match
+    // up after reloading as we are doing a sort by username.
+    // But we can just append a new contact to bottom of select options
+    // without sorting and any user selection will remain in tact.
+    this._appendContact(e.detail.id);
+  },
+
+  // append select option when a new is contact added
+  _appendContact: function(contactId) {
+    $.ajax({
+        context: this,
+        url: myApp._api + "contacts/" + contactId,
+        type: 'GET'
+      }).fail( function() {
+        console.log("Error loading contact: " + contactId);
+      }).done( function(data) {
+        if (!data._id) {
+          console.log("Error with loaded contact data format");
+          return;
+        }
+        console.log("Loaded contact id:" + data._id + " name:" + data.username);
+        var newIdentity = {
+          id: data._id,
+          doc: data
+        }
+        this.push('listData.rows', newIdentity);
+      });
+  },
+
+  // iron-ajax request
+  _reloadContacts: function() {
+    var ironAjax = this.querySelector("iron-ajax");
+    if(ironAjax){
+        console.log("load contacts data");
+        ironAjax.generateRequest();
+    }
+  },
+
+  // iron-ajax response
+  _onResponseReceived: function () {
+      console.log("_onResponseReceived");
+      console.log(this.listData);
+
+      if(!this.listData || !this.listData.rows || this.listData.total_rows==0 ) {
+        console.log("Error no records found.");
+        return;
+      }
+
+      console.log("listData offset:" + this.listData.offset + " total_rows:" + this.listData.total_rows );
+
+      // sort records by username
+      this.set('listData.rows', _.sortBy(this.listData.rows, function(o){
+        return o.doc.username;
+      }));
+
+      // if edit card then add 'unknown' users
+      if (!this.editDoc || !this.editDoc.to || !Array.isArray(this.editDoc.to)) {
+        return;
+      }
+      // make identities array for lookup
+      var identities = [];
+      var i = this.listData.rows.length;
+      while (i--) {
+        identities.push(this.listData.rows[i].doc._id);
+      }
+      // append 'unknown' identities
+      var l = this.editDoc.to.length;
+      while (l--) {
+        var id = this.editDoc.to[l];
+        if ( identities.indexOf(id) === -1 ) {
+          var uid = id.substring(id.indexOf('-')+1); // remove addressbook label
+          console.log("+ unknown contact id:" + uid);
+          var missingIdentity = {
+            id: id,
+            doc: {
+              _id : id,
+              username : uid
+            }
+          }
+          this.push('listData.rows', missingIdentity);
+        }
+      }
+
+      // note: _updateSelection will be called when option elements are bound
+  },
+
+  _getSelectedContacts : function() {
+    var toArray = [];
+    var options = this.querySelectorAll("option"), i = options.length;
+    while (i--) {
+      var option = options[i];
+      if (option.selected && option.value !== "all") {
+        toArray.push(option.value);
+      }
+    }
+    console.log("Selected contacts: " + toArray.length);
+    return toArray;
+  },
+
+  // if editing we need to match postcard's 'to' list of pks against private address book pks
+  _updateSelection : function() {
+    var i = this.listData.rows.length; // total number of saved contacts
+    console.log("contact options: " + i);
+    // show selectTo element if contacts available
+    if(i>0) {
+      this.showSelector("#selectTo");
+    }
+    if (!this.editDoc || !this.editDoc.to || !Array.isArray(this.editDoc.to)) {
+      return;
+    }
+    while (i--) {
+      var item = this.listData.rows[i];
+      if ( this.editDoc.to.indexOf(item.doc._id) > -1 ) {
+        console.log("select option: " + item.doc.username + " id:" + item.doc._id);
+        var option = this.querySelector('option[value="'+item.doc._id+'"]');
+        option.selected = true;
+      }
+    }
+  },
+
+  _clearSelection : function() {
+    var options = this.querySelectorAll('option'), i = options.length;
+    while (i--) {
+      var option = options[i];
+      option.selected = false;
+    }
+  },
+
+  _resetView : function() {
+    this.hideSelector("#selectTo");
+    this._clearSelection(); // reset selection
+  },
+
+  _onOptionsBound : function() {
+    console.log("<option> elements bound");
+    this._updateSelection();
+  }
+
+});
+</script>
+</dom-module>

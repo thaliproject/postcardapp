@@ -1,0 +1,90 @@
+<link rel="import" href="/bower_components/polymer/polymer.html">
+<link rel="import" href="/elements/shared/login-form/login-form.html">
+
+<dom-module id="page-login">
+
+<template>
+  <login-form id="loginForm" hidden></login-form>
+  <aside id="placeholder" class="fit layout vertical center-center">
+    <h1>Loading</h1>
+  </aside>
+</template>
+
+<script>
+'use strict';
+Polymer({
+  is: "page-login",
+  properties: {
+    username: {
+      type: String,
+      value: ""
+    },
+    error_username: {
+      type: String,
+      value: "Please enter a username."
+    },
+    deviceIdentity: {
+      type: String,
+      value: ""
+    },
+    _isStarted: false
+  },
+  listeners: {
+		'deviceIdentity':'onDeviceIdentity',
+		'username':'onUsername',
+		'login':'onLogin',
+		'savedUsername':'onSavedUsername',
+	},
+  created: function() {
+    console.log(this.localName + ' was created');
+  },
+  ready: function() {
+    console.log(this.localName + ' ready');
+    this.start();
+  },
+  attached: function() {
+    console.log(this.localName + ' was attached');
+  },
+  detached: function() {
+    console.log(this.localName + ' was detached');
+  },
+  viewWillAppear: function() {
+    console.log(this.localName + " viewWillAppear");
+    this.start();
+  },
+  viewWillDisappear: function() {
+    console.log(this.localName + " viewWillDisappear");
+    this._isStarted = false;
+  },
+  start: function() {
+    if (!this._isStarted) {
+      console.log("Start login");
+      this._isStarted = true;
+      this.querySelector("login-form").start();
+    }
+  },
+
+  // login-form element event handlers
+	onDeviceIdentity : function(e) {
+		console.log("set deviceIdentity", e.detail);
+    myApp.deviceIdentity = e.detail; // update app property
+	},
+	onUsername : function(e) {
+		console.log("set username", e.detail);
+    myApp.username = e.detail; // update app property
+    getURL("home"); // found username, skip login...
+	},
+	onLogin : function() {
+    console.log("new login");
+		this.querySelector("#loginForm").removeAttribute("hidden");
+    this.querySelector("aside").setAttribute("hidden", true);
+	},
+	onSavedUsername : function(e) {
+		console.log("set saved username", e.detail);
+		myApp.username = e.detail; // update app property
+    getURL("home"); // saved username, show postcards
+	}
+
+});
+</script>
+</dom-module>

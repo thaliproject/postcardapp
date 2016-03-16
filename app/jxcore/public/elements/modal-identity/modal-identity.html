@@ -1,0 +1,303 @@
+<link rel="import" href="/bower_components/polymer/polymer.html">
+<link rel="import" href="/bower_components/iron-overlay-behavior/iron-overlay-behavior.html">
+<link rel="import" href="/bower_components/neon-animation/neon-animation-runner-behavior.html">
+<link rel="import" href="/elements/behaviors/tree-traversing.html">
+<link rel="import" href="/elements/behaviors/ui-helper.html">
+<link rel="import" href="/elements/behaviors/multi-platform.html">
+
+<!-- slide pages -->
+<link rel="import" href="/elements/modal-identity/pages/page-start.html">
+<link rel="import" href="/elements/modal-identity/pages/page-scan.html">
+<link rel="import" href="/elements/modal-identity/pages/page-pair.html">
+<link rel="import" href="/elements/modal-identity/pages/page-save.html">
+<link rel="import" href="/elements/modal-identity/pages/page-user.html">
+
+<dom-module id="modal-identity">
+
+<template>
+  <paper-header-panel>
+    <paper-toolbar>
+      <div id="leftToolbarButtons">
+        <paper-icon-button id="prevButton" icon="arrow-back" on-click ="_onBackHandler" hidden></paper-icon-button>
+      </div>
+      <div id="appName">[[title]]</div>
+      <div id="rightToolbarButtons">
+        <paper-icon-button id="closeButton" icon="close" on-click="_onCloseHandler"></paper-icon-button>
+      </div>
+    </paper-toolbar>
+
+    <!-- sliding 'neon-animatable' pages -->
+  	<neon-animated-pages class="fit" selected="{{selectedPage}}" attr-for-selected="id"  on-iron-select="_pageChanged" on-neon-animation-finish="_pageDidAnimate" entry-animation="slide-from-right-animation" exit-animation="slide-left-animation">
+
+      <!-- slide page: user instructions -->
+      <page-start id="start" data-title="Add Contact"></page-start>
+
+      <!-- slide page: start scanning -->
+      <page-scan id="scan" data-title="People nearby"></page-scan>
+
+      <!-- slide page: select contact -->
+      <page-pair id="pair" data-title="Verification"></page-pair>
+
+      <!-- slide page: save user contact -->
+      <page-save id="save" data-title="Save contact"></page-save>
+
+      <!-- slide page: change username -->
+      <page-user id="user" data-title="Change name"></page-user>
+
+    </neon-animated-pages>
+
+  </paper-header-panel>
+</template>
+
+<script>
+'use strict';
+Polymer({
+  is: "modal-identity",
+
+  attached: function() {
+    this.noCancelOnOutsideClick = true;
+    this.withBackdrop = true;
+  },
+
+  behaviors: [
+      Polymer.IronOverlayBehavior,
+      Polymer.NeonAnimationRunnerBehavior,
+      PageBehaviors.TreeTraversing,
+      PageBehaviors.UIHelper,
+      PageBehaviors.MultiPlatform
+    ],
+
+  listeners: {
+    'neon-animation-finish': '_onNeonAnimationFinish',
+    'next': '_onNextHandler',
+    'prev': '_onBackHandler',
+    'page': '_onPageHandler',
+    'close': '_onCloseHandler'
+  },
+
+  properties: {
+    title: {
+      type: String,
+      value: ""
+    },
+    selectedPage: {
+      type: String,
+      // value: "start"
+    },
+    lastPage: {
+      type: String,
+    },
+
+    bindingObject: {
+      type: Object
+    },
+  },
+
+  ready: function() {
+    console.log(this.localName + ' ready page:' + this.selectedPage);
+    this.lastPage = this.selectedPage; // set last page
+  },
+
+  _setState: function() {
+    this._gotoPageAtIndex(0); // reset page
+    this.querySelector("#start").refresh(); // refresh view after being hidden
+  },
+
+  _resetState: function() {
+    this._stop();
+    this.set('lastPage', null);
+    this.set('bindingObject', null);
+  },
+
+  /* button handlers */
+
+  _onCloseHandler: function(e) {
+    this.close();
+  },
+
+  _onBackHandler: function(e) {
+    if(this.selectedPage === 'user'){
+      this._gotoPageAtIndex(0);
+      return;
+    }
+    this._prev();
+  },
+
+  _onNextHandler: function(e) {
+    if (e && e.detail) {
+      this.bindingObject = e.detail;
+    } else {
+      this.bindingObject = null;
+    }
+    this._next();
+  },
+
+  _onPageHandler: function(e) {
+    console.log(e);
+    if (e && e.detail) {
+      this._gotoPage(e.detail);
+    }
+  },
+
+  /* page methods */
+
+  _getSelectedPageTitle: function() {
+    var titleAttribute = 'data-title';
+    if (this.selectedPage) {
+      return this.querySelector('#'+this.selectedPage).getAttribute(titleAttribute);
+    }
+    return "Add Contact"; // default title
+  },
+
+  _prev: function() {
+    this.querySelector('neon-animated-pages').selectPrevious();
+  },
+
+  _next: function(e) {
+    this.querySelector('neon-animated-pages').selectNext();
+  },
+
+  _pageChanged: function(e) {
+    console.log("#" + this.lastPage + " -> selectedPage: #" + this.selectedPage);
+    this.set('title', this._getSelectedPageTitle()); // update page title
+
+    // detect if back button is needed
+    if(this.selectedPage && this._getPageIndex(this.selectedPage) > 0) {
+      Polymer.dom(this.$.prevButton).removeAttribute("hidden");
+    } else {
+      Polymer.dom(this.$.prevButton).setAttribute("hidden",true);
+    }
+
+    if(this.selectedPage) {
+      this.querySelector('page-'+this.selectedPage).setup(this.bindingObject); // setup bindings!
+    }
+    //this._pageDidAnimate(); // NB: only call if no animation start/finish attributes set
+  },
+
+  _pageDidAnimate: function() {
+    // stop active processes on last page
+    if(this.lastPage) {
+      this.querySelector('page-'+this.lastPage).stop(); // stop biz logic!
+    }
+    this.lastPage = this.selectedPage;
+
+    this.querySelector('page-'+this.selectedPage).start(); // start biz logic!
+  },
+
+  _getPageIndex: function(pageName) {
+    var parent = this.querySelector('neon-animated-pages');
+    var children = parent.items; // neon-animatable
+    var i = children.length;
+    while (i--) {
+      if(pageName === children[i].id) {
+        return i;
+      }
+    }
+    return -1; // return error not found
+  },
+
+  _getSelectedPageIndex: function() {
+    var parent = this.querySelector('neon-animated-pages');
+    var children = parent.items; // neon-animatable
+    var i=0, l=children.length;
+    while (i<l) {
+      if( children[i].classList.contains("iron-selected") ) {
+        return i;
+      }
+      i++;
+    }
+    return -1; // return no selection
+  },
+
+  _gotoPage: function(pageName) {
+    if ( this._getPageIndex(pageName)>=0 ) {
+      console.log("gotoPage: "+ pageName);
+      this.set('selectedPage', pageName);
+    } else {
+      console.log("Error, no page name:" + pageName);
+    }
+  },
+
+  _gotoPageAtIndex: function(index) {
+    var parent = this.querySelector('neon-animated-pages');
+    var children = parent.items; // neon-animatable
+    if (index <= children.length-1) {
+      this._gotoPage( children[index].id );
+    } else {
+      console.log("Error, page index request out of range.");
+    }
+  },
+
+  /*  clean-up page resources on close */
+
+  _stop: function() {
+    if( this.selectedPage ) {
+      console.log("Aborting modal page process...");
+      this.querySelector('page-'+this.selectedPage).stop(); // stop biz logic!
+    }
+  },
+
+  /* stop/restart ThaliReplicationManager */
+
+  _stopThaliReplicationManager : function() {
+		console.log("Stopping ThaliReplicationManager");
+		$.ajax({
+			url: myApp.manager + 'stop',
+			type: 'GET'
+		}).fail( function() {
+			log("Error stopping ThaliReplicationManager, or maybe already stopped.");
+		}).done( function(data) {
+			log("ThaliReplicationManager stopping");
+			console.log(data);
+		});
+	},
+
+  _startThaliReplicationManager : function() {
+		console.log("Starting ThaliReplicationManager");
+		$.ajax({
+			url: myApp.manager + 'start',
+			type: 'GET'
+		}).fail( function() {
+			log("Error starting ThaliReplicationManager, or maybe already started.");
+		}).done( function(data) {
+			log("ThaliReplicationManager starting");
+			console.log(data);
+		});
+	},
+
+  /* Polymer animation behavior methods */
+
+  _renderOpened: function() {
+    this._setState(); // set state when opened before playing entry animation
+
+    if (this.withBackdrop) {
+      this.backdropElement.open();
+    }
+    this.cancelAnimation(); // sweet hack to prevent animation stack breaking due to double click
+    this.playAnimation('entry');
+  },
+
+  _renderClosed: function() {
+    if (this.withBackdrop) {
+      this.backdropElement.close();
+    }
+    this.cancelAnimation(); // sweet hack to prevent animation stack breaking due to double click
+    this.playAnimation('exit');
+  },
+
+  _onNeonAnimationFinish: function() {
+    if (this.opened) {
+      console.log("*** modal opened ***");
+      this._finishRenderOpened();
+      this._stopThaliReplicationManager(); // starting Identity Exchange - stop TRM
+    } else {
+      this._finishRenderClosed();
+      this._resetState(); // reset state for next time
+      this._startThaliReplicationManager(); // finished Identity Exchange - restart TRM
+      console.log("*** modal closed ***");
+    }
+  }
+
+});
+</script>
+</dom-module>

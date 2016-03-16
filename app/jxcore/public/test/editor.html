@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width">
+  <title>Elements Test Runner</title>
+  <script src="/bower_components/webcomponentsjs/webcomponents.min.js"></script>
+  <link  href="/bower_components/polymer/polymer.html" rel="import">
+  <script src="/bower_components/web-component-tester/browser.js"></script>
+  <script src="/bower_components/test-fixture/test-fixture-mocha.js"></script>
+  <link  href="/bower_components/test-fixture/test-fixture.html" rel="import">
+  <script src="/bower_components/PubSubJS/src/pubsub.js"></script>
+  <link  href="/elements/elements.html" rel="import">
+
+  <!-- Required head scripts -->
+  <script src="/bower_components/jquery/dist/jquery.js"></script>
+  <script src="/bower_components/underscore/underscore.js"></script>
+  <script src="/bower_components/node-uuid/uuid.js"></script>
+
+  <script>
+  var IS_MOCKMOBILE = true;
+  </script>
+
+  <!-- Import the element to test -->
+  <link  href="/elements/page-editor/page-editor.html" rel="import">
+</head>
+<body id="my-app">
+
+<test-fixture id="page">
+  <template>
+    <page-editor></page-editor>
+  </template>
+</test-fixture>
+
+<script>
+// Tests for postcards
+suite('Create postcard', function() {
+  var page;
+
+  setup(function(){
+    page = fixture('page');
+  });
+
+  teardown(function(done) {
+    flush(done);
+  });
+
+  test('Address book data', function(done) {
+    // get address book data
+    page._reloadContacts();
+    // spy on iron-ajax received event
+    var spy = sinon.spy(page._onResponseReceived);
+    var mySubscriber = function(msg, result) {
+      console.log("Callback", msg);
+      // Wait for data bindings to stamp out new DOM asynchronously
+      flush(function() {
+        var isSuccess = false;
+        var data = page.get('listData');
+        console.log("Data", data);
+        if (data && data.total_rows >= 0) {
+          console.log("Contacts data ok");
+          isSuccess = true;
+        }
+        assert.isTrue(isSuccess);
+        done();
+      });
+    }
+    var msg = 'onContactsReceived';
+    PubSub.subscribe(msg, mySubscriber);
+    PubSub.publish(msg, spy);
+  });
+
+  test('Generate postcard id', function() {
+    var isSuccess = false;
+    var cardId = generatePostcardId();
+    if (cardId && cardId.length > 0) {
+      console.log("cardId", cardId);
+      isSuccess = true;
+    }
+    assert.isTrue(isSuccess);
+  });
+
+  test('Save postcard', function(done) {
+    var testCallback = function(result){
+      assert.isTrue(result);
+      done();
+    };
+    var cardId = generatePostcardId();
+    var author = "tester";
+    var text = "test text";
+    var jqDeferred = page._saveCard(cardId, author, text); // jQuery ajax result
+    jqDeferred.done(function(data) {
+      console.log("Data", data);
+      if (data && data.ok && data.id && data.id.length > 0) {
+        testCallback(true);
+      } else {
+        testCallback(false);
+      }
+    }).fail(function(jqXHR, textStatus, errorThrown) {
+      testCallback(false);
+    });
+  });
+
+});
+</script>
+
+<!-- Required body scripts -->
+<script src="/socket.io/socket.io.js"></script>
+<script>
+var socket = io.connect("http://localhost:5000");
+</script>
+<script src="/scripts/app.js"></script>
+<script>
+// overrides
+myApp.deviceIdentity = "TESTER";
+</script>
+</body>
+</html>

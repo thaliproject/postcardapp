@@ -1,0 +1,151 @@
+<link rel="import" href="/bower_components/polymer/polymer.html">
+<link rel="import" href="/elements/behaviors/multi-platform.html">
+
+<dom-module id="login-form">
+
+<template>
+  <form is="iron-form" class="inset enclosure">
+    <paper-input name="username" label="Username" bind-value="{{username::input}}" error-message="{{error_username}}" prevent-invalid-input allowed-pattern="[A-Za-z0-9_\.]" required></paper-input>
+    <input is="iron-input" name="deviceIdentity" bind-value="{{deviceIdentity::input}}" type="hidden" />
+    <div class="alignCenter mt">
+      <paper-button id="submit" raised on-click="submitForm">Save</paper-button>
+    </div>
+  </form>
+</template>
+
+<script>
+'use strict';
+Polymer({
+  is: "login-form",
+  behaviors: [
+      PageBehaviors.MultiPlatform
+    ],
+  properties: {
+    username: {
+      type: String,
+      value: ""
+    },
+    error_username: {
+      type: String,
+      value: "Please enter a username."
+    },
+    deviceIdentity: {
+      type: String,
+      value: ""
+    }
+  },
+  listeners: {
+    'iron-form-presubmit': '_formSubmit',
+  },
+
+  start : function() {
+    this._getDeviceIdentity();
+  },
+
+  _getDeviceIdentity: function() {
+    console.log("getting device identity");
+    return $.ajax({
+      timeout: 1000,
+      context: this,
+      url: myApp.webview + 'DeviceIdentity',
+      type: 'GET',
+      dataType: 'json',
+      error: function(jqXHR, textStatus, errorThrown) {
+        alert("Error. Couldn't get device identity!" + errorThrown);
+      },
+      success: function(data) {
+        if(data && data.deviceIdentity) {
+          // update user form input with urlsafe value
+          this.set("deviceIdentity", URLSafeBase64.encode(data.deviceIdentity));
+      		console.log("Device Identity: " + data.deviceIdentity + " urlsafe:" + this.deviceIdentity);
+          this._deviceIdentity( this.deviceIdentity );
+          this._findme( this.deviceIdentity );
+        } else {
+          alert("Error. Device identity was not the expected data format.");
+        }
+      }
+    });
+  },
+  _findme: function(deviceIdentity) {
+    var contactId = addressBookId(deviceIdentity);
+    return $.ajax({
+      timeout: 1000,
+      context: this,
+      url: myApp._api + 'me/' + contactId,
+      type: 'GET',
+      dataType: 'json',
+      error: function(jqXHR, textStatus, errorThrown) {
+        console.log("Login unable to find me: " + contactId);
+        this._login();
+      },
+      success: function(data, textStatus, jqXHR) {
+        if (data.username && data.username.length>0) {
+          // edit username
+          console.log("Found username:", data.username);
+          this.querySelector('paper-input[name="username"]').value = data.username; //this.set('username', data.username);
+          this._username(data.username);
+        } else {
+          console.log("No user record found - login"); // 404 missing
+          this._login();
+        }
+      }
+    });
+  },
+
+  // events
+  _deviceIdentity: function(deviceIdentity) {
+    this.fire('deviceIdentity', deviceIdentity);
+  },
+  _username: function(username) {
+    this.shouldFocus( this.querySelector("paper-input") );
+    this.fire('username', username);
+  },
+  _login: function() {
+    this.shouldFocus( this.querySelector("paper-input") );
+    this.fire('login');
+  },
+  _savedUsername: function(username) {
+    this.fire('savedUsername', username);
+  },
+
+  // form
+  submitForm: function(event) {
+    console.log('submit form');
+    this.querySelector('form').submit(); // validates user input
+  },
+  _formSubmit: function(e) {
+    console.log("Form was submitted");
+    e.preventDefault(); // bypass the built-in form submission
+    this.save(this.username, this.deviceIdentity);
+  },
+
+  save: function(username, deviceIdentity) {
+    console.log("Save", username, deviceIdentity);
+    return $.ajax({
+      timeout: 1000,
+      context: this,
+      url: myApp._api + 'login',
+      type: 'POST',
+      dataType: 'json',
+      data : {
+        username : username,
+        deviceIdentity : deviceIdentity
+      },
+      error: function(jqXHR, textStatus, errorThrown) {
+        alert("Error. Couldn't perform login" + errorThrown);
+      },
+      success: function(data) {
+        console.log("Saved user:", data);
+        if (data.username && data.username.length>0) {
+          this._savedUsername(data.username);
+        } else {
+          alert("Error. Returned unexpected user data.");
+        }
+      }
+    });
+  }
+
+
+});
+</script>
+</dom-module>

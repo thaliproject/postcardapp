@@ -1,0 +1,52 @@
+<script>
+'use strict';
+var PageBehaviors = PageBehaviors || {}; // namespace
+
+/*
+ * Common methods for displaying image data
+ */
+
+PageBehaviors.ImageHelper = {
+
+  // retain list of in-use url resources
+  _urls: [],
+
+  imageDataToImageSource: function(imageData){
+    // if imageData is base64 format then convert to blob
+    var contentType = "image/jpeg";
+    var base64 = imageData.replace(/data:image\/jpeg;base64,/, '');
+
+    var blob = base64ToBlob(base64, contentType);
+    return this._createObjectURL(blob); // img src url
+  },
+
+  // add to urls array so we can revoke once it once it is no longer in use.
+  _createObjectURL: function(blob) {
+    var url = (window.URL || window.webkitURL).createObjectURL( blob );
+    this._urls.push(url);
+    console.log("Created object URL:", url, " resources:", this._urls.length);
+    return url;
+  },
+
+  // remove and revoke matching url from urls array
+  _revokeObjectURL: function(url) {
+    var index = this._urls.indexOf(url);
+    if (index === -1) {
+      return false;
+    }
+    this._urls.splice(index,1);
+    return (window.URL || window.webkitURL).revokeObjectURL( url );
+  },
+
+  // clear and revoke all urls
+  clearAll: function() {
+    var i = this._urls.length;
+    while (i--) {
+      _revokeObjectURL(this._urls[i]);
+    }
+    console.log("clear urls", this._urls.length);
+    return;
+  }
+
+};
+</script>

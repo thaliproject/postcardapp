@@ -1,0 +1,578 @@
+<link rel="import" href="/bower_components/polymer/polymer.html">
+<link rel="import" href="/elements/behaviors/button-listeners.html">
+<link rel="import" href="/elements/behaviors/tree-traversing.html">
+<link rel="import" href="/elements/behaviors/path-components.html">
+<link rel="import" href="/elements/behaviors/multi-platform.html">
+
+<link rel="import" href="/bower_components/iron-resizable-behavior/iron-resizable-behavior.html">
+
+<dom-module id="page-home">
+
+<template>
+  <iron-ajax url="/_api/contacts" last-response="{{addressBook}}" on-response="_onContactsReceived" id="contacts"></iron-ajax>
+  <iron-ajax url="/api/cards" last-response="{{listData}}" on-response="_onCardsReceived" id="postcards"></iron-ajax>
+  <paper-tabs selected="{{selected}}" noink no-slide hidden>
+    <paper-tab>All Postcards</paper-tab>
+    <paper-tab>My Postcards</paper-tab>
+  </paper-tabs>
+
+  <neon-animated-pages selected="{{selected}}" class="fit" entry-animation="scale-up-animation" exit-animation="fade-out-animation" on-iron-select="_tabChanged">
+    <!-- view all postcards (read only) -->
+    <neon-animatable>
+        <iron-list id="allPostcards" items="[[listData.rows]]" as="item" class="fit enclosure-list">
+          <template>
+            <paper-card id="[[item.doc._id]]" class="row">
+              <div class$="[[_classNames(item.doc.to,item.doc._id)]]">
+                <iron-image src="[[_getImage(item.doc)]]" sizing="cover" class$="[[_imageClass(item.doc,index)]]"></iron-image>
+                <pre>[[item.doc.text]]</pre>
+                <span class="from">[[item.doc._from]]</span>
+                <span class="date">[[_humanizeDate(item.doc.dateCreated)]]</span>
+                <div class="cb"></div>
+              </div>
+            </paper-card>
+          </template>
+        </iron-list>
+    </neon-animatable>
+
+    <!-- edit my postcards -->
+    <neon-animatable>
+      <iron-selector attr-for-selected="index" on-click="_itemSelected">
+        <iron-list id="myPostcards" items="{{myCards}}" as="item" class="fit enclosure-list">
+          <template>
+            <paper-card id="[[item.doc._id]]" class="row">
+              <div class$="[[_classNames(item.doc.to,item.doc._id)]]">
+                <iron-image src="[[_getImage(item.doc)]]" sizing="cover" class$="[[_imageClass(item.doc,index)]]"></iron-image>
+                <pre>[[item.doc.text]]</pre>
+                <span class="from">[[item.doc._from]]</span>
+                <span class="date">[[_humanizeDate(item.doc.dateCreated)]]</span>
+                <div class="cb"></div>
+                <paper-fab icon="delete" class="action"></paper-fab>
+              </div>
+            </paper-card>
+          </template>
+        </iron-list>
+      </iron-selector>
+    </neon-animatable>
+  </neon-animated-pages>
+
+  <aside id="placeholder" class="fit layout vertical center-center" hidden>
+    <div>
+      <paper-button id="createPostcard" class="postcard" raised on-click="_addCard"><div><iron-icon icon="add-circle"></iron-icon></div>Create postcard</paper-button>
+      <div class="gutter"></div>
+    </div>
+  </aside>
+</template>
+
+<script>
+'use strict';
+Polymer({
+  is: "page-home",
+  behaviors: [
+      PageBehaviors.ButtonListeners,
+      PageBehaviors.TreeTraversing,
+      PageBehaviors.PathComponents,
+      PageBehaviors.MultiPlatform,
+      Polymer.IronResizableBehavior
+    ],
+  properties: {
+    selected: 0,
+    listData: {
+      type: Object,
+      notify: true,
+    },
+    myCards: {
+      type: Array,
+      computed: 'filterMyCards(listData.*)',
+      notify: true
+    },
+    _rows: [],
+    addButton: Object,
+    editButton: Object,
+    _isEditMode: false,
+    _isLoaded: false,
+    _isAddressBookRequested: false,
+    addressBook: {
+      type: Object,
+      notify: true
+    },
+    contacts: {
+      type: Array,
+      value: []
+    },
+    identities: {
+      type: Array,
+      value: []
+    },
+    _isRedrawing: false
+  },
+  listeners: {
+    'card-changed': 'cardChangedHandler',
+    'contact-changed': 'contactChangedHandler',
+    'iron-resize': '_resizeHandler'
+  },
+  created: function() {
+    console.log(this.localName + ' was created');
+  },
+  ready : function() {
+    console.log(this.localName + ' ready');
+  },
+  attached: function() {
+    console.log(this.localName + ' was attached');
+  },
+  detached: function() {
+    console.log(this.localName + ' was detached');
+  },
+  viewWillAppear: function() {
+    console.log(this.localName + ' viewWillAppear');
+    this.selected = 0;
+    this.activate();
+    myApp.title = "Postcards";
+    if(myApp.discoverButton) {
+      myApp.discoverButton.removeAttribute("hidden");
+    }
+    this._requestContacts();
+    if (this._isLoaded) {
+      this._updateUserView(); // shows edit button (if needed) when back pressed
+    }
+  },
+  viewWillDisappear: function() {
+    console.log(this.localName + ' viewWillDisappear');
+    this.deactivate();
+    // reset state
+    this._isEditMode = false;
+  },
+  activate: function() {
+    console.log(this.localName + " activate... active status:" + this._isActivated);
+    this.addButton = document.querySelector("#addButton");
+    this.editButton = document.querySelector("#editButton");
+
+    var toolbarButtonArray = [this.addButton, this.editButton];
+    var toolbarFunctionArray = [this._addCard, this._toggleEditMode.bind(this)];
+    this.activateButtons(toolbarButtonArray, toolbarFunctionArray);
+  },
+  deactivate: function() {
+    console.log(this.localName + " deactivate... active status:" + this._isActivated);
+    this.deactivateButtons([this.addButton, this.editButton]);
+  },
+
+  // changed tab view
+  _tabChanged: function(e) {
+    if (this.selected === 1) {
+      myApp.editButtonText = "Done"; // read only view icon
+    } else {
+      myApp.editButtonText = "Edit"; // edit view icon
+    }
+  },
+
+  _humanizeDate: function(date) {
+    return moment.utc(date,'x').fromNow();
+  },
+  _classNames: function(toArray, cardId) {
+    var baseStyle = "card-content postcard";
+    // style postcards created by you
+    if ( myApp.deviceIdentity === cardId.substring(cardId.lastIndexOf('-')+1) ) {
+      return baseStyle + " me";
+    }
+     // style postcards addressed to you
+    if ( toArray.indexOf('addressbook-'+myApp.deviceIdentity) >= 0 ) {
+      return baseStyle + " you";
+    }
+    return baseStyle;
+  },
+  _getImage: function(doc) {
+    var filename = doc._id + '.jpg';
+    if (doc._attachments && doc._attachments[filename]) {
+      var imageData = doc._attachments[filename].data;
+      if (typeof imageData !== 'undefined') {
+        return "data:image/jpeg;base64," + imageData;
+      }
+    }
+    return "data:image/gif;base64,R0lGODlhAQABAIAAAAUEBAAAACwAAAAAAQABAAACAkQBADs="; // 1px black
+  },
+  _imageClass: function(doc, index) {
+    var filename = doc._id + '.jpg';
+    if (doc._attachments && doc._attachments[filename]) {
+      return "styledImage";
+    }
+    return "";
+  },
+
+  _addCard: function(e) {
+    console.log("add card: " + e);
+    getURL("editor");
+  },
+
+  // selected postcard click handler
+  _itemSelected: function(e) {
+    // only allow edit postcards in edit mode
+    if (!this._isEditMode) {
+      return;
+    }
+    var cardId = this.getParentAttribute(e.target, 'paper-card', 'id');
+    var isDeleteClicked = this.getParentElement(e.target, "paper-fab");
+    if ( isDeleteClicked ) {
+      document.activeElement.blur(); // should dismiss iOS keyboard
+      this._deleteCard(cardId); // delete selected card
+    } else if ( cardId && cardId.length >= 0 ) {
+      getURL("editor/"+cardId); // edit selected card
+    }
+  },
+
+  // delete card
+  _deleteCard: function(cardId) {
+    console.log("delete cardId:", cardId);
+    $.ajax({
+      url: myApp.api + "cards/" + cardId,
+      type: 'DELETE'
+    }).fail( function() {
+      alert("Error deleting card");
+    }).done( function(data) {
+      if(data.ok && data.ok===true) {
+        console.log("Card deleted:", cardId);
+      } else {
+        alert("Delete card data error");
+      }
+    });
+  },
+
+  // iron-ajax request
+  _reloadData: function(e) {
+    console.log("*** RELOAD DATA... ***");
+    this.querySelector("#postcards").generateRequest();
+  },
+
+  // iron-ajax response
+  _onCardsReceived: function () {
+      if( !this.listData || !this.listData.rows ) {
+        alert("Error. Failed to get any data."); // Reset app
+        return;
+      }
+
+      console.log("listData offset:" + this.listData.offset + " total_rows:" + this.listData.total_rows );
+
+      // append _sender propery with verified contacts
+      this._appendDisplayProperties();
+
+      // sort cards
+      this._sortMyCards();
+
+      this._isLoaded = true;
+      this._updateUserView();
+  },
+
+  // sort records by date created
+  _sortMyCards: function() {
+    console.log("Sorting cards by date created");
+    this.set('listData.rows', _.sortBy(this.listData.rows, function(o){
+      return -o.doc.dateCreated;
+    }));
+  },
+
+  // list only my cards (using cloned rows)
+  // NB: this gets fired for every change on listData but we don't need to update for every changeRecord.
+  // changeRecord cases: added +, deleted -, updated ^
+  // + => rows.splices, rows.length, rows
+  // - => rows.splices, rows.length
+  // ^ => rows.#i.doc
+  filterMyCards: function(changeRecord) {
+    var pathArray = changeRecord.path.split('.');
+    if ( changeRecord.path === 'listData' || changeRecord.path === 'listData.rows' || pathArray.indexOf('length') !== -1 || changeRecord.path.substr(-5) === '_from' ) {
+      //console.log("skip:", changeRecord.path, changeRecord.path !== 'listData.rows', pathArray.indexOf('length'), pathArray.indexOf('doc') );
+      return this._rows;
+    }
+    this._rows = [];
+    // Clone object to remove data bindings on the rows array
+    var clonedRows = JSON.parse(JSON.stringify( this.get('listData.rows') ));
+    var i = clonedRows.length;
+    while(i--){
+      var card = clonedRows[i];
+      var cardId = card.doc._id;
+      var authorId = cardId.substring(cardId.lastIndexOf('-')+1);
+      if (myApp.deviceIdentity === authorId) {
+        this._rows.unshift(card);
+      }
+    }
+    console.log("Filtered my cards:", this._rows.length, changeRecord);
+    // sort my cards
+    this.set('_rows', _.sortBy(this._rows, function(o){
+      return -o.doc.dateCreated;
+    }));
+    return this._rows;
+  },
+
+  // toogle edit mode
+  _toggleEditMode: function() {
+    this._isEditMode = !this._isEditMode;
+    this._updateUserView();
+    //console.log("toggle edit mode:", this._isEditMode);
+    if (this._isEditMode) {
+      this.selected = 1; // edit my postcards
+      this.querySelector('iron-list#myPostcards')._update(); // redraw list
+    } else {
+      this.selected = 0; // view all postcards
+      this.querySelector('iron-list#allPostcards')._update(); // redraw list
+    }
+  },
+
+  // displays user prompt instead if no cards to display // || (this._isEditMode && this.myData && this.myData.rows.length > 0)
+  _updateUserView: function() {
+    if ( (!this._isEditMode && this.listData && this.listData.rows.length>0) || (this._isEditMode && this.myCards && this.myCards.length>0) ) {
+      this.querySelector("aside").setAttribute("hidden", true);
+    } else {
+      console.log("prompt user to go create a postcard!");
+      this.querySelector("aside").removeAttribute("hidden");
+    }
+  },
+
+  _hasLoggedIn: function(){
+    if (myApp.username && myApp.username.length > 0) {
+      return true;
+    }
+    return false;
+  },
+
+  // update client with card changes event detail rather than reloading all records
+  cardChangedHandler: function(e) {
+    // ignore card changes until logged in
+    if (!this._hasLoggedIn()) {
+      console.log("Awaiting login");
+      return false;
+    }
+
+    var id, seq, rev, revNo;
+    var index = -1;
+    var isDeleted = false;
+
+    // parse event detail data
+    if (e.detail && e.detail.id && e.detail.seq && e.detail.changes && e.detail.changes.length>=1 && e.detail.changes[0].rev) {
+      id = e.detail.id;
+      seq = e.detail.seq;
+      rev = e.detail.changes[0].rev;
+      revNo = parseInt( rev.substring(0,rev.indexOf('-')) );
+      isDeleted = (e.detail.deleted && e.detail.deleted===true) ? true : false;
+    } else {
+      console.log("Error with changed event detail format. Reload data...");
+      this._reloadData();
+      return;
+    }
+
+    // ignore 'me' record added during peer connection
+    if (id==="me") {
+      console.log("Ignore 'me' record!");
+      return;
+    }
+
+    // find row index with id to be updated / deleted
+    if (isDeleted || revNo>1) {
+      index = this._getDataArrayIndex('listData.rows', id);
+      console.log("card found #" + index + " revNo:" + revNo + " id:" + id );
+    }
+
+    // perform deleted/updated changes at row index or else create a new row
+    if (isDeleted && index >= 0) {
+      // deleted
+      console.log("[-] deleted:" + index);
+      var result = this.splice('listData.rows', index, 1);
+      if(result && result.length>0) {
+        this._updateUserView();
+      } else {
+        console.log("Error, client failed to delete record. Reload data...");
+        this._reloadData();
+      }
+    } else if (index >= 0) {
+      // updated
+      console.log("[=] updated:" + index);
+      this._loadCard(id, index);
+    } else if (revNo === 1) {
+      // created
+      console.log("[+] created:" + index);
+      this._loadCard(id);
+    } else {
+      console.log("Error, failed to determine a change action to perform. Reload data...");
+      this._reloadData();
+    }
+  },
+
+  _getDataArrayIndex: function(dataArrayPath, id) {
+    var rows = this.get(dataArrayPath);
+    var i = rows.length;
+    while (i--) {
+      if(rows[i].doc._id === id) {
+        return i;
+      }
+    }
+    return -1;
+  },
+
+  _loadCard: function(cardId, index) {
+    $.ajax({
+        context: this,
+        url: myApp.api + "cards/" + cardId,
+        type: 'GET'
+      }).fail( function() {
+        console.log("Error loading card. Reload data...");
+        this._reloadData();
+      }).done( function(data) {
+        if (!data._id) {
+          console.log("Error with loaded card data format. Reload data...");
+          this._reloadData();
+          return;
+        }
+        console.log("Loaded card id:" + data._id);
+
+        var isSuccess = false;
+        // perform an update/create with the loaded card
+        if (index > -1) {
+          // Postcard to be updated
+          isSuccess = this._didUpdateCard(data, index);
+        } else {
+          // Postcard record to be inserted
+          isSuccess = this._didCreateCard(data);
+        }
+
+        if(!isSuccess) {
+          console.log("Error, client failed to create/update. Reload data... ***");
+          this._reloadData();
+        }
+      });
+  },
+
+  _didUpdateCard : function(data, index) {
+    if ( !this._isCardDataValid(data) ) {
+      return false;
+    }
+    var path = 'listData.rows.'+index+'.doc';
+    console.log("update card:", path);
+    if ( this.get(path) ) {
+      this._appendDoc(data); // add properties for display purposes only
+      this.set(path, data); // update doc
+      this.querySelector('iron-list#allPostcards')._update(); // redraw list view for dynamic row height size changes
+      return true;
+    }
+    return false;
+  },
+
+  _didCreateCard : function(data) {
+    if ( !this._isCardDataValid(data) ) {
+      return false;
+    }
+    this._appendDoc(data); // add properties for display purposes only
+    var record = {
+      doc: data,
+      id: data._id,
+      key: data._id,
+      value: {
+        rev: data._rev
+      }
+    };
+    var result = this.unshift('listData.rows', record);
+    // when first item is created the view needs updated to show list
+    if (result===1) {
+      this._updateUserView();
+    }
+    if (result>0) {
+      this._sortMyCards(); // all added cards should be organised by date added
+      return true;
+    }
+    return false;
+  },
+
+  _isCardDataValid : function(data) {
+    return (data && data._id && data._rev && data.from && data.text && data.dateCreated);
+  },
+
+  // refresh all postcards if contact changed
+  contactChangedHandler: function(e) {
+    console.log("Contact changed - request contacts");
+    this._requestContacts();
+  },
+
+  // contacts
+  _requestContacts : function() {
+    if ( !this._isAddressBookRequested ) {
+      this._isAddressBookRequested = true;
+      console.log("Contacts requested");
+      this.querySelector("#contacts").generateRequest(); // iron-ajax
+    }
+  },
+
+  _onContactsReceived : function() {
+    // save contacts to separate arrays for quicker calc with binding properties
+    var i = this.get('addressBook.rows').length;
+    console.log("Contact records received: " + i);
+    // reset
+    this.set('contacts', []);
+    this.set('identities', []);
+    while (i--) {
+      var doc = this.addressBook.rows[i].doc;
+      var contact = doc.username;
+      var identity = doc._id.split('-')[1];
+      this.push('contacts', contact);
+      this.push('identities', identity);
+    }
+
+    // load postcard data on first run, new content will auto-refresh
+    if (!this._isLoaded) {
+      this._reloadData(); // load all postcards
+    } else {
+      this._appendDisplayProperties(); // update existing postcard displays
+    }
+    this._isAddressBookRequested = false;
+  },
+
+  // appends all postcard rows doc object with display properties
+  _appendDisplayProperties : function() {
+    if( !this.listData || !this.listData.rows || this.listData.total_rows==0 ) {
+      return;
+    }
+    var i=0, len=this.listData.rows.length;
+    console.log("appending display properties on rows: " + len);
+    while (i<len) {
+      var doc = this._appendDoc( this.get('listData.rows.'+i+'.doc') );
+      this.set('listData.rows.'+i+'.doc._from', doc._from); // update _from binding
+      i++;
+    }
+    // Also filter my cards with updated properties
+    this.set('listData.lastUpdated', new Date().getTime());
+  },
+
+  // adds properties to 'doc' for display purposes only
+  _appendDoc : function(doc) {
+    // update sender information for display
+    var from = 'from "' + doc.from +'"'; // default sender text
+    // get device identity of the sender
+    var senderIdentity = doc._id.split('-')[2];
+    var index = this.identities.indexOf(senderIdentity);
+    if ( index > -1 ) {
+      var contact = this.contacts[index];
+      from = 'from ' + contact; // use identity exchange 'pet name'
+    }
+    // append doc _from property
+    doc._from = from;
+    return doc;
+  },
+
+  // on window resize we need to redraw the visible iron-list as the row item's height changes
+  _resizeHandler : function(e) {
+    if ( !this._isRedrawing ) {
+      this._redrawList();
+    }
+  },
+
+  // fire iron-resize event to force iron-list to redraw visible row items
+  _redrawList : function() {
+    var list = document.querySelector("page-home.iron-selected neon-animatable.iron-selected iron-list");
+    if (list) {
+      this._isRedrawing = true;
+      console.log("Redraw list", list.id);
+      list.fire('iron-resize');
+      // NB: redrawing the iron-list has the side effect of triggering iron-resize event so adding timeout to prevent unwanted callbacks.
+      setTimeout(function(){
+        this._isRedrawing = false;
+      }.bind(this), 100)
+    }
+  }
+
+});
+</script>
+</dom-module>
