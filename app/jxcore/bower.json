@@ -11,9 +11,9 @@
   ],
   "dependencies": {
     "polymer": "Polymer/polymer#~1.2.3",
-    "iron-elements": "PolymerElements/iron-elements#~1.0.7",
+    "iron-elements": "PolymerElements/iron-elements#~1.0.8",
     "paper-elements": "PolymerElements/paper-elements#~1.0.7",
-    "neon-animation": "PolymerElements/neon-animation#~1.0.9",
+    "neon-elements": "PolymerElements/neon-elements#^1.0.0",
     "font-roboto": "PolymerElements/font-roboto-local#1.0.0",
     "page.js": "1.6.4",
     "jquery": "2.1.4",
@@ -21,11 +21,11 @@
     "node-uuid": "1.4.3",
     "underscore": "1.8.3",
     "exif-js": "~2.1.1",
-    "base64toblob": "~0.0.1",
-    "neon-elements": "PolymerElements/neon-elements#~1.0.0"
+    "base64toblob": "~0.0.1"
   },
   "resolutions": {
-    "font-roboto": "1.0.0"
+    "font-roboto": "1.0.0",
+    "web-animations-js": "2.1.4"
   },
   "devDependencies": {
     "bower": "*",
