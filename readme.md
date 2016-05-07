@@ -2,7 +2,7 @@ Postcard App Demo with the following features
 
 1. Create / update / delete post cards
 
-2. Sync the cards from other devices over http
+2. Sync the cards from other devices over HTTP
 
 [![Watch Postcard app demo](http://img.youtube.com/vi/Mf_lsnrX8_4/0.jpg)](https://www.youtube.com/watch?v=Mf_lsnrX8_4&feature=youtu.be&list=PLmDFwvVc9vQ9zuDS4b3HhWWhhmPiuiUqn)
 
@@ -49,7 +49,7 @@ set PATH=%PATH%;%ANDROID_HOME%\tools;%ANDROID_HOME%\platform-tools
 
 ## JXcore
 
-Follow the instructions at [http://jxcore.com/downloads/](http://jxcore.com/downloads/). Their download page is a little confusing so please pay attention to the section at the top that says in a tiny little font 'Installation'. When you're done, check that the installation worked:
+Follow the instructions at [http://jxcore.com/downloads/](http://jxcore.com/downloads/). Their download page is a little confusing, so please pay attention to the section at the top that says in a tiny little font 'Installation'. When you're done, check that the installation worked:
 ```
 $ jx -jxv
 v 0.3.1.0
@@ -87,7 +87,7 @@ $ npm install -g gulp
 
 ## Hardware
 
-You will need two (it's a peer to peer system) Android devices running at least KitKat. And no, the emulator won't work. We depend on specific radios to work and they aren't in the emulator.
+You will need two (it's a peer-to-peer system) Android devices running at least KitKat. And no, the emulator won't work. We depend on specific radios to work and they aren't in the emulator.
 
 ## Building the postcard app
 
@@ -115,7 +115,7 @@ cordova build ios
 On Windows one needs to use [Git Bash](https://git-scm.com/download/win) or equivalent to run the above commands.
 
 ## Running in development environment on localhost
-You will also need to copy the Thali_CordovaPlugin 'mockmobile.js' script if you want run in development mode. This allows native methods to be called on the desktop when UX testing the web app.
+You will also need to copy the Thali_CordovaPlugin 'mockmobile.js' script if you want to run in development mode. This allows native methods to be called on the desktop when UX testing the web app.
 ```
 cd postcardapp/app/jxcore
 jx npm install
