@@ -1,3 +1,7 @@
+# THIS APP IS NO LONGER FUNCTIONING
+__We apologize but we have been hard at work on https://github.com/thaliproject/Thali_CordovaPlugin and have had no cycles to update this demo app which is based on a hopelessly old version of the Thali code.__
+
+
 Postcard App Demo with the following features
 
 1. Create / update / delete post cards
