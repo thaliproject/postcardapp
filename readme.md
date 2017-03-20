@@ -1,5 +1,5 @@
 # THIS APP IS NO LONGER FUNCTIONING
-__We apologize but we have been hard at work on https://github.com/thaliproject/Thali_CordovaPlugin and have had no cycles to update this demo app which is based on a hopelessly old version of the Thali code.__
+__We apologize but we have been hard at work on https://github.com/thaliproject/Thali_CordovaPlugin and have had no cycles to update this demo app which is based on a hopelessly old version of the Thali code.__ If you want to see an ugly example of how to use Thali that doesn't properly use PouchDB calls please check out https://github.com/thaliproject/ThaliTestApp
 
 
 Postcard App Demo with the following features
